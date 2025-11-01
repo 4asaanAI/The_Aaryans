@@ -31,6 +31,16 @@ function App() {
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const testimonials = [
     {
@@ -115,16 +125,18 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full  backdrop-blur-sm z-50">
+      <nav className={`fixed top-0 w-full backdrop-blur-sm z-50 transition-all duration-300 ${
+        scrolled ? 'bg-[#0f2943] shadow-lg' : 'bg-transparent'
+      }`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 animate-fadeIn">
               <div className="bg-orange-500 p-2 rounded">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">Primary School</span>
+              <span className="text-xl font-bold text-white">The Aaryans</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
               <a href="#home" className="text-white/90 hover:text-white transition-colors text-sm font-medium">Home</a>
@@ -140,7 +152,7 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-12 px-6 min-h-[600px] flex items-center">
+      <section className="relative pt-24 pb-12 px-6 min-h-[600px] flex items-center rounded-b-[60px] overflow-hidden bg-[#0f2943]">
         <div
           className="absolute inset-0 opacity-100"
           style={{
@@ -173,15 +185,15 @@ function App() {
       </section>
 
       {/* Why We Are The Best Section */}
-      <section className="py-16 px-6">
+      <section className="py-12 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl p-10 md:p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Why We Are The Best</h2>
-            <p className="text-gray-600 mb-12 max-w-2xl">
+            <p className="text-gray-600 mb-8 max-w-2xl">
               We have acquired true excellence in education and built a nurturing community that genuinely cares for your children's development. Our commitment to quality education, experienced faculty, and state-of-the-art facilities make us the preferred choice for discerning parents.
             </p>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 pb-8 border-b-2 border-gray-200">
               <div className="text-center hover:scale-105 transform transition-all">
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-10 h-10 text-green-600" />
@@ -224,7 +236,8 @@ function App() {
             </div>
 
             {/* Testimonials - Auto Slider */}
-            <div className="relative">
+            <div className="relative pt-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">What Parents Say</h3>
               <div className="overflow-hidden">
                 <div className="grid md:grid-cols-3 gap-6 transition-all duration-500">
                   {testimonials.slice(currentTestimonial, currentTestimonial + 3).map((testimonial, index) => (
@@ -271,13 +284,13 @@ function App() {
       </section>
 
       {/* School Activities & Contact Section */}
-      <section className="py-16 px-6" id="activities">
+      <section className="py-16 px-6 bg-white" id="activities">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8">
             {/* School Activities */}
             <div>
-              <h2 className="text-4xl font-bold text-black mb-4">School Activities</h2>
-              <p className="text-black/70 mb-8 leading-relaxed">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">School Activities</h2>
+              <p className="text-gray-700 mb-8 leading-relaxed">
                 Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
               </p>
 
@@ -300,7 +313,7 @@ function App() {
               </div>
 
               {/* FAQ Section */}
-              <div className="bg-white rounded-2xl p-8">
+              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
 
                 <div className="space-y-3">
@@ -331,7 +344,7 @@ function App() {
             {/* Have any Questions & Book Admissions */}
             <div className="space-y-8">
               {/* Contact Form */}
-              <div className="bg-orange-500 rounded-2xl p-8 hover:shadow-2xl transition-all">
+              <div className="bg-orange-500 rounded-2xl p-8 shadow-xl border-2 border-orange-600 hover:shadow-2xl transition-all">
                 <h3 className="text-3xl font-bold text-white mb-2">Have any Questions?</h3>
                 <p className="text-white/90 mb-6 text-sm">Fill out the form below and we'll get back to you within 24 hours</p>
 
@@ -394,7 +407,7 @@ function App() {
               </div>
 
               {/* Book Admissions */}
-              <div className="bg-white rounded-2xl p-8 hover:shadow-2xl transition-all">
+              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100 hover:shadow-2xl transition-all">
                 <h3 className="text-3xl font-bold text-gray-900 mb-2">Book Admissions</h3>
                 <p className="text-orange-500 font-bold text-xl mb-2">Now Open!</p>
                 <p className="text-gray-600 text-sm mb-6">Limited seats available for the upcoming academic year. Secure your child's future today.</p>
@@ -418,7 +431,7 @@ function App() {
       </section>
 
       {/* School Location */}
-      <section className="py-16 px-6">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl p-10 md:p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-gray-900 mb-8">Visit Our Campus</h2>
@@ -486,7 +499,7 @@ function App() {
       </section>
 
       {/* Team Section */}
-      <section className="py-16 px-6" id="teachers">
+      <section className="py-16 px-6 bg-[#0f2943]" id="teachers">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-4">Meet Our Expert Faculty</h2>
           <p className="text-white/70 mb-8 max-w-2xl">
@@ -514,7 +527,7 @@ function App() {
       </section>
 
       {/* Social Media */}
-      <section className="py-12 px-6">
+      <section className="py-12 px-6 bg-[#0f2943]">
         <div className="max-w-7xl mx-auto">
           <h3 className="text-3xl font-bold text-black mb-2">Let's be social!</h3>
           <p className="text-black/70 mb-6">Follow us on social media for updates, events, and student achievements</p>
@@ -541,7 +554,7 @@ function App() {
                 <div className="bg-orange-500 p-2 rounded">
                   <GraduationCap className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">Primary School</span>
+                <span className="text-xl font-bold text-white">The Aaryans</span>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
                 Inspiring young minds to achieve excellence through quality education, innovation, and care.
