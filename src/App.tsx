@@ -180,8 +180,8 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full backdrop-blur-xl backdrop-saturate-150 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/90 shadow-xl' : ''
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white/90 shadow-xl backdrop-blur-xl backdrop-saturate-150' : ''
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
