@@ -183,7 +183,7 @@ function App() {
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/90 shadow-xl backdrop-blur-xl backdrop-saturate-150' : ''
       }`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 animate-fadeIn">
               <div className="bg-orange-500 p-2 rounded">
@@ -577,61 +577,57 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 mb-8">Visit Our Campus</h2>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="bg-orange-100 p-3 rounded-full">
-                    <MapPin className="w-6 h-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-2">Address</h3>
-                    <p className="text-gray-600">123 Education Boulevard, Green Valley District, Metropolitan City, 12345</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="bg-orange-100 p-3 rounded-full">
-                    <Phone className="w-6 h-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-2">Phone</h3>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
-                    <p className="text-gray-600">+1 (555) 765-4321</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="bg-orange-100 p-3 rounded-full">
-                    <Mail className="w-6 h-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-2">Email</h3>
-                    <p className="text-gray-600">info@primaryschool.edu</p>
-                    <p className="text-gray-600">admissions@primaryschool.edu</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="bg-orange-100 p-3 rounded-full">
-                    <Clock className="w-6 h-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-2">Office Hours</h3>
-                    <p className="text-gray-600">Monday - Friday: 8:00 AM - 5:00 PM</p>
-                    <p className="text-gray-600">Saturday: 9:00 AM - 1:00 PM</p>
-                  </div>
-                </div>
+              <div className="h-[500px] rounded-2xl overflow-hidden">
+                <img
+                  src="https://images.pexels.com/photos/256490/pexels-photo-256490.jpeg?auto=compress&cs=tinysrgb&w=800"
+                  alt="School Campus Location"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
-              <div className="h-[400px] rounded-2xl overflow-hidden">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095343008!2d-74.00425878459253!3d40.74076794379132!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259bf5c1654f3%3A0xc80f9cfce5383d5d!2sGoogle!5e0!3m2!1sen!2sus!4v1635959873000!5m2!1sen!2sus"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  title="School Location"
-                ></iframe>
+              <div className="space-y-5">
+                <div className="flex items-start gap-3">
+                  <div className="bg-orange-100 p-2.5 rounded-full flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1 text-sm">Address</h3>
+                    <p className="text-gray-600 text-sm">123 Education Boulevard, Green Valley District, Metropolitan City, 12345</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="bg-orange-100 p-2.5 rounded-full flex-shrink-0">
+                    <Phone className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1 text-sm">Phone</h3>
+                    <p className="text-gray-600 text-sm">+1 (555) 123-4567</p>
+                    <p className="text-gray-600 text-sm">+1 (555) 765-4321</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="bg-orange-100 p-2.5 rounded-full flex-shrink-0">
+                    <Mail className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1 text-sm">Email</h3>
+                    <p className="text-gray-600 text-sm">info@primaryschool.edu</p>
+                    <p className="text-gray-600 text-sm">admissions@primaryschool.edu</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="bg-orange-100 p-2.5 rounded-full flex-shrink-0">
+                    <Clock className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1 text-sm">Office Hours</h3>
+                    <p className="text-gray-600 text-sm">Monday - Friday: 8:00 AM - 5:00 PM</p>
+                    <p className="text-gray-600 text-sm">Saturday: 9:00 AM - 1:00 PM</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
