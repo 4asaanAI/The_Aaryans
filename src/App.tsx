@@ -258,7 +258,7 @@ function App() {
               We have acquired true excellence in education and built a nurturing community that genuinely cares for your children's development. Our commitment to quality education, experienced faculty, and state-of-the-art facilities make us the preferred choice for discerning parents.
             </p>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 pb-8 border-b-2 border-gray-200">
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 pb-8 border-b-2 border-gray-200">
               <div className="text-center hover:scale-105 transform transition-all">
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-10 h-10 text-green-600" />
@@ -300,11 +300,44 @@ function App() {
               </div>
             </div>
 
+            {/* Mobile Slider for Why We Are The Best */}
+            <div className="md:hidden mb-8 pb-8 border-b-2 border-gray-200">
+              <div className="relative overflow-hidden">
+                <div className="flex transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+                  {[
+                    { icon: Shield, title: 'Safe Environment', desc: '24/7 security, CCTV monitoring, and controlled access ensure complete safety for every student on campus.', color: 'green' },
+                    { icon: Users, title: 'Certified Teachers', desc: 'Highly qualified educators with years of experience and specialized training in modern teaching methodologies.', color: 'green' },
+                    { icon: BookOpen, title: 'Quality Education', desc: 'Internationally recognized curriculum focusing on critical thinking, creativity, and comprehensive skill development.', color: 'green' },
+                    { icon: Award, title: 'Extensive Programs', desc: 'Well-rounded education with diverse extracurricular activities, sports, arts, and technology programs.', color: 'green' }
+                  ].map((item, index) => (
+                    <div key={index} className="min-w-full px-4 text-center">
+                      <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <item.icon className="w-10 h-10 text-green-600" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 mb-2 text-base">{item.title}</h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-center gap-2 mt-6">
+                  {[0, 1, 2, 3].map((index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`h-2 rounded-full transition-all ${
+                        currentSlide === index ? 'w-8 bg-orange-500' : 'w-2 bg-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Testimonials - Auto Slider */}
             <div className="relative pt-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center tracking-tight">What Parents Say</h3>
               <div className="overflow-hidden">
-                <div className="grid md:grid-cols-3 gap-6 transition-all duration-500">
+                <div className="hidden md:grid md:grid-cols-3 gap-6 transition-all duration-500">
                   {testimonials.slice(currentTestimonial, currentTestimonial + 3).map((testimonial, index) => (
                     <div key={currentTestimonial + index} className="bg-[#0f2943] rounded-2xl p-6 text-white hover:scale-105 transform transition-all animate-fadeIn">
                       <div className="flex items-start gap-3 mb-3">
@@ -325,6 +358,25 @@ function App() {
                       </p>
                     </div>
                   ))}
+                </div>
+                {/* Mobile Testimonials Slider */}
+                <div className="md:hidden">
+                  <div className="bg-[#0f2943] rounded-2xl p-6 text-white">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <GraduationCap className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold mb-1">{testimonials[currentTestimonial].name}</h4>
+                        <div className="flex gap-1 mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-orange-500 text-orange-500" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-white/80 leading-relaxed">{testimonials[currentTestimonial].text}</p>
+                  </div>
                 </div>
               </div>
 
@@ -490,7 +542,7 @@ function App() {
                   Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
                 </p>
 
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="hidden md:grid grid-cols-3 gap-4 mb-6">
                   {[
                     {
                       icon: FlaskConical,
@@ -525,6 +577,34 @@ function App() {
                       }`}>{activity.title}</p>
                     </div>
                   ))}
+                </div>
+
+                {/* Mobile Activity Slider */}
+                <div className="md:hidden mb-6">
+                  <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                    {[
+                      { icon: FlaskConical, title: 'Science Experiment' },
+                      { icon: Palette, title: 'Art & Drawing' },
+                      { icon: Music, title: 'Music & Singing' }
+                    ].map((activity, index) => (
+                      <div
+                        key={index}
+                        onClick={() => setSelectedActivity(index)}
+                        className={`flex-shrink-0 w-28 rounded-2xl p-4 text-center transition-all cursor-pointer ${
+                          selectedActivity === index
+                            ? 'bg-orange-500 shadow-lg'
+                            : 'bg-gray-200'
+                        }`}
+                      >
+                        <activity.icon className={`w-10 h-10 mx-auto mb-2 ${
+                          selectedActivity === index ? 'text-white' : 'text-gray-700'
+                        }`} />
+                        <p className={`font-semibold text-xs ${
+                          selectedActivity === index ? 'text-white' : 'text-gray-900'
+                        }`}>{activity.title}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Activity Description */}
@@ -577,7 +657,7 @@ function App() {
             <h2 className="text-4xl font-bold text-gray-900 mb-8">Visit Our Campus</h2>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="h-[500px] rounded-2xl overflow-hidden">
+              <div className="h-[300px] md:h-[500px] rounded-2xl overflow-hidden">
                 <img
                   src="https://images.pexels.com/photos/256490/pexels-photo-256490.jpeg?auto=compress&cs=tinysrgb&w=800"
                   alt="School Campus Location"
@@ -642,7 +722,7 @@ function App() {
             Our passionate and dedicated team of educators brings years of experience and a genuine love for teaching. Each teacher is committed to nurturing young minds and creating a positive learning environment.
           </p>
 
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="hidden md:grid md:grid-cols-4 gap-6">
             {[
               { name: 'Charlotte M.', role: 'Art Teacher', image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400', exp: '8 years experience' },
               { name: 'James P.', role: 'Science Teacher', image: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400', exp: '12 years experience' },
@@ -659,13 +739,47 @@ function App() {
               </div>
             ))}
           </div>
+
+          {/* Mobile Teachers Slider */}
+          <div className="md:hidden relative">
+            <div className="overflow-hidden">
+              <div className="flex transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+                {[
+                  { name: 'Charlotte M.', role: 'Art Teacher', image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400', exp: '8 years experience' },
+                  { name: 'James P.', role: 'Science Teacher', image: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400', exp: '12 years experience' },
+                  { name: 'Sarah K.', role: 'Music Teacher', image: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400', exp: '10 years experience' },
+                  { name: 'Michael R.', role: 'Sports Teacher', image: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400', exp: '15 years experience' }
+                ].map((teacher, index) => (
+                  <div key={index} className="min-w-full px-4 text-center">
+                    <div className="w-32 h-32 rounded-full bg-orange-500 mx-auto mb-4 overflow-hidden border-4 border-white/20">
+                      <img src={teacher.image} alt={teacher.name} className="w-full h-full object-cover" />
+                    </div>
+                    <h4 className="text-white font-bold mb-1">{teacher.name}</h4>
+                    <p className="text-orange-400 text-sm font-semibold mb-1">{teacher.role}</p>
+                    <p className="text-white/60 text-xs">{teacher.exp}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`h-2 rounded-full transition-all ${
+                    currentSlide === index ? 'w-8 bg-orange-500' : 'w-2 bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-[#0a1f33] py-12 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="bg-orange-500 p-2 rounded">
@@ -759,6 +873,15 @@ function App() {
 
         .animate-slideUp {
           animation: slideUp 0.8s ease-out;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
