@@ -181,7 +181,7 @@ function App() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className={`fixed top-0 w-full backdrop-blur-xl backdrop-saturate-150 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/90 shadow-xl' : 'bg-white/5'
+        scrolled ? 'bg-white/90 shadow-xl' : ''
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -666,31 +666,6 @@ function App() {
         </div>
       </section>
 
-      {/* Social Media */}
-      <section className="py-3 px-6 bg-[#0f2943]">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-[#1a3a5a] to-[#0f2943] rounded-xl p-3 shadow-lg border border-orange-500/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-white mb-0">Let's be social!</h3>
-                <p className="text-white/70 text-xs">Follow us for updates</p>
-              </div>
-              <div className="flex gap-2">
-                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110 shadow-md">
-                  <Facebook className="w-4 h-4 text-white" />
-                </a>
-                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110 shadow-md">
-                  <Twitter className="w-4 h-4 text-white" />
-                </a>
-                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110 shadow-md">
-                  <Instagram className="w-4 h-4 text-white" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="bg-[#0a1f33] py-12 px-6 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
@@ -700,13 +675,22 @@ function App() {
                 <div className="bg-orange-500 p-2 rounded">
                   <GraduationCap className="w-6 h-6 text-white" />
                 </div>
-                <span className={`text-xl font-bold transition-colors ${
-                scrolled ? 'text-gray-900' : 'text-white'
-              }`}>The Aaryans</span>
+                <span className="text-xl font-bold text-white">The Aaryans</span>
               </div>
-              <p className="text-white/60 text-sm leading-relaxed">
+              <p className="text-white/60 text-sm leading-relaxed mb-4">
                 Inspiring young minds to achieve excellence through quality education, innovation, and care.
               </p>
+              <div className="flex gap-3">
+                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110">
+                  <Facebook className="w-4 h-4 text-white" />
+                </a>
+                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110">
+                  <Twitter className="w-4 h-4 text-white" />
+                </a>
+                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110">
+                  <Instagram className="w-4 h-4 text-white" />
+                </a>
+              </div>
             </div>
 
             <div>
