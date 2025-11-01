@@ -284,6 +284,64 @@ function App() {
         </div>
       </section>
 
+      {/* School Facilities Slideshow - Full Width */}
+      <section className="py-0 bg-[#0f2943]">
+        <div className="relative">
+          <div className="relative h-[400px] overflow-hidden">
+            {schoolPlaces.map((place, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-1000 ${
+                  index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <img
+                  src={place.image}
+                  alt={place.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white max-w-7xl mx-auto">
+                  <h3 className="text-3xl md:text-5xl font-bold mb-2 animate-fadeIn">{place.title}</h3>
+                  <p className="text-lg md:text-2xl text-white/90 animate-fadeIn">{place.subtitle}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all hover:scale-110 z-10"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all hover:scale-110 z-10"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </button>
+
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+            {schoolPlaces.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`h-2 rounded-full transition-all ${
+                  index === currentSlide
+                    ? 'w-8 bg-orange-500'
+                    : 'w-2 bg-white/50 hover:bg-white/70'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* School Activities & Contact Section */}
       <section className="py-16 px-6 bg-white" id="activities">
         <div className="max-w-7xl mx-auto">
