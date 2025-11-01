@@ -549,25 +549,25 @@ function App() {
         <div className="max-w-7xl mx-auto">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative bg-gradient-to-br from-[#1a3a5a] to-[#0f2943] rounded-3xl p-10 shadow-2xl border-2 border-orange-500/30" style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(251, 146, 60, 0.1), inset 0 2px 4px 0 rgba(255, 255, 255, 0.06);">
+            <div className="relative bg-gradient-to-br from-[#1a3a5a] to-[#0f2943] rounded-3xl p-10 shadow-2xl border-2 border-orange-500/30" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(251, 146, 60, 0.1), inset 0 2px 4px 0 rgba(255, 255, 255, 0.06)' }}>
               <h3 className="text-4xl font-bold text-white mb-3 drop-shadow-lg">Let's be social!</h3>
               <p className="text-white/80 mb-8 text-lg">Follow us on social media for updates, events, and student achievements</p>
               <div className="flex gap-6">
                 <a href="#" className="relative group">
                   <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style="box-shadow: 0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style={{ boxShadow: '0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
                     <Facebook className="w-7 h-7 text-white drop-shadow-lg" />
                   </div>
                 </a>
                 <a href="#" className="relative group">
                   <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style="box-shadow: 0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style={{ boxShadow: '0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
                     <Twitter className="w-7 h-7 text-white drop-shadow-lg" />
                   </div>
                 </a>
                 <a href="#" className="relative group">
                   <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style="box-shadow: 0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style={{ boxShadow: '0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
                     <Instagram className="w-7 h-7 text-white drop-shadow-lg" />
                   </div>
                 </a>
