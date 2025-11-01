@@ -14,6 +14,8 @@ import {
   Instagram,
   Star,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
   Phone,
   Mail,
@@ -33,6 +35,7 @@ function App() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,6 +84,22 @@ function App() {
     return () => clearInterval(interval);
   }, [testimonials.length]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % schoolPlaces.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [schoolPlaces.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % schoolPlaces.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + schoolPlaces.length) % schoolPlaces.length);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
@@ -89,6 +108,39 @@ function App() {
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
+
+  const schoolPlaces = [
+    {
+      title: 'Modern Playground',
+      subtitle: 'Safe and spacious outdoor area with modern play equipment',
+      image: 'https://images.pexels.com/photos/1094072/pexels-photo-1094072.jpeg?auto=compress&cs=tinysrgb&w=1920'
+    },
+    {
+      title: 'School Canteen',
+      subtitle: 'Hygienic cafeteria serving nutritious and delicious meals',
+      image: 'https://images.pexels.com/photos/1332189/pexels-photo-1332189.jpeg?auto=compress&cs=tinysrgb&w=1920'
+    },
+    {
+      title: 'Smart Classrooms',
+      subtitle: 'Technology-enabled learning spaces with interactive displays',
+      image: 'https://images.pexels.com/photos/8471831/pexels-photo-8471831.jpeg?auto=compress&cs=tinysrgb&w=1920'
+    },
+    {
+      title: 'Science Laboratory',
+      subtitle: 'Well-equipped labs for hands-on scientific exploration',
+      image: 'https://images.pexels.com/photos/8535230/pexels-photo-8535230.jpeg?auto=compress&cs=tinysrgb&w=1920'
+    },
+    {
+      title: 'Library & Reading Room',
+      subtitle: 'Extensive collection of books fostering a love for reading',
+      image: 'https://images.pexels.com/photos/2908984/pexels-photo-2908984.jpeg?auto=compress&cs=tinysrgb&w=1920'
+    },
+    {
+      title: 'Sports Facilities',
+      subtitle: 'Indoor and outdoor courts for various sports activities',
+      image: 'https://images.pexels.com/photos/1089459/pexels-photo-1089459.jpeg?auto=compress&cs=tinysrgb&w=1920'
+    }
+  ];
 
   const faqs = [
     {
