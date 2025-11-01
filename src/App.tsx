@@ -276,8 +276,8 @@ function App() {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* School Activities */}
             <div>
-              <h2 className="text-4xl font-bold text-white mb-4">School Activities</h2>
-              <p className="text-white/70 mb-8 leading-relaxed">
+              <h2 className="text-4xl font-bold text-black mb-4">School Activities</h2>
+              <p className="text-black/70 mb-8 leading-relaxed">
                 Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
               </p>
 
