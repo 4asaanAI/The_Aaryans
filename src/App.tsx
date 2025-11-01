@@ -287,31 +287,8 @@ function App() {
       <section className="py-16 px-6 bg-white" id="activities">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* School Activities */}
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">School Activities</h2>
-              <p className="text-gray-700 mb-8 leading-relaxed">
-                Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
-              </p>
-
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
-                  <FlaskConical className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
-                  <p className="text-white font-semibold text-sm mb-2">Science Experiment</p>
-                  <p className="text-white/80 text-xs">Hands-on laboratory sessions fostering curiosity and scientific thinking</p>
-                </div>
-                <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
-                  <Palette className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
-                  <p className="text-white font-semibold text-sm mb-2">Art & Drawing</p>
-                  <p className="text-white/80 text-xs">Creative expression through various art forms and mediums</p>
-                </div>
-                <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
-                  <Music className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
-                  <p className="text-white font-semibold text-sm mb-2">Music & Singing</p>
-                  <p className="text-white/80 text-xs">Musical training including instruments and vocal development</p>
-                </div>
-              </div>
-
+            {/* FAQ and Have Any Questions */}
+            <div className="space-y-8">
               {/* FAQ Section */}
               <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
@@ -339,10 +316,7 @@ function App() {
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Have any Questions & Book Admissions */}
-            <div className="space-y-8">
               {/* Contact Form */}
               <div className="bg-orange-500 rounded-2xl p-8 shadow-xl border-2 border-orange-600 hover:shadow-2xl transition-all">
                 <h3 className="text-3xl font-bold text-white mb-2">Have any Questions?</h3>
@@ -404,6 +378,35 @@ function App() {
                     Submit Inquiry
                   </button>
                 </form>
+              </div>
+            </div>
+
+            {/* School Activities & Book Admissions */}
+            <div className="space-y-8">
+              {/* School Activities */}
+              <div>
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">School Activities</h2>
+                <p className="text-gray-700 mb-8 leading-relaxed">
+                  Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
+                </p>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
+                    <FlaskConical className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
+                    <p className="text-white font-semibold text-sm mb-2">Science Experiment</p>
+                    <p className="text-white/80 text-xs">Hands-on laboratory sessions fostering curiosity and scientific thinking</p>
+                  </div>
+                  <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
+                    <Palette className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
+                    <p className="text-white font-semibold text-sm mb-2">Art & Drawing</p>
+                    <p className="text-white/80 text-xs">Creative expression through various art forms and mediums</p>
+                  </div>
+                  <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
+                    <Music className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
+                    <p className="text-white font-semibold text-sm mb-2">Music & Singing</p>
+                    <p className="text-white/80 text-xs">Musical training including instruments and vocal development</p>
+                  </div>
+                </div>
               </div>
 
               {/* Book Admissions */}
