@@ -32,6 +32,7 @@ function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -347,29 +348,6 @@ function App() {
                     className="w-full px-4 py-3 rounded-full bg-white/90 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
                     required
                   />
-                  <input
-                    type="text"
-                    placeholder="Location/City"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    className="w-full px-4 py-3 rounded-full bg-white/90 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
-                    required
-                  />
-
-                  <div className="space-y-3">
-                    <p className="text-white font-semibold">Preferred Time Slot</p>
-                    <select
-                      value={formData.time}
-                      onChange={(e) => setFormData({...formData, time: e.target.value})}
-                      className="w-full px-4 py-3 rounded-full bg-white/90 text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
-                      required
-                    >
-                      <option value="">Select a time slot</option>
-                      <option value="morning">Morning (9:00 AM - 12:00 PM)</option>
-                      <option value="afternoon">Afternoon (12:00 PM - 3:00 PM)</option>
-                      <option value="evening">Evening (3:00 PM - 6:00 PM)</option>
-                    </select>
-                  </div>
 
                   <button
                     type="submit"
@@ -390,22 +368,59 @@ function App() {
                   Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
                 </p>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
-                    <FlaskConical className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
-                    <p className="text-white font-semibold text-sm mb-2">Science Experiment</p>
-                    <p className="text-white/80 text-xs">Hands-on laboratory sessions fostering curiosity and scientific thinking</p>
-                  </div>
-                  <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
-                    <Palette className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
-                    <p className="text-white font-semibold text-sm mb-2">Art & Drawing</p>
-                    <p className="text-white/80 text-xs">Creative expression through various art forms and mediums</p>
-                  </div>
-                  <div className="bg-orange-500 rounded-2xl p-6 text-center hover:bg-orange-600 transition-all cursor-pointer hover:scale-105 transform group">
-                    <Music className="w-12 h-12 text-white mx-auto mb-3 group-hover:rotate-12 transition-transform" />
-                    <p className="text-white font-semibold text-sm mb-2">Music & Singing</p>
-                    <p className="text-white/80 text-xs">Musical training including instruments and vocal development</p>
-                  </div>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {[
+                    {
+                      icon: FlaskConical,
+                      title: 'Science Experiment',
+                      description: 'Our state-of-the-art science laboratory provides students with hands-on experience in conducting experiments and exploring scientific concepts. From basic chemistry to physics demonstrations, students engage in practical learning that brings textbook theories to life. Our experienced science teachers guide students through safe, educational experiments that foster critical thinking, problem-solving skills, and a genuine love for scientific discovery. Students learn to formulate hypotheses, conduct investigations, and analyze results, developing essential skills for future academic success.'
+                    },
+                    {
+                      icon: Palette,
+                      title: 'Art & Drawing',
+                      description: 'Our comprehensive art program nurtures creativity and self-expression through various artistic mediums including painting, drawing, sculpture, and mixed media. Students explore different techniques, styles, and artistic movements while developing their unique creative voice. Our dedicated art studio is equipped with professional-grade materials and tools, allowing students to experiment freely and create meaningful artwork. Regular exhibitions and art shows provide opportunities for students to showcase their talents and build confidence in their abilities.'
+                    },
+                    {
+                      icon: Music,
+                      title: 'Music & Singing',
+                      description: 'Our music program offers comprehensive training in vocal techniques, instrument playing, and music theory. Students have access to a wide range of instruments including keyboards, guitars, drums, and traditional instruments. Weekly music classes focus on rhythm, melody, harmony, and musical expression. Students participate in choir performances, individual recitals, and group concerts throughout the year. Our experienced music teachers help students discover their musical talents while building confidence, discipline, and a lifelong appreciation for the arts.'
+                    }
+                  ].map((activity, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedActivity(index)}
+                      className={`rounded-2xl p-6 text-center transition-all cursor-pointer hover:scale-105 transform group ${
+                        selectedActivity === index
+                          ? 'bg-orange-500 shadow-lg'
+                          : 'bg-gray-200 hover:bg-gray-300'
+                      }`}
+                    >
+                      <activity.icon className={`w-12 h-12 mx-auto mb-3 group-hover:rotate-12 transition-transform ${
+                        selectedActivity === index ? 'text-white' : 'text-gray-700'
+                      }`} />
+                      <p className={`font-semibold text-sm ${
+                        selectedActivity === index ? 'text-white' : 'text-gray-900'
+                      }`}>{activity.title}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Activity Description */}
+                <div className="bg-orange-50 rounded-2xl p-6 border-2 border-orange-100">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {[
+                      { icon: FlaskConical, title: 'Science Experiment' },
+                      { icon: Palette, title: 'Art & Drawing' },
+                      { icon: Music, title: 'Music & Singing' }
+                    ][selectedActivity].title}
+                  </h3>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {[
+                      'Our state-of-the-art science laboratory provides students with hands-on experience in conducting experiments and exploring scientific concepts. From basic chemistry to physics demonstrations, students engage in practical learning that brings textbook theories to life. Our experienced science teachers guide students through safe, educational experiments that foster critical thinking, problem-solving skills, and a genuine love for scientific discovery. Students learn to formulate hypotheses, conduct investigations, and analyze results, developing essential skills for future academic success.',
+                      'Our comprehensive art program nurtures creativity and self-expression through various artistic mediums including painting, drawing, sculpture, and mixed media. Students explore different techniques, styles, and artistic movements while developing their unique creative voice. Our dedicated art studio is equipped with professional-grade materials and tools, allowing students to experiment freely and create meaningful artwork. Regular exhibitions and art shows provide opportunities for students to showcase their talents and build confidence in their abilities.',
+                      'Our music program offers comprehensive training in vocal techniques, instrument playing, and music theory. Students have access to a wide range of instruments including keyboards, guitars, drums, and traditional instruments. Weekly music classes focus on rhythm, melody, harmony, and musical expression. Students participate in choir performances, individual recitals, and group concerts throughout the year. Our experienced music teachers help students discover their musical talents while building confidence, discipline, and a lifelong appreciation for the arts.'
+                    ][selectedActivity]}
+                  </p>
                 </div>
               </div>
 
