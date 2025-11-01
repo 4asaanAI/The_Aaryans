@@ -571,7 +571,7 @@ function App() {
       </section>
 
       {/* School Location */}
-      <section className="py-4 px-6 bg-white">
+      <section className="py-4 pt-0 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl p-10 md:p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-gray-900 mb-8">Visit Our Campus</h2>
