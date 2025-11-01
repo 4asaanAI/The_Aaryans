@@ -21,14 +21,14 @@ import {
   Mail,
   Clock
 } from 'lucide-react';
+import { submitContactInquiry } from './lib/supabase';
+import { Notification } from './components/Notification';
 
 function App() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    location: '',
-    time: ''
+    phone: ''
   });
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -36,6 +36,8 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -133,9 +135,33 @@ function App() {
     setCurrentSlide((prev) => (prev - 1 + schoolPlaces.length) % schoolPlaces.length);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
+
+    try {
+      await submitContactInquiry({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined
+      });
+
+      setNotification({
+        type: 'success',
+        message: 'Thank you! Your inquiry has been submitted successfully. We\'ll get back to you within 24 hours.'
+      });
+
+      setFormData({ name: '', email: '', phone: '' });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setNotification({
+        type: 'error',
+        message: 'Sorry, there was an error submitting your inquiry. Please try again or contact us directly.'
+      });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setNotification(null), 5000);
+    }
   };
 
   const toggleFaq = (index: number) => {
@@ -179,6 +205,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/90 shadow-xl backdrop-blur-xl backdrop-saturate-150' : ''
@@ -525,9 +558,10 @@ function App() {
 
                   <button
                     type="submit"
-                    className="w-full bg-white text-orange-500 py-3 rounded-full font-bold hover:bg-gray-100 transition-all hover:scale-105 transform"
+                    disabled={isSubmitting}
+                    className="w-full bg-white text-orange-500 py-3 rounded-full font-bold hover:bg-gray-100 transition-all hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    Submit Inquiry
+                    {isSubmitting ? 'Submitting...' : 'Submit Inquiry'}
                   </button>
                 </form>
               </div>
