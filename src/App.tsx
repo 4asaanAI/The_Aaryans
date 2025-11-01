@@ -289,12 +289,12 @@ function App() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8">
             {/* FAQ and Have Any Questions */}
-            <div className="space-y-8">
+            <div className="flex flex-col gap-8">
               {/* FAQ Section */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100">
+              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100 flex-1 flex flex-col">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h3>
 
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1">
                   {faqs.map((faq, index) => (
                     <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
                       <button
@@ -360,9 +360,9 @@ function App() {
             </div>
 
             {/* School Activities & Book Admissions */}
-            <div className="space-y-8">
+            <div className="flex flex-col gap-8">
               {/* School Activities */}
-              <div>
+              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100 flex-1 flex flex-col">
                 <h2 className="text-4xl font-bold text-gray-900 mb-4">School Activities</h2>
                 <p className="text-gray-700 mb-8 leading-relaxed">
                   Our comprehensive activity program is designed to develop well-rounded individuals. We believe that learning extends beyond textbooks and encourage students to explore their passions through hands-on experiences.
@@ -406,7 +406,7 @@ function App() {
                 </div>
 
                 {/* Activity Description */}
-                <div className="bg-orange-50 rounded-2xl p-6 border-2 border-orange-100">
+                <div className="bg-orange-50 rounded-2xl p-6 border-2 border-orange-100 flex-1">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">
                     {[
                       { icon: FlaskConical, title: 'Science Experiment' },
@@ -425,7 +425,7 @@ function App() {
               </div>
 
               {/* Book Admissions */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100 hover:shadow-2xl transition-all">
+              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-orange-100 hover:shadow-2xl transition-all h-full flex flex-col justify-between">
                 <h3 className="text-3xl font-bold text-gray-900 mb-2">Book Admissions</h3>
                 <p className="text-orange-500 font-bold text-xl mb-2">Now Open!</p>
                 <p className="text-gray-600 text-sm mb-6">Limited seats available for the upcoming academic year. Secure your child's future today.</p>
@@ -449,7 +449,7 @@ function App() {
       </section>
 
       {/* School Location */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-8 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl p-10 md:p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-gray-900 mb-8">Visit Our Campus</h2>
@@ -547,18 +547,32 @@ function App() {
       {/* Social Media */}
       <section className="py-12 px-6 bg-[#0f2943]">
         <div className="max-w-7xl mx-auto">
-          <h3 className="text-3xl font-bold text-white mb-2">Let's be social!</h3>
-          <p className="text-white/70 mb-6">Follow us on social media for updates, events, and student achievements</p>
-          <div className="flex gap-4">
-            <a href="#" className="bg-orange-500 p-3 rounded-full hover:bg-orange-600 transition-all hover:scale-110 transform">
-              <Facebook className="w-6 h-6 text-white" />
-            </a>
-            <a href="#" className="bg-orange-500 p-3 rounded-full hover:bg-orange-600 transition-all hover:scale-110 transform">
-              <Twitter className="w-6 h-6 text-white" />
-            </a>
-            <a href="#" className="bg-orange-500 p-3 rounded-full hover:bg-orange-600 transition-all hover:scale-110 transform">
-              <Instagram className="w-6 h-6 text-white" />
-            </a>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent blur-3xl rounded-full"></div>
+            <div className="relative bg-gradient-to-br from-[#1a3a5a] to-[#0f2943] rounded-3xl p-10 shadow-2xl border-2 border-orange-500/30" style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(251, 146, 60, 0.1), inset 0 2px 4px 0 rgba(255, 255, 255, 0.06);">
+              <h3 className="text-4xl font-bold text-white mb-3 drop-shadow-lg">Let's be social!</h3>
+              <p className="text-white/80 mb-8 text-lg">Follow us on social media for updates, events, and student achievements</p>
+              <div className="flex gap-6">
+                <a href="#" className="relative group">
+                  <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style="box-shadow: 0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                    <Facebook className="w-7 h-7 text-white drop-shadow-lg" />
+                  </div>
+                </a>
+                <a href="#" className="relative group">
+                  <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style="box-shadow: 0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                    <Twitter className="w-7 h-7 text-white drop-shadow-lg" />
+                  </div>
+                </a>
+                <a href="#" className="relative group">
+                  <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style="box-shadow: 0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+                    <Instagram className="w-7 h-7 text-white drop-shadow-lg" />
+                  </div>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
