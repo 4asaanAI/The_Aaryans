@@ -215,8 +215,8 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-6 px-6">
-        <div className="max-w-7xl mx-auto relative min-h-[600px] flex items-center rounded-[40px] overflow-hidden bg-[#0f2943]">
+      <section className="px-6">
+        <div className="max-w-7xl mx-auto relative pt-24 pb-12 min-h-[600px] flex items-center rounded-b-[60px] overflow-hidden bg-[#0f2943]">
           <div
             className="absolute inset-0 opacity-100"
             style={{
@@ -227,7 +227,7 @@ function App() {
           ></div>
           <div className="absolute inset-0 bg-gradient-to-r from-[#0f2943] via-[#0f2943]/70 to-[#0f2943]/40"></div>
 
-          <div className="relative z-10 w-full px-12 py-12">
+          <div className="relative z-10 w-full px-12">
             <div className="max-w-xl animate-slideUp">
               <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
                 An Inspiring Primary School for your child
