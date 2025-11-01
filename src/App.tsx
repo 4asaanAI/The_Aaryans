@@ -516,8 +516,8 @@ function App() {
       {/* Social Media */}
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <h3 className="text-3xl font-bold text-white mb-2">Let's be social!</h3>
-          <p className="text-white/70 mb-6">Follow us on social media for updates, events, and student achievements</p>
+          <h3 className="text-3xl font-bold text-black mb-2">Let's be social!</h3>
+          <p className="text-black/70 mb-6">Follow us on social media for updates, events, and student achievements</p>
           <div className="flex gap-4">
             <a href="#" className="bg-orange-500 p-3 rounded-full hover:bg-orange-600 transition-all hover:scale-110 transform">
               <Facebook className="w-6 h-6 text-white" />
