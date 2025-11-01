@@ -140,7 +140,7 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-12 px-42 min-h-[600px] flex items-center">
+      <section className="relative pt-24 pb-12 px-6 min-h-[600px] flex items-center">
         <div
           className="absolute inset-0 opacity-100"
           style={{
