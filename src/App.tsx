@@ -142,7 +142,7 @@ function App() {
       {/* Hero Section */}
       <section className="relative pt-24 pb-12 px-6 min-h-[600px] flex items-center">
         <div
-          className="absolute inset-0 opacity-100"
+          className="absolute inset-0 opacity-100 rounded-md"
           style={{
             backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/2/29/Exeter_High_School_%28New_Hampshire%29.jpg)',
             backgroundSize: 'cover',
