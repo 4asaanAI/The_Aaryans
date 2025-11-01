@@ -180,8 +180,8 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full backdrop-blur-sm z-50 transition-all duration-300 ${
-        scrolled ? 'bg-[#0f2943] shadow-lg' : 'bg-transparent'
+      <nav className={`fixed top-0 w-full backdrop-blur-xl backdrop-saturate-150 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white/90 shadow-xl' : 'bg-white/5'
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -189,14 +189,24 @@ function App() {
               <div className="bg-orange-500 p-2 rounded">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">The Aaryans</span>
+              <span className={`text-xl font-bold transition-colors ${
+                scrolled ? 'text-gray-900' : 'text-white'
+              }`}>The Aaryans</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <a href="#home" className="text-white/90 hover:text-white transition-colors text-sm font-medium">Home</a>
-              <a href="#about" className="text-white/90 hover:text-white transition-colors text-sm font-medium">About</a>
-              <a href="#activities" className="text-white/90 hover:text-white transition-colors text-sm font-medium">Activities</a>
-              <a href="#teachers" className="text-white/90 hover:text-white transition-colors text-sm font-medium">Teachers</a>
-              <button className="bg-orange-500 text-white px-6 py-2 rounded-full hover:bg-orange-600 transition-all text-sm font-semibold hover:scale-105 transform">
+              <a href="#home" className={`transition-colors text-sm font-medium ${
+                scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'
+              }`}>Home</a>
+              <a href="#about" className={`transition-colors text-sm font-medium ${
+                scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'
+              }`}>About</a>
+              <a href="#activities" className={`transition-colors text-sm font-medium ${
+                scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'
+              }`}>Activities</a>
+              <a href="#teachers" className={`transition-colors text-sm font-medium ${
+                scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'
+              }`}>Teachers</a>
+              <button className="bg-orange-500 text-white px-6 py-2.5 rounded-full hover:bg-orange-600 transition-all text-sm font-semibold hover:scale-105 transform shadow-lg">
                 Contact
               </button>
             </div>
@@ -205,33 +215,35 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-12 px-6 min-h-[600px] flex items-center rounded-b-[60px] overflow-hidden bg-[#0f2943]">
-        <div
-          className="absolute inset-0 opacity-100"
-          style={{
-            backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/2/29/Exeter_High_School_%28New_Hampshire%29.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0f2943] via-[#0f2943]/70 to-[#0f2943]/40"></div>
+      <section className="pt-20 pb-6 px-6">
+        <div className="max-w-7xl mx-auto relative min-h-[600px] flex items-center rounded-[40px] overflow-hidden bg-[#0f2943]">
+          <div
+            className="absolute inset-0 opacity-100"
+            style={{
+              backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/2/29/Exeter_High_School_%28New_Hampshire%29.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          ></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f2943] via-[#0f2943]/70 to-[#0f2943]/40"></div>
 
-        <div className="max-w-7xl mx-auto relative z-10 w-full">
-          <div className="max-w-xl animate-slideUp">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              An Inspiring Primary School for your child
-            </h1>
-            <p className="text-lg text-white/80 mb-8 leading-relaxed">
-              A primary school with incredible staff to inspire and excite, to educate, care lovingly and to make that special individual feel confident in their abilities.
-            </p>
-            <div className="flex gap-4">
-              <button className="bg-orange-500 text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-all font-semibold hover:scale-105 transform">
-                Schedule a tour
-              </button>
-              <button className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-full hover:bg-white/20 transition-all font-semibold flex items-center gap-2 hover:scale-105 transform">
-                <Play className="w-4 h-4 fill-white" />
-                Watch Video
-              </button>
+          <div className="relative z-10 w-full px-12 py-12">
+            <div className="max-w-xl animate-slideUp">
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
+                An Inspiring Primary School for your child
+              </h1>
+              <p className="text-lg text-white/90 mb-8 leading-relaxed">
+                A primary school with incredible staff to inspire and excite, to educate, care lovingly and to make that special individual feel confident in their abilities.
+              </p>
+              <div className="flex gap-4">
+                <button className="bg-orange-500 text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-all font-semibold hover:scale-105 transform shadow-lg">
+                  Schedule a tour
+                </button>
+                <button className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-full hover:bg-white/20 transition-all font-semibold flex items-center gap-2 hover:scale-105 transform">
+                  <Play className="w-4 h-4 fill-white" />
+                  Watch Video
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -241,8 +253,8 @@ function App() {
       <section className="py-12 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl p-10 md:p-12 shadow-2xl">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why We Are The Best</h2>
-            <p className="text-gray-600 mb-8 max-w-2xl">
+            <h2 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">Why We Are The Best</h2>
+            <p className="text-gray-600 mb-8 max-w-2xl leading-relaxed">
               We have acquired true excellence in education and built a nurturing community that genuinely cares for your children's development. Our commitment to quality education, experienced faculty, and state-of-the-art facilities make us the preferred choice for discerning parents.
             </p>
 
@@ -251,8 +263,8 @@ function App() {
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-10 h-10 text-green-600" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">Safe Environment</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-base">Safe Environment</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   24/7 security, CCTV monitoring, and controlled access ensure complete safety for every student on campus.
                 </p>
               </div>
@@ -261,8 +273,8 @@ function App() {
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-10 h-10 text-green-600" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">Certified Teachers</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-base">Certified Teachers</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Highly qualified educators with years of experience and specialized training in modern teaching methodologies.
                 </p>
               </div>
@@ -271,8 +283,8 @@ function App() {
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="w-10 h-10 text-green-600" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">Quality Education</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-base">Quality Education</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Internationally recognized curriculum focusing on critical thinking, creativity, and comprehensive skill development.
                 </p>
               </div>
@@ -281,8 +293,8 @@ function App() {
                 <div className="bg-green-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Award className="w-10 h-10 text-green-600" />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">Extensive Programs</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-gray-900 mb-2 text-base">Extensive Programs</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Well-rounded education with diverse extracurricular activities, sports, arts, and technology programs.
                 </p>
               </div>
@@ -290,7 +302,7 @@ function App() {
 
             {/* Testimonials - Auto Slider */}
             <div className="relative pt-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">What Parents Say</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center tracking-tight">What Parents Say</h3>
               <div className="overflow-hidden">
                 <div className="grid md:grid-cols-3 gap-6 transition-all duration-500">
                   {testimonials.slice(currentTestimonial, currentTestimonial + 3).map((testimonial, index) => (
@@ -559,7 +571,7 @@ function App() {
       </section>
 
       {/* School Location */}
-      <section className="py-8 px-6 bg-white">
+      <section className="py-4 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl p-10 md:p-12 shadow-2xl">
             <h2 className="text-4xl font-bold text-gray-900 mb-8">Visit Our Campus</h2>
@@ -627,7 +639,7 @@ function App() {
       </section>
 
       {/* Team Section */}
-      <section className="py-16 px-6 bg-[#0f2943]" id="teachers">
+      <section className="py-12 px-6 bg-[#0f2943]" id="teachers">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-4">Meet Our Expert Faculty</h2>
           <p className="text-white/70 mb-8 max-w-2xl">
@@ -655,31 +667,23 @@ function App() {
       </section>
 
       {/* Social Media */}
-      <section className="py-12 px-6 bg-[#0f2943]">
+      <section className="py-3 px-6 bg-[#0f2943]">
         <div className="max-w-7xl mx-auto">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative bg-gradient-to-br from-[#1a3a5a] to-[#0f2943] rounded-3xl p-10 shadow-2xl border-2 border-orange-500/30" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(251, 146, 60, 0.1), inset 0 2px 4px 0 rgba(255, 255, 255, 0.06)' }}>
-              <h3 className="text-4xl font-bold text-white mb-3 drop-shadow-lg">Let's be social!</h3>
-              <p className="text-white/80 mb-8 text-lg">Follow us on social media for updates, events, and student achievements</p>
-              <div className="flex gap-6">
-                <a href="#" className="relative group">
-                  <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style={{ boxShadow: '0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
-                    <Facebook className="w-7 h-7 text-white drop-shadow-lg" />
-                  </div>
+          <div className="bg-gradient-to-r from-[#1a3a5a] to-[#0f2943] rounded-xl p-3 shadow-lg border border-orange-500/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-white mb-0">Let's be social!</h3>
+                <p className="text-white/70 text-xs">Follow us for updates</p>
+              </div>
+              <div className="flex gap-2">
+                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110 shadow-md">
+                  <Facebook className="w-4 h-4 text-white" />
                 </a>
-                <a href="#" className="relative group">
-                  <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style={{ boxShadow: '0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
-                    <Twitter className="w-7 h-7 text-white drop-shadow-lg" />
-                  </div>
+                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110 shadow-md">
+                  <Twitter className="w-4 h-4 text-white" />
                 </a>
-                <a href="#" className="relative group">
-                  <div className="absolute inset-0 bg-orange-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl transition-all group-hover:scale-110 group-hover:shadow-2xl border-2 border-orange-400/50" style={{ boxShadow: '0 10px 30px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}>
-                    <Instagram className="w-7 h-7 text-white drop-shadow-lg" />
-                  </div>
+                <a href="#" className="bg-orange-500 hover:bg-orange-600 p-2 rounded-lg transition-all hover:scale-110 shadow-md">
+                  <Instagram className="w-4 h-4 text-white" />
                 </a>
               </div>
             </div>
@@ -696,7 +700,9 @@ function App() {
                 <div className="bg-orange-500 p-2 rounded">
                   <GraduationCap className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">The Aaryans</span>
+                <span className={`text-xl font-bold transition-colors ${
+                scrolled ? 'text-gray-900' : 'text-white'
+              }`}>The Aaryans</span>
               </div>
               <p className="text-white/60 text-sm leading-relaxed">
                 Inspiring young minds to achieve excellence through quality education, innovation, and care.
