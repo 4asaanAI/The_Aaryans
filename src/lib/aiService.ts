@@ -61,19 +61,24 @@ function buildContext(schoolData: any[]): string {
   return context;
 }
 
-
-
 async function queryAI(userMessage: string, context: string): Promise<string> {
   const HF_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2';
+  const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY;
 
   const prompt = `${context}\n\nUser Question: ${userMessage}\n\nAssistant Response:`;
 
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (HF_API_KEY) {
+      headers['Authorization'] = `Bearer ${HF_API_KEY}`;
+    }
+
     const response = await fetch(HF_API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         inputs: prompt,
         parameters: {
@@ -86,10 +91,9 @@ async function queryAI(userMessage: string, context: string): Promise<string> {
     });
 
     if (!response.ok) {
-      if (response.status === 503) {
-        return getFallbackResponse(userMessage);
-      }
-      throw new Error(`AI service error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Hugging Face API error:', response.status, errorText);
+      throw new Error(`AI service error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -98,10 +102,10 @@ async function queryAI(userMessage: string, context: string): Promise<string> {
       return cleanResponse(data[0].generated_text);
     }
 
-    return getFallbackResponse(userMessage);
+    throw new Error('Invalid response format from AI service');
   } catch (error) {
     console.error('Hugging Face API error:', error);
-    return getFallbackResponse(userMessage);
+    throw error;
   }
 }
 
