@@ -22,73 +22,85 @@ export async function populateSchoolData() {
     {
       category: 'basic_info',
       title: 'School Name',
-      content: 'The Aaryans',
-      metadata: { type: 'name' }
+      content: 'THE AARYANS',
+      metadata: { type: 'name', tagline: 'Chariot of Knowledge' }
     },
     {
       category: 'basic_info',
       title: 'School Description',
-      content: 'An Inspiring Primary School for your child. A primary school with incredible staff to inspire and excite, to educate, care lovingly and to make that special individual feel confident in their abilities.',
-      metadata: { type: 'description' }
+      content: 'A co-educational CBSE affiliated institution founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh. Spread across 8 acres, we embrace traditional values while helping students develop their intellectual, emotional, social, physical, artistic, creative and spiritual potentials.',
+      metadata: { type: 'description', founded: '2008', campus: '8 acres', affiliation: 'CBSE' }
+    },
+    {
+      category: 'basic_info',
+      title: 'Vision',
+      content: 'To provide state-of-the-art infrastructure and create a dynamic environment for holistic child development, maintaining the highest standards of excellence.',
+      metadata: { type: 'vision' }
+    },
+    {
+      category: 'basic_info',
+      title: 'Mission',
+      content: 'To help students face the challenges of the world with courage and conviction, developing them into well-rounded individuals ready to meet life situations.',
+      metadata: { type: 'mission' }
     },
     {
       category: 'features',
-      title: 'Safe Environment',
-      content: '24/7 security, CCTV monitoring, and controlled access ensure complete safety for every student on campus.',
-      metadata: { icon: 'shield' }
-    },
-    {
-      category: 'features',
-      title: 'Certified Teachers',
-      content: 'Highly qualified educators with years of experience and specialized training in modern teaching methodologies.',
+      title: 'Experienced Staff',
+      content: 'Trained and experienced educators dedicated to academic excellence and student development.',
       metadata: { icon: 'users' }
     },
     {
       category: 'features',
-      title: 'Quality Education',
-      content: 'Internationally recognized curriculum focusing on critical thinking, creativity, and comprehensive skill development.',
+      title: 'CBSE Affiliation',
+      content: 'Affiliated with CBSE, New Delhi, following a career-oriented syllabus for comprehensive education.',
       metadata: { icon: 'book' }
     },
     {
       category: 'features',
-      title: 'Extensive Programs',
-      content: 'Well-rounded education with diverse extracurricular activities, sports, arts, and technology programs.',
+      title: 'Holistic Development',
+      content: 'Activity-oriented education focusing on personality development, communication skills, and social growth.',
       metadata: { icon: 'award' }
     },
     {
+      category: 'features',
+      title: 'Sports Excellence',
+      content: 'Comprehensive sports and games facilities promoting physical fitness and competitive spirit.',
+      metadata: { icon: 'trophy' }
+    },
+    {
       category: 'facilities',
-      title: 'Modern Playground',
-      content: 'Safe and spacious outdoor area with modern play equipment for physical activity and recreation.',
+      title: 'Sports and Games',
+      content: 'Comprehensive sports facilities with dedicated areas for various games and physical education activities.',
       metadata: {}
     },
     {
       category: 'facilities',
-      title: 'School Canteen',
-      content: 'Hygienic cafeteria serving nutritious and delicious meals prepared fresh daily by nutritionists.',
+      title: 'Library and Study Room',
+      content: 'Well-stocked library with extensive collection of books and dedicated study areas for focused learning.',
       metadata: {}
     },
     {
       category: 'facilities',
-      title: 'Smart Classrooms',
-      content: 'Technology-enabled learning spaces with interactive displays for modern education.',
+      title: 'Seminar and Workshop Spaces',
+      content: 'Modern facilities for conducting seminars, workshops, and interactive learning sessions.',
       metadata: {}
     },
     {
       category: 'facilities',
-      title: 'Science Laboratory',
-      content: 'Well-equipped labs for hands-on scientific exploration and experiments.',
+      title: 'Educational Excursions',
+      content: 'Regular educational trips and excursions to enhance practical knowledge and real-world learning.',
       metadata: {}
     },
     {
       category: 'facilities',
-      title: 'Library & Reading Room',
-      content: 'Extensive collection of books fostering a love for reading and knowledge.',
+      title: 'Transport Routes',
+      content: 'Safe and convenient transportation services covering multiple routes across the region.',
       metadata: {}
     },
     {
       category: 'facilities',
-      title: 'Sports Facilities',
-      content: 'Indoor and outdoor courts for various sports activities including football, basketball, and swimming.',
+      title: '8-Acre Campus',
+      content: 'Spacious, peaceful campus spread across 8 acres providing ample space for learning and recreation.',
       metadata: {}
     },
     {
@@ -184,32 +196,44 @@ export async function populateSchoolData() {
     {
       category: 'contact',
       title: 'Address',
-      content: '123 Education Boulevard, Green Valley District, Metropolitan City, 12345',
+      content: '62 KM Stone, NH-58, Modipuram Bypass, Meerut- 250001 (U.P.), INDIA',
       metadata: { type: 'address' }
     },
     {
       category: 'contact',
       title: 'Phone',
-      content: '+1 (555) 123-4567 or +1 (555) 765-4321',
+      content: '9837975353, 8755998955',
       metadata: { type: 'phone' }
     },
     {
       category: 'contact',
       title: 'Email',
-      content: 'info@primaryschool.edu or admissions@primaryschool.edu',
+      content: 'principal@theaaryans.com',
       metadata: { type: 'email' }
     },
     {
       category: 'contact',
-      title: 'Office Hours',
-      content: 'Monday - Friday: 8:00 AM - 5:00 PM, Saturday: 9:00 AM - 1:00 PM',
-      metadata: { type: 'hours' }
+      title: 'School Code',
+      content: '60473 | Affiliation No.: 2131045',
+      metadata: { type: 'affiliation' }
     },
     {
       category: 'admissions',
       title: 'Admissions Status',
-      content: 'Now Open! Limited seats available for the upcoming academic year. Secure your child\'s future today.',
+      content: 'Admissions Open 2024-25! Join us to provide your child with quality education in a nurturing environment.',
       metadata: {}
+    },
+    {
+      category: 'leadership',
+      title: 'Principal',
+      content: 'Preeti Malhotra - Leading with vision to provide an ideal learning atmosphere for all students.',
+      metadata: { role: 'Principal' }
+    },
+    {
+      category: 'leadership',
+      title: 'Founders',
+      content: 'Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh - Visionaries behind THE AARYANS, founded on April 10, 2008.',
+      metadata: { role: 'Founders' }
     }
   ];
 

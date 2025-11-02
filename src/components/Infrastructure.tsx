@@ -1,0 +1,71 @@
+import { Library, FlaskConical, Bus, Presentation, Map, Trophy } from 'lucide-react';
+
+export function Infrastructure() {
+  const facilities = [
+    {
+      icon: Trophy,
+      title: 'Sports and Games',
+      description: 'Comprehensive sports facilities with dedicated areas for various games and physical education activities.'
+    },
+    {
+      icon: Library,
+      title: 'Library and Study Room',
+      description: 'Well-stocked library with extensive collection of books and dedicated study areas for focused learning.'
+    },
+    {
+      icon: Presentation,
+      title: 'Seminar and Workshop Spaces',
+      description: 'Modern facilities for conducting seminars, workshops, and interactive learning sessions.'
+    },
+    {
+      icon: Map,
+      title: 'Educational Excursions',
+      description: 'Regular educational trips and excursions to enhance practical knowledge and real-world learning.'
+    },
+    {
+      icon: Bus,
+      title: 'Transport Routes',
+      description: 'Safe and convenient transportation services covering multiple routes across the region.'
+    },
+    {
+      icon: FlaskConical,
+      title: 'Practical Learning',
+      description: 'Hands-on learning facilities for science experiments and practical knowledge development.'
+    }
+  ];
+
+  return (
+    <section id="infrastructure" className="py-20 px-6 bg-slate-50">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Infrastructure</h2>
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+            Our 8-acre campus features state-of-the-art infrastructure designed to support comprehensive student development across all domains.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {facilities.map((facility, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all border border-slate-200 hover:border-orange-500 group"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <facility.icon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
+              <p className="text-slate-600 leading-relaxed">{facility.description}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-12 text-center text-white">
+          <h3 className="text-3xl font-bold mb-4">8-Acre Campus</h3>
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+            Spacious, peaceful campus spread across 8 acres providing ample space for learning, recreation, and holistic development in a serene environment.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}

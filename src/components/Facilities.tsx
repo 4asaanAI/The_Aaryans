@@ -1,0 +1,108 @@
+import { GraduationCap, Users2, TrendingUp, Languages, Lightbulb, Heart } from 'lucide-react';
+
+export function Facilities() {
+  const facilities = [
+    {
+      icon: Users2,
+      title: 'Experienced/Trained Staff',
+      description: 'Dedicated educators with specialized training and years of experience in nurturing young minds.'
+    },
+    {
+      icon: GraduationCap,
+      title: 'Academic Excellence',
+      description: 'Focus on building strong foundations in core subjects with innovative teaching methodologies.'
+    },
+    {
+      icon: Languages,
+      title: 'Communication & Social Skills',
+      description: 'Comprehensive programs to develop effective communication and interpersonal skills.'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Personality Development',
+      description: 'Structured programs to build confidence, leadership qualities, and character.'
+    },
+    {
+      icon: Lightbulb,
+      title: 'Activity-Oriented Education',
+      description: 'Hands-on learning experiences that make education engaging and practical.'
+    },
+    {
+      icon: Heart,
+      title: 'Holistic Development',
+      description: 'Balanced approach focusing on intellectual, emotional, social, and physical growth.'
+    }
+  ];
+
+  return (
+    <section id="facilities" className="py-20 px-6 bg-white">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Facilities</h2>
+          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+            We provide comprehensive facilities and programs designed to nurture well-rounded individuals ready to excel in all aspects of life.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {facilities.map((facility, index) => (
+            <div
+              key={index}
+              className="group bg-slate-50 rounded-xl p-8 border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <facility.icon className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
+              <p className="text-slate-600 leading-relaxed">{facility.description}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-10 text-white">
+            <h3 className="text-2xl font-bold mb-4">Co-Educational System</h3>
+            <p className="text-slate-300 leading-relaxed mb-6">
+              Our co-educational environment promotes mutual respect, collaborative learning, and prepares students for real-world interactions. We believe in creating an inclusive atmosphere where every student can thrive.
+            </p>
+            <ul className="space-y-2 text-slate-300">
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold">•</span>
+                <span>Equal opportunities for all students</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold">•</span>
+                <span>Collaborative learning environment</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 font-bold">•</span>
+                <span>Balanced development of all students</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-10 text-white">
+            <h3 className="text-2xl font-bold mb-4">Educational Excursions</h3>
+            <p className="leading-relaxed mb-6">
+              Regular field trips and educational excursions to museums, science centers, historical sites, and nature reserves enhance practical learning and provide real-world context to classroom lessons.
+            </p>
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="font-bold">•</span>
+                <span>Hands-on learning experiences</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold">•</span>
+                <span>Cultural and historical awareness</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold">•</span>
+                <span>Safe and supervised trips</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
