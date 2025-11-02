@@ -117,4 +117,4 @@ function cleanResponse(text: string): string {
   return cleaned || "I'd be happy to help! Could you please rephrase your question?";
 }
 
-?
+
