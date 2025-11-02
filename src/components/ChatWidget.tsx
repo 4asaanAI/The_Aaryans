@@ -239,7 +239,7 @@ export function ChatWidget() {
                 className="bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-full transition-all hover:scale-110 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 aria-label="Send message"
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-5 h-5"/>
               </button>
             </div>
           </div>
