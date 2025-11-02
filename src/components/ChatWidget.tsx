@@ -64,12 +64,13 @@ export function ChatWidget() {
   };
 
   const handleSendMessage = async () => {
-   
-    if (!inputMessage.trim() || isLoading);
 
+    if (!inputMessage.trim() || isLoading || !sessionId) return;
+
+    const userMessage = inputMessage.trim();
     setInputMessage('');
     setIsLoading(true);
-   
+
     const newUserMessage: ChatMessage = {
       message: userMessage,
       role: 'user',
