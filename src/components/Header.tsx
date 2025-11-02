@@ -64,26 +64,59 @@ export function Header() {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-700"
+            className="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all active:scale-95"
+            aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-2">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-sm font-medium text-slate-700 hover:text-orange-500 transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
+          <div className="md:hidden mt-4 pb-4 space-y-3 animate-slideDown">
+            <div className="space-y-2 border-b border-slate-200 pb-3">
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2.5 px-3 text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
+            <div className="space-y-2 pt-2">
+              <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Quick Links</p>
+              {topBarLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2.5 px-3 text-sm text-slate-600 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-all"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
           </div>
         )}
+
+        <style>{`
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          .animate-slideDown {
+            animation: slideDown 0.3s ease-out;
+          }
+        `}</style>
       </nav>
     </header>
   );
