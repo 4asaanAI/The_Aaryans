@@ -9,6 +9,15 @@ export interface SchoolDataItem {
 }
 
 export async function populateSchoolData() {
+  const { data: existingData } = await supabase
+    .from('school_data')
+    .select('id')
+    .limit(1);
+
+  if (existingData && existingData.length > 0) {
+    return { success: true, alreadyPopulated: true };
+  }
+
   const schoolData: Omit<SchoolDataItem, 'id'>[] = [
     {
       category: 'basic_info',
@@ -206,11 +215,11 @@ export async function populateSchoolData() {
 
   const { error } = await supabase
     .from('school_data')
-    .upsert(schoolData, { onConflict: 'title' });
+    .insert(schoolData);
 
   if (error) {
     console.error('Error populating school data:', error);
-    throw error;
+    return { success: false, error };
   }
 
   return { success: true };

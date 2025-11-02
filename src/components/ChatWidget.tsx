@@ -48,6 +48,14 @@ export function ChatWidget() {
       setIsInitialized(true);
     } catch (error) {
       console.error('Error initializing chat:', error);
+
+      try {
+        const sid = await getOrCreateChatSession();
+        setSessionId(sid);
+      } catch (sessionError) {
+        console.error('Error creating session:', sessionError);
+      }
+
       setMessages([
         {
           message: "Hello! I'm here to help answer your questions about The Aaryans Primary School. How can I assist you?",
