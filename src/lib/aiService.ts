@@ -147,39 +147,6 @@ async function tryModel(modelUrl: string, userMessage: string, context: string, 
   }
 }
 
-function getFallbackResponse(userMessage: string): string {
-  const lowerMessage = userMessage.toLowerCase();
-
-  const keywords: Record<string, string[]> = {
-    admission: ['admission', 'admissions', 'apply', 'enroll', 'enrollment', 'join', 'register'],
-    timing: ['time', 'timing', 'hours', 'schedule', 'when', 'open', 'close'],
-    facilities: ['facility', 'facilities', 'playground', 'library', 'lab', 'computer', 'sports'],
-    activities: ['activity', 'activities', 'extracurricular', 'clubs', 'events'],
-    teachers: ['teacher', 'teachers', 'staff', 'faculty', 'qualification'],
-    fees: ['fee', 'fees', 'cost', 'price', 'tuition', 'payment'],
-    contact: ['contact', 'phone', 'email', 'address', 'location', 'reach'],
-    curriculum: ['curriculum', 'syllabus', 'course', 'subjects', 'teach']
-  };
-
-  const responses: Record<string, string> = {
-    admission: "We welcome students throughout the year! Our admission process includes:\n- Application form submission\n- Parent-child interaction\n- Document verification\n\nFor detailed information, please contact us at +1 (555) 123-4567 or visit our office during school hours.",
-    timing: "Our school timings are:\n- Monday to Friday: 8:00 AM - 2:30 PM\n- Office hours: 7:30 AM - 3:30 PM\n\nWe're closed on weekends and public holidays. Feel free to contact us during office hours!",
-    facilities: "The Aaryans Primary School offers excellent facilities including:\n- Modern classrooms with smart boards\n- Well-stocked library\n- Science and computer labs\n- Sports ground and playground\n- Safe and secure campus\n\nWould you like to schedule a campus tour?",
-    activities: "We offer diverse activities for holistic development:\n- Sports (Cricket, Basketball, Athletics)\n- Arts and Crafts\n- Music and Dance\n- Science Club\n- Annual cultural events\n\nThese activities help students discover and develop their talents!",
-    teachers: "Our dedicated team of qualified teachers brings years of experience in primary education. All our teachers are certified and regularly participate in professional development programs to ensure the best learning experience for students.",
-    fees: "For detailed information about fee structure and payment plans, please contact our office at +1 (555) 123-4567 or email info@primaryschool.edu. We offer flexible payment options and can discuss this during the admission process.",
-    contact: "You can reach us at:\n- Phone: +1 (555) 123-4567\n- Email: info@primaryschool.edu\n- Address: 123 Education Lane, Learning City, LC 12345\n\nOur office is open Monday to Friday, 7:30 AM - 3:30 PM.",
-    curriculum: "We follow a comprehensive curriculum focused on:\n- Strong foundation in core subjects\n- Hands-on learning experiences\n- Development of critical thinking\n- Character building\n\nOur approach ensures academic excellence while nurturing well-rounded individuals."
-  };
-
-  for (const [category, keywordList] of Object.entries(keywords)) {
-    if (keywordList.some(keyword => lowerMessage.includes(keyword))) {
-      return responses[category];
-    }
-  }
-
-  return "Thank you for your question! I'm here to help you learn more about The Aaryans Primary School. You can ask me about:\n- Admissions process\n- School timings\n- Facilities and infrastructure\n- Activities and programs\n- Our teaching staff\n\nFeel free to ask anything, or contact us directly at +1 (555) 123-4567!";
-}
 
 function cleanResponse(text: string): string {
   let cleaned = text.trim();
