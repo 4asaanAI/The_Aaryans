@@ -47,17 +47,28 @@ export function About() {
               <p className="text-sm text-slate-600">Affiliation No: 2131045 | School Code: 60473</p>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Users className="w-6 h-6 text-orange-600" />
-                <h4 className="font-bold text-slate-900">Leadership</h4>
+            <div className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+              <div className="grid grid-cols-3 gap-4 p-6">
+                <div className="col-span-1">
+                  <img
+                    src="https://www.theaaryans.com/MessageImages/Principal%20Desk.JPG"
+                    alt="Principal Preeti Malhotra"
+                    className="w-full h-24 object-cover rounded-lg"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-5 h-5 text-orange-600" />
+                    <h4 className="font-bold text-slate-900">Principal</h4>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-1">
+                    <strong>Preeti Malhotra</strong>
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    "Education is the ability to meet life situations."
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-slate-600 mb-2">
-                <strong>Principal:</strong> Preeti Malhotra
-              </p>
-              <p className="text-sm text-slate-600">
-                "Education is the ability to meet life situations." - Leading with the mission to inculcate compassion and humanitarian spirit in every student.
-              </p>
             </div>
 
             <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white">

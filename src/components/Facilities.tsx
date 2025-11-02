@@ -59,47 +59,85 @@ export function Facilities() {
           ))}
         </div>
 
+        <div className="mb-16">
+          <h3 className="text-3xl font-bold text-slate-900 mb-8 text-center">Campus Gallery</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              'https://www.theaaryans.com/IGTImages/5DSC_0356.JPG',
+              'https://www.theaaryans.com/IGTImages/8DSC_1301.JPG',
+              'https://www.theaaryans.com/IGTImages/12DSC_2706.JPG',
+              'https://www.theaaryans.com/IGTImages/342DSC_5778.JPG',
+              'https://www.theaaryans.com/IGTImages/345DSC_5891.JPG',
+              'https://www.theaaryans.com/IGTImages/301DSC_1839.JPG',
+              'https://www.theaaryans.com/IGTImages/311DSC_2132.JPG',
+              'https://www.theaaryans.com/IGTImages/325DSC_0356.JPG'
+            ].map((img, idx) => (
+              <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all">
+                <img
+                  src={img}
+                  alt={`School activity ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-10 text-white">
-            <h3 className="text-2xl font-bold mb-4">Co-Educational System</h3>
-            <p className="text-slate-300 leading-relaxed mb-6">
-              Our co-educational environment promotes mutual respect, collaborative learning, and prepares students for real-world interactions. We believe in creating an inclusive atmosphere where every student can thrive.
-            </p>
-            <ul className="space-y-2 text-slate-300">
-              <li className="flex items-start gap-2">
-                <span className="text-orange-500 font-bold">•</span>
-                <span>Equal opportunities for all students</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-orange-500 font-bold">•</span>
-                <span>Collaborative learning environment</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-orange-500 font-bold">•</span>
-                <span>Balanced development of all students</span>
-              </li>
-            </ul>
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl overflow-hidden">
+            <div className="p-10 text-white">
+              <h3 className="text-2xl font-bold mb-4">Co-Educational System</h3>
+              <p className="text-slate-300 leading-relaxed mb-6">
+                Our co-educational environment promotes mutual respect, collaborative learning, and prepares students for real-world interactions.
+              </p>
+              <ul className="space-y-2 text-slate-300">
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">•</span>
+                  <span>Equal opportunities for all students</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">•</span>
+                  <span>Collaborative learning environment</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">•</span>
+                  <span>Balanced development of all students</span>
+                </li>
+              </ul>
+            </div>
+            <img
+              src="https://www.theaaryans.com/HeaderImages/3baner3.jpeg"
+              alt="Students in classroom"
+              className="w-full h-48 object-cover"
+            />
           </div>
 
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-10 text-white">
-            <h3 className="text-2xl font-bold mb-4">Educational Excursions</h3>
-            <p className="leading-relaxed mb-6">
-              Regular field trips and educational excursions to museums, science centers, historical sites, and nature reserves enhance practical learning and provide real-world context to classroom lessons.
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <span className="font-bold">•</span>
-                <span>Hands-on learning experiences</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold">•</span>
-                <span>Cultural and historical awareness</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold">•</span>
-                <span>Safe and supervised trips</span>
-              </li>
-            </ul>
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl overflow-hidden">
+            <div className="p-10 text-white">
+              <h3 className="text-2xl font-bold mb-4">Educational Excursions</h3>
+              <p className="leading-relaxed mb-6">
+                Regular field trips and educational excursions enhance practical learning and provide real-world context to classroom lessons.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="font-bold">•</span>
+                  <span>Hands-on learning experiences</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold">•</span>
+                  <span>Cultural and historical awareness</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold">•</span>
+                  <span>Safe and supervised trips</span>
+                </li>
+              </ul>
+            </div>
+            <img
+              src="https://www.theaaryans.com/HeaderImages/4baner4.jpeg"
+              alt="Educational activities"
+              className="w-full h-48 object-cover"
+            />
           </div>
         </div>
       </div>

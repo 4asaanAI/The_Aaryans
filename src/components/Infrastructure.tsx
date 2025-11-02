@@ -59,11 +59,39 @@ export function Infrastructure() {
           ))}
         </div>
 
-        <div className="mt-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-12 text-center text-white">
-          <h3 className="text-3xl font-bold mb-4">8-Acre Campus</h3>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Spacious, peaceful campus spread across 8 acres providing ample space for learning, recreation, and holistic development in a serene environment.
-          </p>
+        <div className="mt-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl overflow-hidden">
+          <div className="grid md:grid-cols-2">
+            <div className="p-12 flex flex-col justify-center">
+              <h3 className="text-3xl font-bold mb-4 text-white">8-Acre Campus</h3>
+              <p className="text-lg text-slate-300 leading-relaxed">
+                Spacious, peaceful campus spread across 8 acres providing ample space for learning, recreation, and holistic development in a serene environment.
+              </p>
+            </div>
+            <div className="h-80 md:h-auto">
+              <img
+                src="https://www.theaaryans.com/HeaderImages/2baner2.jpeg"
+                alt="THE AARYANS Campus"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            'https://www.theaaryans.com/IGTImages/2DSC_0274.JPG',
+            'https://www.theaaryans.com/IGTImages/3DSC_0301.JPG',
+            'https://www.theaaryans.com/IGTImages/323DSC_0342.JPG',
+            'https://www.theaaryans.com/IGTImages/324DSC_0351.JPG'
+          ].map((img, idx) => (
+            <div key={idx} className="aspect-video rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform">
+              <img
+                src={img}
+                alt={`School facility ${idx + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>

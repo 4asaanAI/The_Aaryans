@@ -46,25 +46,34 @@ export function Admission() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-12 text-white">
-          <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-3xl font-bold mb-4">Ready to Enroll?</h3>
-            <p className="text-lg mb-8 text-white/90">
-              Take the first step towards your child's bright future. Contact us today for more information about our admission process.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="#contact"
-                className="px-8 py-4 bg-white text-orange-600 rounded-lg font-semibold hover:bg-slate-100 transition-all hover:scale-105 transform"
-              >
-                Contact for Admission
-              </a>
-              <a
-                href="#registration"
-                className="px-8 py-4 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-all backdrop-blur-sm border border-white/30"
-              >
-                Online Registration
-              </a>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl overflow-hidden">
+          <div className="grid md:grid-cols-5">
+            <div className="md:col-span-3 p-12 flex flex-col justify-center">
+              <h3 className="text-3xl font-bold mb-4 text-white">Ready to Enroll?</h3>
+              <p className="text-lg mb-8 text-white/90">
+                Take the first step towards your child's bright future. Contact us today for more information about our admission process.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a
+                  href="#contact"
+                  className="px-8 py-4 bg-white text-orange-600 rounded-lg font-semibold hover:bg-slate-100 transition-all hover:scale-105 transform text-center"
+                >
+                  Contact for Admission
+                </a>
+                <a
+                  href="#registration"
+                  className="px-8 py-4 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-all backdrop-blur-sm border border-white/30 text-center"
+                >
+                  Online Registration
+                </a>
+              </div>
+            </div>
+            <div className="md:col-span-2 h-64 md:h-auto">
+              <img
+                src="https://www.theaaryans.com/HeaderImages/5baner5.jpeg"
+                alt="Student admission"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
