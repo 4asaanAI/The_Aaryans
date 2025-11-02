@@ -15,30 +15,8 @@ export interface ChatSession {
   updated_at?: string;
 }
 
-function getOrCreateSessionId(): string {
-  const STORAGE_KEY = 'chat_session_id';
-  let sessionId = localStorage.getItem(STORAGE_KEY);
-
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem(STORAGE_KEY, sessionId);
-  }
-
-  return sessionId;
-}
-
 export async function getOrCreateChatSession(): Promise<string> {
-  const sessionId = getOrCreateSessionId();
-
-  const { data: existingSession } = await supabase
-    .from('chat_sessions')
-    .select('id')
-    .eq('session_id', sessionId)
-    .maybeSingle();
-
-  if (existingSession) {
-    return existingSession.id;
-  }
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const { data: newSession, error } = await supabase
     .from('chat_sessions')
@@ -92,9 +70,4 @@ export async function getChatHistory(sessionId: string): Promise<ChatMessage[]> 
   }
 
   return data || [];
-}
-
-export function clearLocalSession(): void {
-  const STORAGE_KEY = 'chat_session_id';
-  localStorage.removeItem(STORAGE_KEY);
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Loader2, Bot } from 'lucide-react';
 import { generateAIResponse } from '../lib/aiService';
-import { getOrCreateChatSession, saveChatMessage, getChatHistory, ChatMessage } from '../lib/chatService';
+import { getOrCreateChatSession, saveChatMessage, ChatMessage } from '../lib/chatService';
 import { populateSchoolData } from '../lib/schoolData';
 
 export function ChatWidget() {
@@ -32,18 +32,12 @@ export function ChatWidget() {
       const sid = await getOrCreateChatSession();
       setSessionId(sid);
 
-      const history = await getChatHistory(sid);
-
-      if (history.length === 0) {
-        const welcomeMessage: ChatMessage = {
-          message: "Hello! 👋 Welcome to The Aaryans Primary School. I'm here to help answer your questions about admissions, facilities, activities, teachers, and more. How can I assist you today?",
-          role: 'assistant',
-          created_at: new Date().toISOString()
-        };
-        setMessages([welcomeMessage]);
-      } else {
-        setMessages(history);
-      }
+      const welcomeMessage: ChatMessage = {
+        message: "Hello! 👋 Welcome to The Aaryans Primary School. I'm here to help answer your questions about admissions, facilities, activities, teachers, and more. How can I assist you today?",
+        role: 'assistant',
+        created_at: new Date().toISOString()
+      };
+      setMessages([welcomeMessage]);
 
       setIsInitialized(true);
     } catch (error) {
