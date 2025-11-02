@@ -48,10 +48,7 @@ export function Infrastructure() {
         <div className="px-12 mb-16">
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
-            showArrows={false}
-            showDots={true}
             autoPlay={true}
-            autoPlayInterval={4500}
             gap="2rem"
           >
             {facilities.map((facility, index) => (
@@ -79,7 +76,7 @@ export function Infrastructure() {
             </div>
             <div className="h-80 md:h-auto">
               <img
-                src="https://theaaryans.in/wp-content/uploads/2025/09/256.jpg"
+                src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0013.jpg"
                 alt="THE AARYANS Campus"
                 className="w-full h-full object-cover"
               />
@@ -89,10 +86,10 @@ export function Infrastructure() {
 
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            'https://theaaryans.in/wp-content/uploads/2025/09/258.jpg',
-            'https://theaaryans.in/wp-content/uploads/2025/09/259.jpg',
-            'https://theaaryans.in/wp-content/uploads/2025/09/257-1.jpg',
-            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0012.jpg'
+            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240516-WA0016.jpg',
+            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20231102-WA0005.jpg',
+            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20230831-WA0028-300x300.jpg',
+            'https://theaaryans.in/wp-content/uploads/2025/09/1000460825.jpg'
           ].map((img, idx) => (
             <div key={idx} className="aspect-video rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform">
               <img

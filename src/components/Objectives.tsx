@@ -38,10 +38,7 @@ export function Objectives() {
         <div className="px-12">
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 2 }}
-            showArrows={false}
-            showDots={true}
             autoPlay={true}
-            autoPlayInterval={4000}
             gap="2rem"
           >
             {objectives.map((objective, index) => (

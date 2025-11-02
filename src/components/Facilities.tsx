@@ -59,10 +59,7 @@ export function Facilities() {
         <div className="px-12 mb-16">
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
-            showArrows={false}
-            showDots={true}
             autoPlay={true}
-            autoPlayInterval={4000}
             gap="2rem"
           >
             {facilities.map((facility, index) => (
@@ -84,11 +81,8 @@ export function Facilities() {
           <h3 className="text-3xl font-bold text-slate-900 mb-8 text-center">Campus Gallery</h3>
           <div className="px-12">
             <Carousel
-              itemsPerView={{ mobile: 2, tablet: 3, desktop: 4 }}
-              showArrows={false}
-              showDots={true}
+              itemsPerView={{ mobile: 1, tablet: 3, desktop: 4 }}
               autoPlay={true}
-              autoPlayInterval={3500}
               gap="1rem"
             >
               {galleryImages.map((img, idx) => (
@@ -127,7 +121,7 @@ export function Facilities() {
               </ul>
             </div>
             <img
-              src="https://theaaryans.in/wp-content/uploads/2025/09/258.jpg"
+              src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20250103-WA0026.jpg"
               alt="Students in classroom"
               className="w-full h-48 object-cover"
             />
@@ -155,7 +149,7 @@ export function Facilities() {
               </ul>
             </div>
             <img
-              src="https://theaaryans.in/wp-content/uploads/2025/09/259.jpg"
+              src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0012.jpg"
               alt="Educational activities"
               className="w-full h-48 object-cover"
             />

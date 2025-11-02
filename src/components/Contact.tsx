@@ -100,15 +100,6 @@ export function Contact({ onNotification }: ContactProps) {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white">
-              <h4 className="font-bold text-lg mb-2">Quick Links</h4>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <a href="#fee" className="hover:underline">Fee Structure</a>
-                <a href="#registration" className="hover:underline">Online Registration</a>
-                <a href="#career" className="hover:underline">Careers</a>
-                <a href="#verify-tc" className="hover:underline">Verify TC</a>
-              </div>
-            </div>
           </div>
 
           <div className="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
