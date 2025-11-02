@@ -64,8 +64,9 @@ export function ChatWidget() {
   };
 
   const handleSendMessage = async () => {
+    
     if (!inputMessage.trim() || isLoading || !sessionId) return;
-console.log("hi")
+
     const userMessage = inputMessage.trim();
     setInputMessage('');
     setIsLoading(true);
