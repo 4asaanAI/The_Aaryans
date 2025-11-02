@@ -28,19 +28,19 @@ export async function populateSchoolData() {
     {
       category: 'basic_info',
       title: 'School Description',
-      content: 'THE AARYANS, an institution of the Vedic Educational Foundation, embraces traditional values while forging ahead on the "Chariot of Knowledge" to face the challenges of the world with courage and conviction. Founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh, spread across 8 acres.',
-      metadata: { type: 'description', founded: '2008', campus: '8 acres', affiliation: 'CBSE' }
+      content: 'THE AARYANS, an institution of the Vedic Educational Trust, embraces traditional values while forging ahead on the "Chariot of Knowledge" to face the challenges of the world with courage and conviction. Founded on April 13, 2015, by visionaries Ch. Hatpal Singh & Sh. Anil Kumar Singh, on a peaceful, verdant campus.',
+      metadata: { type: 'description', founded: '2015', affiliation: 'CBSE', location: 'Amroha' }
     },
     {
       category: 'basic_info',
       title: 'Vision',
-      content: 'THE AARYANS embraces traditional values while forging ahead on the "Chariot of Knowledge" to face the challenges of the world with courage and conviction.',
+      content: 'Good Education is a journey, not a destination. THE AARYANS embraces traditional values while forging ahead on the "Chariot of Knowledge" to face the challenges of the world with courage and conviction.',
       metadata: { type: 'vision' }
     },
     {
       category: 'basic_info',
       title: 'Mission',
-      content: 'The School aims to help the students be the most they can be and develop intellectual, emotional, social, physical, artistic, creative and spiritual potentials while maintaining highest standards of excellence. We inculcate in them compassion and humanitarian spirit.',
+      content: 'We care for our values and belief and aim for a perfect balance of complementary factors: ancient and modern, traditional and innovative. The School aims to help students develop intellectual, emotional, social, physical, and spiritual potentials through state-of-the-art laboratories and holistic activities including yoga, meditation, athletics, and arts.',
       metadata: { type: 'mission' }
     },
     {
@@ -220,26 +220,26 @@ export async function populateSchoolData() {
     {
       category: 'contact',
       title: 'Address',
-      content: '62 KM Stone, NH-58, Modipuram Bypass, Meerut- 250001 (U.P.), INDIA',
+      content: 'Prem Nagar, Joya, N.H.24, District - Amroha (U.P.), INDIA',
       metadata: { type: 'address' }
     },
     {
       category: 'contact',
       title: 'Phone',
-      content: '9837975353, 8755998955',
+      content: '8126965555, 8126968888',
       metadata: { type: 'phone' }
     },
     {
       category: 'contact',
       title: 'Email',
-      content: 'principal@theaaryans.com',
+      content: 'theaaryansjoya@gmail.com',
       metadata: { type: 'email' }
     },
     {
       category: 'contact',
-      title: 'School Code',
-      content: '60473 | Affiliation No.: 2131045',
-      metadata: { type: 'affiliation' }
+      title: 'School Info',
+      content: 'Founded: April 13, 2015 | CBSE Affiliated',
+      metadata: { type: 'info' }
     },
     {
       category: 'admissions',
@@ -249,14 +249,8 @@ export async function populateSchoolData() {
     },
     {
       category: 'leadership',
-      title: 'Principal',
-      content: 'Preeti Malhotra - Leading with vision to provide an ideal learning atmosphere for all students.',
-      metadata: { role: 'Principal' }
-    },
-    {
-      category: 'leadership',
       title: 'Founders',
-      content: 'Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh - Visionaries behind THE AARYANS, founded on April 10, 2008.',
+      content: 'Ch. Hatpal Singh & Sh. Anil Kumar Singh - Visionaries behind THE AARYANS, founded on April 13, 2015, committed to providing quality education with traditional values.',
       metadata: { role: 'Founders' }
     }
   ];

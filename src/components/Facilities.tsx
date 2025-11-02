@@ -63,14 +63,14 @@ export function Facilities() {
           <h3 className="text-3xl font-bold text-slate-900 mb-8 text-center">Campus Gallery</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[
-              'https://www.theaaryans.com/IGTImages/5DSC_0356.JPG',
-              'https://www.theaaryans.com/IGTImages/8DSC_1301.JPG',
-              'https://www.theaaryans.com/IGTImages/12DSC_2706.JPG',
-              'https://www.theaaryans.com/IGTImages/342DSC_5778.JPG',
-              'https://www.theaaryans.com/IGTImages/345DSC_5891.JPG',
-              'https://www.theaaryans.com/IGTImages/301DSC_1839.JPG',
-              'https://www.theaaryans.com/IGTImages/311DSC_2132.JPG',
-              'https://www.theaaryans.com/IGTImages/325DSC_0356.JPG'
+              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20250103-WA0026.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/1000460825.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240516-WA0016.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20231102-WA0005.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20230831-WA0028-300x300.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0013.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/257.jpg',
+              'https://theaaryans.in/wp-content/uploads/2025/09/256.jpg'
             ].map((img, idx) => (
               <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all">
                 <img
@@ -106,7 +106,7 @@ export function Facilities() {
               </ul>
             </div>
             <img
-              src="https://www.theaaryans.com/HeaderImages/3baner3.jpeg"
+              src="https://theaaryans.in/wp-content/uploads/2025/09/258.jpg"
               alt="Students in classroom"
               className="w-full h-48 object-cover"
             />
@@ -134,7 +134,7 @@ export function Facilities() {
               </ul>
             </div>
             <img
-              src="https://www.theaaryans.com/HeaderImages/4baner4.jpeg"
+              src="https://theaaryans.in/wp-content/uploads/2025/09/259.jpg"
               alt="Educational activities"
               className="w-full h-48 object-cover"
             />

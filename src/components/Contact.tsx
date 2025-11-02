@@ -54,8 +54,8 @@ export function Contact({ onNotification }: ContactProps) {
               <div>
                 <h3 className="font-bold text-slate-900 mb-2">Address</h3>
                 <p className="text-slate-600">
-                  62 KM Stone, NH-58, Modipuram Bypass<br />
-                  Meerut- 250001 (U.P.), INDIA
+                  Prem Nagar, Joya, N.H.24<br />
+                  District - Amroha (U.P.), INDIA
                 </p>
               </div>
             </div>
@@ -67,8 +67,8 @@ export function Contact({ onNotification }: ContactProps) {
               <div>
                 <h3 className="font-bold text-slate-900 mb-2">Phone</h3>
                 <p className="text-slate-600">
-                  <a href="tel:9837975353" className="hover:text-orange-600">9837975353</a><br />
-                  <a href="tel:8755998955" className="hover:text-orange-600">8755998955</a>
+                  <a href="tel:8126965555" className="hover:text-orange-600">8126965555</a><br />
+                  <a href="tel:8126968888" className="hover:text-orange-600">8126968888</a>
                 </p>
               </div>
             </div>
@@ -80,8 +80,8 @@ export function Contact({ onNotification }: ContactProps) {
               <div>
                 <h3 className="font-bold text-slate-900 mb-2">Email</h3>
                 <p className="text-slate-600">
-                  <a href="mailto:principal@theaaryans.com" className="hover:text-orange-600">
-                    principal@theaaryans.com
+                  <a href="mailto:theaaryansjoya@gmail.com" className="hover:text-orange-600">
+                    theaaryansjoya@gmail.com
                   </a>
                 </p>
               </div>
@@ -94,8 +94,8 @@ export function Contact({ onNotification }: ContactProps) {
               <div>
                 <h3 className="font-bold text-slate-900 mb-2">School Information</h3>
                 <p className="text-slate-600">
-                  School Code: 60473<br />
-                  Affiliation No.: 2131045
+                  Founded: April 13, 2015<br />
+                  CBSE Affiliated
                 </p>
               </div>
             </div>

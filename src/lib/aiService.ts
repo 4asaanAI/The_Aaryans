@@ -29,7 +29,7 @@ export async function generateAIResponse(userMessage: string): Promise<AIRespons
       };
     } catch (fallbackError) {
       return {
-        response: "I apologize, but I'm having trouble processing your question right now. Please try again or contact us directly at 9837975353, 8755998955 or principal@theaaryans.com.",
+        response: "I apologize, but I'm having trouble processing your question right now. Please try again or contact us directly at 8126965555, 8126968888 or theaaryansjoya@gmail.com.",
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
@@ -75,18 +75,18 @@ async function queryOpenAI(userMessage: string, context: string): Promise<string
 
   const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
-  const systemPrompt = `You are a helpful assistant for THE AARYANS - an institution of the Vedic Educational Foundation, also known as "Chariot of Knowledge". Your role is to answer questions about the school based on the following information:
+  const systemPrompt = `You are a helpful assistant for THE AARYANS - an institution of the Vedic Educational Trust, also known as "Chariot of Knowledge". Your role is to answer questions about the school based on the following information:
 
 ${context}
 
 Instructions:
 - Answer questions clearly and concisely based only on the information provided above
-- If asked about something not covered in the information, politely say you don't have that specific information and suggest contacting the school directly at 9837975353, 8755998955 or principal@theaaryans.com
+- If asked about something not covered in the information, politely say you don't have that specific information and suggest contacting the school directly at 8126965555, 8126968888 or theaaryansjoya@gmail.com
 - Be friendly, helpful, and professional
 - Keep responses focused and not too long (2-4 sentences is ideal)
 - If asked about admissions, encourage them to book a tour or contact the school
 - Use a warm, welcoming tone appropriate for parents and families
-- Remember: THE AARYANS is a CBSE affiliated co-educational institution founded in 2008 on an 8-acre campus in Meerut`;
+- Remember: THE AARYANS is a CBSE affiliated co-educational institution founded on April 13, 2015, located in Prem Nagar, Joya, Amroha (U.P.)`;
 
   try {
     const response = await fetch(OPENAI_API_URL, {
@@ -158,13 +158,13 @@ function getFallbackResponse(userMessage: string): string {
   };
 
   const responses: Record<string, string> = {
-    admission: "Admissions are open for 2024-25! Our admission process includes:\n- Application form submission\n- Campus tour\n- Document verification\n\nFor detailed information, please contact us at 9837975353, 8755998955 or email principal@theaaryans.com",
-    timing: "For information about school timings, please contact our office at 9837975353 or 8755998955. We're located at 62 KM Stone, NH-58, Modipuram Bypass, Meerut.",
+    admission: "Admissions are open for 2024-25! Academic Session: April to March. Nursery admission age: 3 years (as of April 1st). Our admission process includes written test and parent-child interaction.\n\nFor detailed information, please contact us at 8126965555, 8126968888 or email theaaryansjoya@gmail.com",
+    timing: "Academic Session runs from April to March. For detailed school timings, please contact our office at 8126965555 or 8126968888. We're located at Prem Nagar, Joya, N.H.24, Amroha.",
     facilities: "THE AARYANS offers excellent facilities including:\n- Sports and games facilities\n- Library and study rooms\n- Seminar and workshop spaces\n- Educational excursions\n- Transport services\n- 8-acre peaceful campus\n\nWould you like to schedule a campus tour?",
     activities: "We offer diverse activities for holistic development through activity-oriented education. Our programs focus on personality development, communication skills, and social growth. Contact us to learn more!",
     teachers: "THE AARYANS has experienced and trained staff dedicated to academic excellence. Our educators focus on helping students develop their intellectual, emotional, social, physical, artistic, creative and spiritual potentials.",
-    fees: "For detailed information about fee structure 2025-26 and payment plans, please contact our office at 9837975353, 8755998955 or email principal@theaaryans.com",
-    contact: "You can reach us at:\n- Phone: 9837975353, 8755998955\n- Email: principal@theaaryans.com\n- Address: 62 KM Stone, NH-58, Modipuram Bypass, Meerut-250001 (U.P.), INDIA\n- School Code: 60473 | Affiliation No: 2131045",
+    fees: "For detailed information about fee structure and payment plans, please contact our office at 8126965555, 8126968888 or email theaaryansjoya@gmail.com",
+    contact: "You can reach us at:\n- Phone: 8126965555, 8126968888\n- Email: theaaryansjoya@gmail.com\n- Address: Prem Nagar, Joya, N.H.24, District - Amroha (U.P.), INDIA\n- Founded: April 13, 2015 | CBSE Affiliated",
     curriculum: "We follow CBSE curriculum with a career-oriented syllabus focused on:\n- Holistic child development\n- Activity-based learning\n- Traditional values with modern approach\n- Development of intellectual, emotional, social, physical, artistic, creative and spiritual potentials"
   };
 
@@ -174,5 +174,5 @@ function getFallbackResponse(userMessage: string): string {
     }
   }
 
-  return "Thank you for your question! I'm here to help you learn more about THE AARYANS - Chariot of Knowledge. You can ask me about:\n- Admissions process\n- School timings\n- Facilities and infrastructure\n- CBSE curriculum\n- Our objectives\n\nFeel free to ask anything, or contact us directly at 9837975353, 8755998955!";
+  return "Thank you for your question! I'm here to help you learn more about THE AARYANS - Chariot of Knowledge. You can ask me about:\n- Admissions process\n- School timings\n- Facilities and infrastructure\n- CBSE curriculum\n- Our objectives\n\nFeel free to ask anything, or contact us directly at 8126965555, 8126968888!";
 }

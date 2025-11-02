@@ -59,17 +59,17 @@ export function Footer() {
             <h4 className="font-bold mb-4">Contact Info</h4>
             <ul className="space-y-3 text-sm text-slate-400">
               <li>
-                62 KM Stone, NH-58<br />
-                Modipuram Bypass<br />
-                Meerut- 250001 (U.P.)
+                Prem Nagar, Joya, N.H.24<br />
+                District - Amroha<br />
+                Uttar Pradesh, INDIA
               </li>
               <li>
-                <a href="tel:9837975353" className="hover:text-orange-500">9837975353</a>,{' '}
-                <a href="tel:8755998955" className="hover:text-orange-500">8755998955</a>
+                <a href="tel:8126965555" className="hover:text-orange-500">8126965555</a>,{' '}
+                <a href="tel:8126968888" className="hover:text-orange-500">8126968888</a>
               </li>
               <li>
-                <a href="mailto:principal@theaaryans.com" className="hover:text-orange-500">
-                  principal@theaaryans.com
+                <a href="mailto:theaaryansjoya@gmail.com" className="hover:text-orange-500">
+                  theaaryansjoya@gmail.com
                 </a>
               </li>
             </ul>
@@ -78,7 +78,7 @@ export function Footer() {
 
         <div className="border-t border-slate-800 pt-8 text-center">
           <p className="text-slate-400 text-sm">
-            &copy; 2025 THE AARYANS. All rights reserved. | CBSE Affiliation No: 2131045 | School Code: 60473
+            &copy; 2025 THE AARYANS. All rights reserved. | Founded April 13, 2015 | CBSE Affiliated
           </p>
         </div>
       </div>

@@ -69,7 +69,7 @@ export function Infrastructure() {
             </div>
             <div className="h-80 md:h-auto">
               <img
-                src="https://www.theaaryans.com/HeaderImages/2baner2.jpeg"
+                src="https://theaaryans.in/wp-content/uploads/2025/09/256.jpg"
                 alt="THE AARYANS Campus"
                 className="w-full h-full object-cover"
               />
@@ -79,10 +79,10 @@ export function Infrastructure() {
 
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            'https://www.theaaryans.com/IGTImages/2DSC_0274.JPG',
-            'https://www.theaaryans.com/IGTImages/3DSC_0301.JPG',
-            'https://www.theaaryans.com/IGTImages/323DSC_0342.JPG',
-            'https://www.theaaryans.com/IGTImages/324DSC_0351.JPG'
+            'https://theaaryans.in/wp-content/uploads/2025/09/258.jpg',
+            'https://theaaryans.in/wp-content/uploads/2025/09/259.jpg',
+            'https://theaaryans.in/wp-content/uploads/2025/09/257-1.jpg',
+            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0012.jpg'
           ].map((img, idx) => (
             <div key={idx} className="aspect-video rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform">
               <img

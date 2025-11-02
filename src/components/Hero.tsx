@@ -5,7 +5,7 @@ export function Hero() {
     <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       <div className="absolute inset-0">
         <img
-          src="https://www.theaaryans.com/HeaderImages/1baner1.jpeg"
+          src="https://theaaryans.in/wp-content/uploads/2025/09/257.jpg"
           alt="THE AARYANS School Campus"
           className="w-full h-full object-cover"
         />
@@ -20,7 +20,7 @@ export function Hero() {
           Chariot of Knowledge
         </p>
         <p className="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-          An institution of the Vedic Educational Foundation that embraces traditional values while forging ahead to face the challenges of the world with courage and conviction.
+          An institution of the Vedic Educational Trust that embraces traditional values while forging ahead to face the challenges of the world with courage and conviction.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a

@@ -7,7 +7,7 @@ export function About() {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">About Us</h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            THE AARYANS, an institution of the Vedic Educational Foundation, was founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh. We embrace traditional values while forging ahead on the 'Chariot of Knowledge'.
+            THE AARYANS, an institution of the Vedic Educational Trust, was founded on April 13, 2015, by visionaries Ch. Hatpal Singh & Sh. Anil Kumar Singh. Situated on a peaceful, verdant campus, we embrace traditional values while forging ahead on the 'Chariot of Knowledge'.
           </p>
         </div>
 
@@ -20,7 +20,7 @@ export function About() {
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Our Vision</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  THE AARYANS embraces traditional values while forging ahead on the 'Chariot of Knowledge' to face the challenges of the world with courage and conviction.
+                  Good Education is a journey, not a destination. We embrace traditional values while forging ahead on the 'Chariot of Knowledge' to face the challenges of the world with courage and conviction.
                 </p>
               </div>
             </div>
@@ -32,7 +32,7 @@ export function About() {
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Our Mission</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  The School aims to help the students be the most they can be and develop intellectual, emotional, social, physical, artistic, creative and spiritual potentials while maintaining highest standards of excellence.
+                  We care for our values and belief and aim for a perfect balance of complementary factors: ancient and modern, traditional and innovative. We help students develop their intellectual, emotional, social, physical, and spiritual potentials.
                 </p>
               </div>
             </div>
@@ -44,30 +44,21 @@ export function About() {
                 <Building2 className="w-6 h-6 text-orange-600" />
                 <h4 className="font-bold text-slate-900">CBSE Affiliated</h4>
               </div>
-              <p className="text-sm text-slate-600">Affiliation No: 2131045 | School Code: 60473</p>
+              <p className="text-sm text-slate-600">CBSE Affiliated Co-educational Institution</p>
             </div>
 
             <div className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
-              <div className="grid grid-cols-3 gap-4 p-6">
-                <div className="col-span-1">
-                  <img
-                    src="https://www.theaaryans.com/MessageImages/Principal%20Desk.JPG"
-                    alt="Principal Preeti Malhotra"
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-5 h-5 text-orange-600" />
+                  <h4 className="font-bold text-slate-900">Leadership</h4>
                 </div>
-                <div className="col-span-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-5 h-5 text-orange-600" />
-                    <h4 className="font-bold text-slate-900">Principal</h4>
-                  </div>
-                  <p className="text-sm text-slate-600 mb-1">
-                    <strong>Preeti Malhotra</strong>
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    "Education is the ability to meet life situations."
-                  </p>
-                </div>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Founders:</strong> Ch. Hatpal Singh & Sh. Anil Kumar Singh
+                </p>
+                <p className="text-xs text-slate-500">
+                  Visionaries committed to providing quality education with traditional values.
+                </p>
               </div>
             </div>
 
@@ -76,8 +67,8 @@ export function About() {
               <ul className="text-sm space-y-1">
                 <li>8-acre peaceful campus</li>
                 <li>Co-educational institution</li>
-                <li>Founded in 2008</li>
-                <li>Meerut, Uttar Pradesh</li>
+                <li>Founded in 2015</li>
+                <li>Amroha, Uttar Pradesh</li>
               </ul>
             </div>
           </div>

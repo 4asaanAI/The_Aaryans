@@ -10,7 +10,7 @@ export function Admission() {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Admission Guidelines</h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Join THE AARYANS family and provide your child with quality education in a nurturing environment. Limited seats available!
+            Join THE AARYANS family and provide your child with quality education in a nurturing environment. Academic Session: April to March. Nursery admission age: 3 years (as of April 1st).
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export function Admission() {
             </div>
             <div className="md:col-span-2 h-64 md:h-auto">
               <img
-                src="https://www.theaaryans.com/HeaderImages/5baner5.jpeg"
+                src="https://theaaryans.in/wp-content/uploads/2025/09/257-1.jpg"
                 alt="Student admission"
                 className="w-full h-full object-cover"
               />
