@@ -62,7 +62,7 @@ function buildContext(schoolData: any[]): string {
 }
 
 async function queryAI(userMessage: string, context: string): Promise<string> {
-  const HF_API_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2';
+  const HF_API_URL = 'https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct';
   const HF_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY;
 
   const prompt = `${context}\n\nUser Question: ${userMessage}\n\nAssistant Response:`;
@@ -93,6 +93,14 @@ async function queryAI(userMessage: string, context: string): Promise<string> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Hugging Face API error:', response.status, errorText);
+
+      if (response.status === 503) {
+        const errorData = JSON.parse(errorText);
+        if (errorData.estimated_time) {
+          throw new Error(`Model is loading. Please wait ${Math.ceil(errorData.estimated_time)} seconds and try again.`);
+        }
+      }
+
       throw new Error(`AI service error: ${response.status} - ${errorText}`);
     }
 
