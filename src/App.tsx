@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { submitContactInquiry } from './lib/supabase';
 import { Notification } from './components/Notification';
+import { ChatWidget } from './components/ChatWidget';
 
 function App() {
   const [formData, setFormData] = useState({
@@ -918,6 +919,8 @@ function App() {
           scrollbar-width: none;
         }
       `}</style>
+
+      <ChatWidget />
     </div>
   );
 }
