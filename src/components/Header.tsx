@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [quickLinksMenuOpen, setQuickLinksMenuOpen] = useState(false);
 
   const navLinks = [
     { name: 'Home', href: '#home' },
@@ -13,7 +14,7 @@ export function Header() {
     { name: 'Contact', href: '#contact' }
   ];
 
-  const topBarLinks = [
+  const quickLinks = [
     { name: 'Fee 2025-26', href: '#fee' },
     { name: 'Online Registration', href: '#registration' },
     { name: 'Admission Open 2024-25', href: '#admission' },
@@ -24,19 +25,6 @@ export function Header() {
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm">
-      <div className="bg-slate-900 text-white py-2 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-center md:justify-end items-center gap-x-6 gap-y-1 text-xs">
-          {topBarLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="hover:text-orange-400 transition-colors"
-            >
-              {link.name}
-            </a>
-          ))}
-        </div>
-      </div>
 
       <nav className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
@@ -60,6 +48,34 @@ export function Header() {
                 {link.name}
               </a>
             ))}
+
+            <div className="relative">
+              <button
+                onClick={() => setQuickLinksMenuOpen(!quickLinksMenuOpen)}
+                className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all active:scale-95"
+                aria-label="Toggle quick links menu"
+              >
+                {quickLinksMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+
+              {quickLinksMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown">
+                  <div className="px-4 py-2 border-b border-slate-200">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Quick Links</p>
+                  </div>
+                  {quickLinks.map((link) => (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      onClick={() => setQuickLinksMenuOpen(false)}
+                      className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                    >
+                      {link.name}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <button
@@ -87,7 +103,7 @@ export function Header() {
             </div>
             <div className="space-y-2 pt-2">
               <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Quick Links</p>
-              {topBarLinks.map((link) => (
+              {quickLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
