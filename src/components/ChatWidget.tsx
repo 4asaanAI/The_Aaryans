@@ -69,7 +69,7 @@ export function ChatWidget() {
     const userMessage = inputMessage.trim();
     setInputMessage('');
     setIsLoading(true);
-
+   console.log("hi")
     const newUserMessage: ChatMessage = {
       message: userMessage,
       role: 'user',
