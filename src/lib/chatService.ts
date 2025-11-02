@@ -29,7 +29,7 @@ export async function getOrCreateChatSession(): Promise<string> {
     throw error;
   }
 
-  return newSession!.id;
+  return newSession!.id as string;
 }
 
 export async function saveChatMessage(
