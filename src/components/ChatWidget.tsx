@@ -33,7 +33,7 @@ export function ChatWidget() {
       setSessionId(sid);
 
       const welcomeMessage: ChatMessage = {
-        message: "Hello! 👋 Welcome to The Aaryans Primary School. I'm here to help answer your questions about admissions, facilities, activities, teachers, and more. How can I assist you today?",
+        message: "Hello! 👋 Welcome to THE AARYANS - Chariot of Knowledge. I'm here to help answer your questions about admissions, our CBSE curriculum, facilities, infrastructure, and more. How can I assist you today?",
         role: 'assistant',
         created_at: new Date().toISOString()
       };
@@ -52,7 +52,7 @@ export function ChatWidget() {
 
       setMessages([
         {
-          message: "Hello! I'm here to help answer your questions about The Aaryans Primary School. How can I assist you?",
+          message: "Hello! I'm here to help answer your questions about THE AARYANS. How can I assist you?",
           role: 'assistant',
           created_at: new Date().toISOString()
         }

@@ -17,7 +17,7 @@ export function Hero() {
           Chariot of Knowledge
         </p>
         <p className="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-          A co-educational CBSE affiliated institution founded in 2008, dedicated to nurturing intellectual, emotional, social, and spiritual growth across our 8-acre campus.
+          An institution of the Vedic Educational Foundation that embraces traditional values while forging ahead to face the challenges of the world with courage and conviction.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a

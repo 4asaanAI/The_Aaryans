@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
+import { Objectives } from './components/Objectives';
 import { Infrastructure } from './components/Infrastructure';
 import { Facilities } from './components/Facilities';
 import { Admission } from './components/Admission';
@@ -31,6 +32,7 @@ function App() {
       <Header />
       <Hero />
       <About />
+      <Objectives />
       <Infrastructure />
       <Facilities />
       <Admission />

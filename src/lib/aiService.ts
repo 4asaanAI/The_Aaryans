@@ -29,7 +29,7 @@ export async function generateAIResponse(userMessage: string): Promise<AIRespons
       };
     } catch (fallbackError) {
       return {
-        response: "I apologize, but I'm having trouble processing your question right now. Please try again or contact us directly at +1 (555) 123-4567 or info@primaryschool.edu.",
+        response: "I apologize, but I'm having trouble processing your question right now. Please try again or contact us directly at 9837975353, 8755998955 or principal@theaaryans.com.",
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
@@ -44,6 +44,7 @@ function buildContext(schoolData: any[]): string {
     basic_info: 'School Information',
     features: 'Key Features',
     facilities: 'Facilities',
+    objectives: 'Our Objectives',
     activities: 'Activities',
     teachers: 'Our Teachers',
     faq: 'Frequently Asked Questions',
@@ -74,17 +75,18 @@ async function queryOpenAI(userMessage: string, context: string): Promise<string
 
   const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
-  const systemPrompt = `You are a helpful assistant for The Aaryans Primary School. Your role is to answer questions about the school based on the following information:
+  const systemPrompt = `You are a helpful assistant for THE AARYANS - an institution of the Vedic Educational Foundation, also known as "Chariot of Knowledge". Your role is to answer questions about the school based on the following information:
 
 ${context}
 
 Instructions:
 - Answer questions clearly and concisely based only on the information provided above
-- If asked about something not covered in the information, politely say you don't have that specific information and suggest contacting the school directly at +1 (555) 123-4567 or info@primaryschool.edu
+- If asked about something not covered in the information, politely say you don't have that specific information and suggest contacting the school directly at 9837975353, 8755998955 or principal@theaaryans.com
 - Be friendly, helpful, and professional
 - Keep responses focused and not too long (2-4 sentences is ideal)
 - If asked about admissions, encourage them to book a tour or contact the school
-- Use a warm, welcoming tone appropriate for parents and families`;
+- Use a warm, welcoming tone appropriate for parents and families
+- Remember: THE AARYANS is a CBSE affiliated co-educational institution founded in 2008 on an 8-acre campus in Meerut`;
 
   try {
     const response = await fetch(OPENAI_API_URL, {
@@ -156,14 +158,14 @@ function getFallbackResponse(userMessage: string): string {
   };
 
   const responses: Record<string, string> = {
-    admission: "We welcome students throughout the year! Our admission process includes:\n- Application form submission\n- Parent-child interaction\n- Document verification\n\nFor detailed information, please contact us at +1 (555) 123-4567 or visit our office during school hours.",
-    timing: "Our school timings are:\n- Monday to Friday: 8:00 AM - 2:30 PM\n- Office hours: 7:30 AM - 3:30 PM\n\nWe're closed on weekends and public holidays. Feel free to contact us during office hours!",
-    facilities: "The Aaryans Primary School offers excellent facilities including:\n- Modern classrooms with smart boards\n- Well-stocked library\n- Science and computer labs\n- Sports ground and playground\n- Safe and secure campus\n\nWould you like to schedule a campus tour?",
-    activities: "We offer diverse activities for holistic development:\n- Sports (Cricket, Basketball, Athletics)\n- Arts and Crafts\n- Music and Dance\n- Science Club\n- Annual cultural events\n\nThese activities help students discover and develop their talents!",
-    teachers: "Our dedicated team of qualified teachers brings years of experience in primary education. All our teachers are certified and regularly participate in professional development programs to ensure the best learning experience for students.",
-    fees: "For detailed information about fee structure and payment plans, please contact our office at +1 (555) 123-4567 or email info@primaryschool.edu. We offer flexible payment options and can discuss this during the admission process.",
-    contact: "You can reach us at:\n- Phone: +1 (555) 123-4567\n- Email: info@primaryschool.edu\n- Address: 123 Education Lane, Learning City, LC 12345\n\nOur office is open Monday to Friday, 7:30 AM - 3:30 PM.",
-    curriculum: "We follow a comprehensive curriculum focused on:\n- Strong foundation in core subjects\n- Hands-on learning experiences\n- Development of critical thinking\n- Character building\n\nOur approach ensures academic excellence while nurturing well-rounded individuals."
+    admission: "Admissions are open for 2024-25! Our admission process includes:\n- Application form submission\n- Campus tour\n- Document verification\n\nFor detailed information, please contact us at 9837975353, 8755998955 or email principal@theaaryans.com",
+    timing: "For information about school timings, please contact our office at 9837975353 or 8755998955. We're located at 62 KM Stone, NH-58, Modipuram Bypass, Meerut.",
+    facilities: "THE AARYANS offers excellent facilities including:\n- Sports and games facilities\n- Library and study rooms\n- Seminar and workshop spaces\n- Educational excursions\n- Transport services\n- 8-acre peaceful campus\n\nWould you like to schedule a campus tour?",
+    activities: "We offer diverse activities for holistic development through activity-oriented education. Our programs focus on personality development, communication skills, and social growth. Contact us to learn more!",
+    teachers: "THE AARYANS has experienced and trained staff dedicated to academic excellence. Our educators focus on helping students develop their intellectual, emotional, social, physical, artistic, creative and spiritual potentials.",
+    fees: "For detailed information about fee structure 2025-26 and payment plans, please contact our office at 9837975353, 8755998955 or email principal@theaaryans.com",
+    contact: "You can reach us at:\n- Phone: 9837975353, 8755998955\n- Email: principal@theaaryans.com\n- Address: 62 KM Stone, NH-58, Modipuram Bypass, Meerut-250001 (U.P.), INDIA\n- School Code: 60473 | Affiliation No: 2131045",
+    curriculum: "We follow CBSE curriculum with a career-oriented syllabus focused on:\n- Holistic child development\n- Activity-based learning\n- Traditional values with modern approach\n- Development of intellectual, emotional, social, physical, artistic, creative and spiritual potentials"
   };
 
   for (const [category, keywordList] of Object.entries(keywords)) {
@@ -172,5 +174,5 @@ function getFallbackResponse(userMessage: string): string {
     }
   }
 
-  return "Thank you for your question! I'm here to help you learn more about The Aaryans Primary School. You can ask me about:\n- Admissions process\n- School timings\n- Facilities and infrastructure\n- Activities and programs\n- Our teaching staff\n\nFeel free to ask anything, or contact us directly at +1 (555) 123-4567!";
+  return "Thank you for your question! I'm here to help you learn more about THE AARYANS - Chariot of Knowledge. You can ask me about:\n- Admissions process\n- School timings\n- Facilities and infrastructure\n- CBSE curriculum\n- Our objectives\n\nFeel free to ask anything, or contact us directly at 9837975353, 8755998955!";
 }

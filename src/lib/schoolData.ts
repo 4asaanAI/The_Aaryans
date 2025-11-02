@@ -28,19 +28,19 @@ export async function populateSchoolData() {
     {
       category: 'basic_info',
       title: 'School Description',
-      content: 'A co-educational CBSE affiliated institution founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh. Spread across 8 acres, we embrace traditional values while helping students develop their intellectual, emotional, social, physical, artistic, creative and spiritual potentials.',
+      content: 'THE AARYANS, an institution of the Vedic Educational Foundation, embraces traditional values while forging ahead on the "Chariot of Knowledge" to face the challenges of the world with courage and conviction. Founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh, spread across 8 acres.',
       metadata: { type: 'description', founded: '2008', campus: '8 acres', affiliation: 'CBSE' }
     },
     {
       category: 'basic_info',
       title: 'Vision',
-      content: 'To provide state-of-the-art infrastructure and create a dynamic environment for holistic child development, maintaining the highest standards of excellence.',
+      content: 'THE AARYANS embraces traditional values while forging ahead on the "Chariot of Knowledge" to face the challenges of the world with courage and conviction.',
       metadata: { type: 'vision' }
     },
     {
       category: 'basic_info',
       title: 'Mission',
-      content: 'To help students face the challenges of the world with courage and conviction, developing them into well-rounded individuals ready to meet life situations.',
+      content: 'The School aims to help the students be the most they can be and develop intellectual, emotional, social, physical, artistic, creative and spiritual potentials while maintaining highest standards of excellence. We inculcate in them compassion and humanitarian spirit.',
       metadata: { type: 'mission' }
     },
     {
@@ -101,6 +101,30 @@ export async function populateSchoolData() {
       category: 'facilities',
       title: '8-Acre Campus',
       content: 'Spacious, peaceful campus spread across 8 acres providing ample space for learning and recreation.',
+      metadata: {}
+    },
+    {
+      category: 'objectives',
+      title: 'Love for Learning',
+      content: 'To inculcate in our children love for learning.',
+      metadata: {}
+    },
+    {
+      category: 'objectives',
+      title: 'Well-Rounded Personalities',
+      content: 'To nurture well rounded personalities who are confident, creative and able to adjust and adopt to any circumstances of environment.',
+      metadata: {}
+    },
+    {
+      category: 'objectives',
+      title: 'Lead by Example',
+      content: 'To lead by example and be good role models so that our children imbibe our qualities and take pride in what they do.',
+      metadata: {}
+    },
+    {
+      category: 'objectives',
+      title: 'Global Citizens',
+      content: 'Preparing global citizens committed to humanistic values and democratic traditions with strong secular ethos.',
       metadata: {}
     },
     {

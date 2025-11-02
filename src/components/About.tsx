@@ -7,7 +7,7 @@ export function About() {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">About Us</h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh, THE AARYANS has been committed to educational excellence for over 15 years.
+            THE AARYANS, an institution of the Vedic Educational Foundation, was founded on April 10, 2008, by visionaries Shri Harpal Singh Chaudhary and Chaudhary Kadam Singh. We embrace traditional values while forging ahead on the 'Chariot of Knowledge'.
           </p>
         </div>
 
@@ -20,7 +20,7 @@ export function About() {
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Our Vision</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  To provide state-of-the-art infrastructure and create a dynamic environment for holistic child development, maintaining the highest standards of excellence.
+                  THE AARYANS embraces traditional values while forging ahead on the 'Chariot of Knowledge' to face the challenges of the world with courage and conviction.
                 </p>
               </div>
             </div>
@@ -32,7 +32,7 @@ export function About() {
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Our Mission</h3>
                 <p className="text-slate-600 leading-relaxed">
-                  To help students face the challenges of the world with courage and conviction, developing them into well-rounded individuals ready to meet life situations.
+                  The School aims to help the students be the most they can be and develop intellectual, emotional, social, physical, artistic, creative and spiritual potentials while maintaining highest standards of excellence.
                 </p>
               </div>
             </div>
@@ -56,7 +56,7 @@ export function About() {
                 <strong>Principal:</strong> Preeti Malhotra
               </p>
               <p className="text-sm text-slate-600">
-                Leading with vision to provide an ideal learning atmosphere for all students.
+                "Education is the ability to meet life situations." - Leading with the mission to inculcate compassion and humanitarian spirit in every student.
               </p>
             </div>
 
