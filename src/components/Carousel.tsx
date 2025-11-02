@@ -1,5 +1,4 @@
-import { useState, useEffect, ReactNode } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, ReactNode, useRef } from 'react';
 
 interface CarouselProps {
   children: ReactNode[];
@@ -18,14 +17,13 @@ interface CarouselProps {
 export function Carousel({
   children,
   autoPlay = false,
-  autoPlayInterval = 5000,
   itemsPerView = { mobile: 1, tablet: 2, desktop: 3 },
-  showArrows = true,
   showDots = true,
   gap = '2rem'
 }: CarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsVisible, setItemsVisible] = useState(itemsPerView.desktop);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -45,52 +43,52 @@ export function Carousel({
   }, [itemsPerView]);
 
   const totalSlides = Math.ceil(children.length / itemsVisible);
+  const duplicatedChildren = [...children, ...children, ...children];
 
   useEffect(() => {
-    if (!autoPlay) return;
+    if (!autoPlay || !scrollRef.current) return;
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % totalSlides);
-    }, autoPlayInterval);
+    const scrollContainer = scrollRef.current;
+    let animationId: number;
+    let scrollPosition = 0;
+    const itemWidth = scrollContainer.scrollWidth / duplicatedChildren.length;
+    const speed = 0.5;
 
-    return () => clearInterval(interval);
-  }, [autoPlay, autoPlayInterval, totalSlides]);
+    const animate = () => {
+      scrollPosition += speed;
+
+      if (scrollPosition >= itemWidth * children.length) {
+        scrollPosition = 0;
+      }
+
+      scrollContainer.style.transform = `translateX(-${scrollPosition}px)`;
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [autoPlay, children.length, duplicatedChildren.length]);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
   };
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalSlides);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') goToPrevious();
-      if (e.key === 'ArrowRight') goToNext();
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [totalSlides]);
-
-  const startIndex = currentIndex * itemsVisible;
-  const visibleItems = children.slice(startIndex, startIndex + itemsVisible);
-
   return (
     <div className="relative w-full">
       <div className="overflow-hidden">
         <div
-          className="flex transition-all duration-500 ease-in-out"
-          style={{ gap }}
+          ref={scrollRef}
+          className="flex"
+          style={{ gap, willChange: 'transform' }}
         >
-          {visibleItems.map((child, index) => (
+          {duplicatedChildren.map((child, index) => (
             <div
-              key={startIndex + index}
+              key={index}
               className="flex-shrink-0"
               style={{ width: `calc((100% - ${gap} * ${itemsVisible - 1}) / ${itemsVisible})` }}
             >
@@ -99,25 +97,6 @@ export function Carousel({
           ))}
         </div>
       </div>
-
-      {showArrows && totalSlides > 1 && (
-        <>
-          <button
-            onClick={goToPrevious}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all group z-10"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-6 h-6 text-slate-700 group-hover:text-white" />
-          </button>
-          <button
-            onClick={goToNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all group z-10"
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-6 h-6 text-slate-700 group-hover:text-white" />
-          </button>
-        </>
-      )}
 
       {showDots && totalSlides > 1 && (
         <div className="flex justify-center gap-2 mt-8">
