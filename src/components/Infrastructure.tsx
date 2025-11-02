@@ -1,4 +1,5 @@
 import { Library, FlaskConical, Bus, Presentation, Map, Trophy } from 'lucide-react';
+import { Carousel } from './Carousel';
 
 export function Infrastructure() {
   const facilities = [
@@ -44,19 +45,26 @@ export function Infrastructure() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {facilities.map((facility, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all border border-slate-200 hover:border-orange-500 group"
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <facility.icon className="w-8 h-8 text-white" />
+        <div className="px-12 mb-16">
+          <Carousel
+            itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
+            showArrows={true}
+            showDots={true}
+            gap="2rem"
+          >
+            {facilities.map((facility, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all border border-slate-200 hover:border-orange-500 group h-full"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <facility.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{facility.description}</p>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
-              <p className="text-slate-600 leading-relaxed">{facility.description}</p>
-            </div>
-          ))}
+            ))}
+          </Carousel>
         </div>
 
         <div className="mt-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl overflow-hidden">

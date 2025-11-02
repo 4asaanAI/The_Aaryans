@@ -1,14 +1,41 @@
-import { ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export function Hero() {
+  const images = [
+    'https://theaaryans.in/wp-content/uploads/2025/09/257.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/256.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/258.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/259.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/257-1.jpg'
+  ];
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       <div className="absolute inset-0">
-        <img
-          src="https://theaaryans.in/wp-content/uploads/2025/09/257.jpg"
-          alt="THE AARYANS School Campus"
-          className="w-full h-full object-cover"
-        />
+        {images.map((img, index) => (
+          <div
+            key={img}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <img
+              src={img}
+              alt={`THE AARYANS School Campus ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/50"></div>
       </div>
 
@@ -35,10 +62,6 @@ export function Hero() {
           >
             Contact Us
           </a>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-8 h-8 text-white/50" />
         </div>
       </div>
     </section>

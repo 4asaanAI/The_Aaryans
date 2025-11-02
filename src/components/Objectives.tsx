@@ -1,4 +1,5 @@
 import { Heart, Users, Star, Globe } from 'lucide-react';
+import { Carousel } from './Carousel';
 
 export function Objectives() {
   const objectives = [
@@ -34,19 +35,26 @@ export function Objectives() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {objectives.map((objective, index) => (
-            <div
-              key={index}
-              className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 hover:bg-white/20 transition-all group"
-            >
-              <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <objective.icon className="w-8 h-8 text-white" />
+        <div className="px-12">
+          <Carousel
+            itemsPerView={{ mobile: 1, tablet: 2, desktop: 2 }}
+            showArrows={true}
+            showDots={true}
+            gap="2rem"
+          >
+            {objectives.map((objective, index) => (
+              <div
+                key={index}
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 hover:bg-white/20 transition-all group h-full"
+              >
+                <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <objective.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">{objective.title}</h3>
+                <p className="text-slate-300 leading-relaxed">{objective.description}</p>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">{objective.title}</h3>
-              <p className="text-slate-300 leading-relaxed">{objective.description}</p>
-            </div>
-          ))}
+            ))}
+          </Carousel>
         </div>
       </div>
     </section>

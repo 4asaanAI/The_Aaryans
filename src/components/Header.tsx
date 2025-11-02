@@ -60,9 +60,6 @@ export function Header() {
 
               {quickLinksMenuOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown">
-                  <div className="px-4 py-2 border-b border-slate-200">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Quick Links</p>
-                  </div>
                   {quickLinks.map((link) => (
                     <a
                       key={link.name}
@@ -102,7 +99,6 @@ export function Header() {
               ))}
             </div>
             <div className="space-y-2 pt-2">
-              <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Quick Links</p>
               {quickLinks.map((link) => (
                 <a
                   key={link.name}

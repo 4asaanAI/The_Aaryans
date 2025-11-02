@@ -1,4 +1,5 @@
 import { GraduationCap, Users2, TrendingUp, Languages, Lightbulb, Heart } from 'lucide-react';
+import { Carousel } from './Carousel';
 
 export function Facilities() {
   const facilities = [
@@ -34,6 +35,17 @@ export function Facilities() {
     }
   ];
 
+  const galleryImages = [
+    'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20250103-WA0026.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/1000460825.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240516-WA0016.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20231102-WA0005.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20230831-WA0028-300x300.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0013.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/257.jpg',
+    'https://theaaryans.in/wp-content/uploads/2025/09/256.jpg'
+  ];
+
   return (
     <section id="facilities" className="py-20 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -44,42 +56,47 @@ export function Facilities() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {facilities.map((facility, index) => (
-            <div
-              key={index}
-              className="group bg-slate-50 rounded-xl p-8 border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all"
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <facility.icon className="w-8 h-8 text-white" />
+        <div className="px-12 mb-16">
+          <Carousel
+            itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
+            showArrows={true}
+            showDots={true}
+            gap="2rem"
+          >
+            {facilities.map((facility, index) => (
+              <div
+                key={index}
+                className="group bg-slate-50 rounded-xl p-8 border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all h-full"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <facility.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{facility.description}</p>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
-              <p className="text-slate-600 leading-relaxed">{facility.description}</p>
-            </div>
-          ))}
+            ))}
+          </Carousel>
         </div>
 
         <div className="mb-16">
           <h3 className="text-3xl font-bold text-slate-900 mb-8 text-center">Campus Gallery</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[
-              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20250103-WA0026.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/1000460825.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240516-WA0016.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20231102-WA0005.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20230831-WA0028-300x300.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0013.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/257.jpg',
-              'https://theaaryans.in/wp-content/uploads/2025/09/256.jpg'
-            ].map((img, idx) => (
-              <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all">
-                <img
-                  src={img}
-                  alt={`School activity ${idx + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
+          <div className="px-12">
+            <Carousel
+              itemsPerView={{ mobile: 2, tablet: 3, desktop: 4 }}
+              showArrows={true}
+              showDots={true}
+              gap="1rem"
+            >
+              {galleryImages.map((img, idx) => (
+                <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all">
+                  <img
+                    src={img}
+                    alt={`School activity ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </Carousel>
           </div>
         </div>
 
