@@ -110,13 +110,13 @@ export function Admission() {
             <div className="space-y-4 text-slate-600">
               <div>
                 <p className="font-semibold text-slate-900 mb-1">For Admission Queries:</p>
-                <p>Phone: 9837975353, 8755998955</p>
-                <p>Email: principal@theaaryans.com</p>
+                <p>Phone: 8126965555, 8126968888</p>
+                <p>Email: theaaryansjoya@gmail.com</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-900 mb-1">Visit Us:</p>
-                <p>62 KM Stone, NH-58, Modipuram Bypass</p>
-                <p>Meerut- 250001 (U.P.), INDIA</p>
+                <p>Prem Nagar, Joya, N.H.24</p>
+                <p>District - Amroha (U.P.), INDIA</p>
               </div>
               <div className="pt-4">
                 <a
