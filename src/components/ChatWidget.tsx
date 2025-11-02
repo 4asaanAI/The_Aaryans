@@ -65,6 +65,7 @@ export function ChatWidget() {
 
   const handleSendMessage = async () => {
        const userMessage = inputMessage.trim();
+    console.log(userMessage)
     if (!inputMessage.trim() || isLoading || !sessionId) return;
 
     setInputMessage('');
