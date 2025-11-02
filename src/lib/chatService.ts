@@ -9,14 +9,14 @@ export interface ChatMessage {
 }
 
 export interface ChatSession {
-  id?: string;
+  id: string;
   session_id: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export async function getOrCreateChatSession(): Promise<string> {
-  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
   const { data: newSession, error } = await supabase
     .from('chat_sessions')
@@ -29,7 +29,11 @@ export async function getOrCreateChatSession(): Promise<string> {
     throw error;
   }
 
-  return newSession!.id as string;
+  if (!newSession) {
+    throw new Error('Failed to create chat session');
+  }
+
+  return newSession.id;
 }
 
 export async function saveChatMessage(

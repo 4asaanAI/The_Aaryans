@@ -8,14 +8,22 @@ export interface SchoolDataItem {
   metadata?: Record<string, any>;
 }
 
-export async function populateSchoolData() {
-  const { data: existingData } = await supabase
-    .from('school_data')
-    .select('id')
-    .limit(1);
+export async function populateSchoolData(): Promise<{ success: boolean; alreadyPopulated?: boolean; error?: any }> {
+  try {
+    const { data: existingData, error: checkError } = await supabase
+      .from('school_data')
+      .select('id')
+      .limit(1);
 
-  if (existingData && existingData.length > 0) {
-    return { success: true, alreadyPopulated: true };
+    if (checkError) {
+      console.error('Error checking existing data:', checkError);
+    }
+
+    if (existingData && existingData.length > 0) {
+      return { success: true, alreadyPopulated: true };
+    }
+  } catch (err) {
+    console.error('Error in populateSchoolData check:', err);
   }
 
   const schoolData: Omit<SchoolDataItem, 'id'>[] = [
@@ -130,91 +138,55 @@ export async function populateSchoolData() {
     {
       category: 'activities',
       title: 'Science Experiments',
-      content: 'Our state-of-the-art science laboratory provides students with hands-on experience in conducting experiments and exploring scientific concepts. From basic chemistry to physics demonstrations, students engage in practical learning that brings textbook theories to life.',
+      content: 'Our state-of-the-art science laboratory provides students with hands-on experience in conducting experiments and exploring scientific concepts.',
       metadata: {}
     },
     {
       category: 'activities',
       title: 'Art & Drawing',
-      content: 'Our comprehensive art program nurtures creativity and self-expression through various artistic mediums including painting, drawing, sculpture, and mixed media. Students explore different techniques, styles, and artistic movements while developing their unique creative voice.',
+      content: 'Our comprehensive art program nurtures creativity and self-expression through various artistic mediums including painting, drawing, sculpture, and mixed media.',
       metadata: {}
     },
     {
       category: 'activities',
       title: 'Music & Singing',
-      content: 'Our music program offers comprehensive training in vocal techniques, instrument playing, and music theory. Students have access to keyboards, guitars, drums, and traditional instruments. Weekly music classes focus on rhythm, melody, harmony, and musical expression.',
+      content: 'Our music program offers comprehensive training in vocal techniques, instrument playing, and music theory with access to various instruments.',
       metadata: {}
-    },
-    {
-      category: 'teachers',
-      title: 'Charlotte M.',
-      content: 'Art Teacher with 8 years of experience in nurturing creativity and artistic expression.',
-      metadata: { role: 'Art Teacher', experience: '8 years' }
-    },
-    {
-      category: 'teachers',
-      title: 'James P.',
-      content: 'Science Teacher with 12 years of experience in hands-on scientific education.',
-      metadata: { role: 'Science Teacher', experience: '12 years' }
-    },
-    {
-      category: 'teachers',
-      title: 'Sarah K.',
-      content: 'Music Teacher with 10 years of experience in music education and performance.',
-      metadata: { role: 'Music Teacher', experience: '10 years' }
-    },
-    {
-      category: 'teachers',
-      title: 'Michael R.',
-      content: 'Sports Teacher with 15 years of experience in physical education and athletics.',
-      metadata: { role: 'Sports Teacher', experience: '15 years' }
     },
     {
       category: 'faq',
       title: 'What is the admission process?',
-      content: 'Our admission process begins with filling out an online application form. This is followed by a campus tour where parents and students can experience our facilities firsthand. Students then participate in an age-appropriate assessment to help us understand their learning level. Finally, we conduct a personal interview with parents to discuss our educational philosophy and answer any questions.',
+      content: 'Our admission process begins with filling out an application form, followed by a campus tour, student assessment, and parent interview.',
       metadata: {}
     },
     {
       category: 'faq',
       title: 'Do you provide transportation?',
-      content: 'Yes, we provide comprehensive and safe transportation services covering all major areas of the city. Our buses are equipped with GPS tracking, CCTV cameras, and trained attendants. We ensure timely pickups and drop-offs with multiple routes designed for convenience. Parents receive real-time updates about their child\'s journey.',
+      content: 'Yes, we provide safe transportation services with GPS tracking and CCTV cameras covering all major areas.',
       metadata: {}
     },
     {
       category: 'faq',
       title: 'Are there extracurricular activities?',
-      content: 'Absolutely! We believe in holistic development and offer a wide range of extracurricular activities including sports (football, basketball, swimming), arts (painting, pottery, drama), music (instrumental and vocal), dance, coding clubs, robotics, debate society, and environmental clubs. Students are encouraged to explore their interests beyond academics.',
-      metadata: {}
-    },
-    {
-      category: 'faq',
-      title: 'What is the student-teacher ratio?',
-      content: 'We maintain a low student-teacher ratio of 15:1 to ensure personalized attention for every child. This allows our teachers to understand each student\'s unique learning style, strengths, and areas for improvement, enabling them to provide tailored support and foster meaningful relationships.',
+      content: 'Yes! We offer sports, arts, music, dance, coding clubs, robotics, debate society, and environmental clubs.',
       metadata: {}
     },
     {
       category: 'faq',
       title: 'What are the school timings?',
-      content: 'Our regular school hours are from 8:30 AM to 3:00 PM, Monday through Friday. We also offer extended care services from 7:00 AM to 6:00 PM for working parents. The school follows a structured schedule with dedicated time for academics, physical education, lunch, and extracurricular activities.',
+      content: 'Regular hours: 8:30 AM to 3:00 PM, Monday through Friday. Extended care: 7:00 AM to 6:00 PM.',
       metadata: {}
     },
     {
       category: 'faq',
       title: 'What curriculum do you follow?',
-      content: 'We follow an internationally recognized curriculum that combines the best practices from various educational systems. Our program emphasizes critical thinking, creativity, and problem-solving skills while maintaining strong foundations in core subjects like Mathematics, Science, Language Arts, and Social Studies. We also integrate technology, arts, and physical education into daily learning.',
+      content: 'We follow CBSE curriculum with emphasis on critical thinking, creativity, and traditional values with modern teaching methodologies.',
       metadata: {}
     },
     {
       category: 'faq',
       title: 'How do you ensure child safety?',
-      content: 'Child safety is our top priority. Our campus has 24/7 security personnel, CCTV surveillance throughout, controlled access points, and visitor management systems. All staff undergo thorough background checks and regular safety training. We have a certified school nurse on campus, fire safety systems, and regular emergency drills to ensure preparedness.',
-      metadata: {}
-    },
-    {
-      category: 'faq',
-      title: 'Do you offer meals and snacks?',
-      content: 'Yes, we provide nutritious, balanced meals and snacks prepared fresh daily in our hygienic kitchen. Our menu is designed by nutritionists to meet growing children\'s dietary needs. We accommodate special dietary requirements, allergies, and cultural preferences. Parents receive monthly menus in advance.',
+      content: 'We have 24/7 security, CCTV surveillance, controlled access, background-checked staff, school nurse, fire safety systems, and regular emergency drills.',
       metadata: {}
     },
     {
@@ -244,39 +216,49 @@ export async function populateSchoolData() {
     {
       category: 'admissions',
       title: 'Admissions Status',
-      content: 'Admissions Open 2024-25! Join us to provide your child with quality education in a nurturing environment.',
+      content: 'Admissions Open 2024-25! Academic Session: April to March. Nursery admission age: 3 years (as of April 1st).',
       metadata: {}
     },
     {
       category: 'leadership',
       title: 'Founders',
-      content: 'Ch. Hatpal Singh & Sh. Anil Kumar Singh - Visionaries behind THE AARYANS, founded on April 13, 2015, committed to providing quality education with traditional values.',
+      content: 'Ch. Hatpal Singh & Sh. Anil Kumar Singh - Visionaries committed to providing quality education with traditional values.',
       metadata: { role: 'Founders' }
     }
   ];
 
-  const { error } = await supabase
-    .from('school_data')
-    .insert(schoolData);
+  try {
+    const { error } = await supabase
+      .from('school_data')
+      .insert(schoolData);
 
-  if (error) {
-    console.error('Error populating school data:', error);
-    return { success: false, error };
+    if (error) {
+      console.error('Error populating school data:', error);
+      return { success: false, error };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('Exception in populateSchoolData:', err);
+    return { success: false, error: err };
   }
-
-  return { success: true };
 }
 
-export async function getSchoolData() {
-  const { data, error } = await supabase
-    .from('school_data')
-    .select('*')
-    .order('category', { ascending: true });
+export async function getSchoolData(): Promise<SchoolDataItem[]> {
+  try {
+    const { data, error } = await supabase
+      .from('school_data')
+      .select('*')
+      .order('category', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching school data:', error);
-    throw error;
+    if (error) {
+      console.error('Error fetching school data:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Exception in getSchoolData:', err);
+    return [];
   }
-
-  return data || [];
 }
