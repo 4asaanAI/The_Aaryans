@@ -32,7 +32,7 @@ export function Hero() {
             <img
               src={img}
               alt={`THE AARYANS School Campus ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
             />
           </div>
         ))}

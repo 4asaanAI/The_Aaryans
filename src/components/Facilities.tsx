@@ -59,8 +59,10 @@ export function Facilities() {
         <div className="px-12 mb-16">
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
-            showArrows={true}
+            showArrows={false}
             showDots={true}
+            autoPlay={true}
+            autoPlayInterval={4000}
             gap="2rem"
           >
             {facilities.map((facility, index) => (
@@ -83,8 +85,10 @@ export function Facilities() {
           <div className="px-12">
             <Carousel
               itemsPerView={{ mobile: 2, tablet: 3, desktop: 4 }}
-              showArrows={true}
+              showArrows={false}
               showDots={true}
+              autoPlay={true}
+              autoPlayInterval={3500}
               gap="1rem"
             >
               {galleryImages.map((img, idx) => (

@@ -48,8 +48,10 @@ export function Infrastructure() {
         <div className="px-12 mb-16">
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
-            showArrows={true}
+            showArrows={false}
             showDots={true}
+            autoPlay={true}
+            autoPlayInterval={4500}
             gap="2rem"
           >
             {facilities.map((facility, index) => (
