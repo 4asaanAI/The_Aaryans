@@ -49,12 +49,10 @@ export function Header() {
               </a>
             ))}
 
-            <div
-              className="relative"
-              onMouseEnter={() => setQuickLinksMenuOpen(true)}
-              onMouseLeave={() => setQuickLinksMenuOpen(false)}
-            >
+            <div className="relative">
               <button
+                onMouseEnter={() => setQuickLinksMenuOpen(true)}
+                onMouseLeave={() => setQuickLinksMenuOpen(false)}
                 className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
                 aria-label="Quick links menu"
               >
@@ -62,7 +60,11 @@ export function Header() {
               </button>
 
               {quickLinksMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown">
+                <div
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown"
+                  onMouseEnter={() => setQuickLinksMenuOpen(true)}
+                  onMouseLeave={() => setQuickLinksMenuOpen(false)}
+                >
                   {quickLinks.map((link) => (
                     <a
                       key={link.name}
