@@ -27,6 +27,8 @@ export function Carousel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const scrollPositionRef = useRef(0);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -47,8 +49,6 @@ export function Carousel({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [itemsPerView]);
-
-  const totalSlides = Math.ceil(children.length / itemsVisible);
 
   useEffect(() => {
     if (isMobile && autoPlay) {
@@ -102,7 +102,10 @@ export function Carousel({
     if (isMobile) {
       setCurrentIndex((prev) => (prev - 1 + children.length) % children.length);
     } else {
-      setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
+      if (scrollRef.current) {
+        const itemWidth = scrollRef.current.scrollWidth / duplicatedChildren.length;
+        scrollPositionRef.current = Math.max(0, scrollPositionRef.current - itemWidth);
+      }
     }
   };
 
@@ -110,46 +113,56 @@ export function Carousel({
     if (isMobile) {
       setCurrentIndex((prev) => (prev + 1) % children.length);
     } else {
-      setCurrentIndex((prev) => (prev + 1) % totalSlides);
+      if (scrollRef.current) {
+        const itemWidth = scrollRef.current.scrollWidth / duplicatedChildren.length;
+        scrollPositionRef.current += itemWidth;
+      }
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0) {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
     }
   };
 
   if (isMobile) {
     return (
-      <div className="relative w-full">
+      <div
+        className="relative w-full"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="overflow-hidden">
-          <div className="relative" style={{ minHeight: '300px' }}>
+          <div className="relative w-full" style={{ minHeight: '350px' }}>
             {children.map((child, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-500 ${
+                className={`absolute inset-0 w-full transition-opacity duration-500 ${
                   index === currentIndex ? 'opacity-100' : 'opacity-0'
                 }`}
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
               >
-                <div className={`transition-transform duration-300 ${isPaused ? 'scale-105' : ''}`}>
-                  {child}
-                </div>
+                {child}
               </div>
             ))}
           </div>
         </div>
-
-        <button
-          onClick={goToPrevious}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all group z-10"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5 text-slate-700 group-hover:text-white" />
-        </button>
-        <button
-          onClick={goToNext}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all group z-10"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-white" />
-        </button>
 
         {showDots && (
           <div className="flex justify-center gap-2 mt-8">
@@ -178,18 +191,16 @@ export function Carousel({
           ref={scrollRef}
           className="flex"
           style={{ gap, willChange: 'transform' }}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
           {duplicatedChildren.map((child, index) => (
             <div
               key={index}
               className="flex-shrink-0"
               style={{ width: `calc((100% - ${gap} * ${itemsVisible - 1}) / ${itemsVisible})` }}
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
             >
-              <div className={`transition-all duration-300 ${isPaused ? 'scale-105 shadow-2xl' : ''}`}>
-                {child}
-              </div>
+              {child}
             </div>
           ))}
         </div>

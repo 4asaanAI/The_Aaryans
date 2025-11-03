@@ -123,7 +123,7 @@ export function Facilities() {
             <img
               src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20250103-WA0026.jpg"
               alt="Students in classroom"
-              className="w-full h-48 object-cover"
+              className="w-full h-48 object-cover object-center"
             />
           </div>
 
@@ -151,7 +151,7 @@ export function Facilities() {
             <img
               src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0012.jpg"
               alt="Educational activities"
-              className="w-full h-48 object-cover"
+              className="w-full h-48 object-cover object-center"
             />
           </div>
         </div>

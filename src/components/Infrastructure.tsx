@@ -78,27 +78,10 @@ export function Infrastructure() {
               <img
                 src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0013.jpg"
                 alt="THE AARYANS Campus"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
             </div>
           </div>
-        </div>
-
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240516-WA0016.jpg',
-            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20231102-WA0005.jpg',
-            'https://theaaryans.in/wp-content/uploads/2025/09/IMG-20230831-WA0028-300x300.jpg',
-            'https://theaaryans.in/wp-content/uploads/2025/09/1000460825.jpg'
-          ].map((img, idx) => (
-            <div key={idx} className="aspect-video rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform">
-              <img
-                src={img}
-                alt={`School facility ${idx + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
         </div>
       </div>
     </section>

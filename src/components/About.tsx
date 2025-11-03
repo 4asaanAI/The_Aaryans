@@ -1,14 +1,6 @@
 import { Building2, Users, Award, Target } from 'lucide-react';
-import { Carousel } from './Carousel';
 
 export function About() {
-  const highlights = [
-    { icon: Users, title: 'Experienced Staff', desc: 'Trained educators for excellence' },
-    { icon: Award, title: 'CBSE Curriculum', desc: 'Career-oriented syllabus' },
-    { icon: Building2, title: 'Modern Infrastructure', desc: 'State-of-the-art facilities' },
-    { icon: Target, title: 'Holistic Development', desc: 'Activity-based learning' }
-  ];
-
   return (
     <section id="about" className="py-20 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -82,22 +74,21 @@ export function About() {
           </div>
         </div>
 
-        <div className="px-12">
-          <Carousel
-            itemsPerView={{ mobile: 1, tablet: 2, desktop: 4 }}
-            autoPlay={true}
-            gap="1.5rem"
-          >
-            {highlights.map((item, index) => (
-              <div key={index} className="text-center p-6 rounded-xl border border-slate-200 hover:border-orange-500 hover:shadow-lg transition-all h-full">
-                <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-7 h-7 text-orange-600" />
-                </div>
-                <h4 className="font-bold text-slate-900 mb-2">{item.title}</h4>
-                <p className="text-sm text-slate-600">{item.desc}</p>
+        <div className="grid md:grid-cols-4 gap-6">
+          {[
+            { icon: Users, title: 'Experienced Staff', desc: 'Trained educators for excellence' },
+            { icon: Award, title: 'CBSE Curriculum', desc: 'Career-oriented syllabus' },
+            { icon: Building2, title: 'Modern Infrastructure', desc: 'State-of-the-art facilities' },
+            { icon: Target, title: 'Holistic Development', desc: 'Activity-based learning' }
+          ].map((item, index) => (
+            <div key={index} className="text-center p-6 rounded-xl border border-slate-200 hover:border-orange-500 hover:shadow-lg transition-all">
+              <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <item.icon className="w-7 h-7 text-orange-600" />
               </div>
-            ))}
-          </Carousel>
+              <h4 className="font-bold text-slate-900 mb-2">{item.title}</h4>
+              <p className="text-sm text-slate-600">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
