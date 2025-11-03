@@ -76,28 +76,28 @@ export function About() {
         </div>
 
         {/* Campus Highlights - Full Width */}
-        <div className="bg-slate-50 rounded-xl p-8 border border-slate-200">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-orange-600" />
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-white" />
             </div>
-            <h4 className="font-bold text-slate-900 text-xl">Campus Highlights</h4>
+            <h4 className="font-bold text-white text-xl">Campus Highlights</h4>
           </div>
-          <ul className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-slate-600">
+          <ul className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-white">
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></span>
               <span>8-acre peaceful campus</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></span>
               <span>Co-educational institution</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></span>
               <span>Founded in 2015</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0"></span>
               <span>Amroha, Uttar Pradesh</span>
             </li>
           </ul>
