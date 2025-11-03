@@ -38,36 +38,48 @@ export function Header() {
             </div>
           </div>
 
-          <div
-            className="hidden md:flex items-center gap-8 relative"
-            onMouseEnter={() => setQuickLinksMenuOpen(true)}
-            onMouseLeave={() => setQuickLinksMenuOpen(false)}
-          >
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-slate-700 hover:text-orange-500 transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-
-            <div className="relative">
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="#signup"
+              className="px-4 py-2 text-sm font-medium text-slate-900 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all border border-slate-300"
+            >
+              Sign Up
+            </a>
+            <a
+              href="#login"
+              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all"
+            >
+              Login
+            </a>
+            <div
+              className="relative"
+              onMouseEnter={() => setQuickLinksMenuOpen(true)}
+              onMouseLeave={() => setQuickLinksMenuOpen(false)}
+            >
               <button
                 className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
-                aria-label="Quick links menu"
+                aria-label="Menu"
               >
                 <Menu className="w-5 h-5" />
               </button>
 
               {quickLinksMenuOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown">
+                  {navLinks.map((link) => (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      className="block px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                    >
+                      {link.name}
+                    </a>
+                  ))}
+                  <div className="border-t border-slate-200 my-2"></div>
                   {quickLinks.map((link) => (
                     <a
                       key={link.name}
                       href={link.href}
-                      className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                      className="block px-4 py-2.5 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                     >
                       {link.name}
                     </a>

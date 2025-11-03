@@ -20,7 +20,7 @@ export function Hero() {
   }, [images.length]);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+    <section id="home" className="relative min-h-screen md:min-h-screen h-screen md:h-auto flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       <div className="absolute inset-0">
         {images.map((img, index) => (
           <div
