@@ -38,7 +38,11 @@ export function Header() {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div
+            className="hidden md:flex items-center gap-8 relative"
+            onMouseEnter={() => setQuickLinksMenuOpen(true)}
+            onMouseLeave={() => setQuickLinksMenuOpen(false)}
+          >
             {navLinks.map((link) => (
               <a
                 key={link.name}
@@ -51,8 +55,6 @@ export function Header() {
 
             <div className="relative">
               <button
-                onMouseEnter={() => setQuickLinksMenuOpen(true)}
-                onMouseLeave={() => setQuickLinksMenuOpen(false)}
                 className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
                 aria-label="Quick links menu"
               >
@@ -60,11 +62,7 @@ export function Header() {
               </button>
 
               {quickLinksMenuOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown"
-                  onMouseEnter={() => setQuickLinksMenuOpen(true)}
-                  onMouseLeave={() => setQuickLinksMenuOpen(false)}
-                >
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-slideDown">
                   {quickLinks.map((link) => (
                     <a
                       key={link.name}

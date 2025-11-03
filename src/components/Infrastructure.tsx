@@ -36,11 +36,11 @@ export function Infrastructure() {
   ];
 
   return (
-    <section id="infrastructure" className="py-20 px-6 bg-slate-50">
+    <section id="infrastructure" className="py-20 px-6 bg-gradient-to-br from-slate-900 to-slate-800">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Infrastructure</h2>
-          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Infrastructure</h2>
+          <p className="text-lg text-slate-300 max-w-3xl mx-auto">
             Our 8-acre campus features state-of-the-art infrastructure designed to support comprehensive student development across all domains.
           </p>
         </div>
@@ -54,13 +54,13 @@ export function Infrastructure() {
             {facilities.map((facility, index) => (
               <div
                 key={index}
-                className="bg-white rounded-lg p-6 shadow-sm hover:shadow-xl transition-all border-2 border-slate-200 hover:border-orange-500 group h-full"
+                className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border-2 border-white/20 hover:bg-white/20 transition-all group h-full"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-orange-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <facility.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{facility.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{facility.description}</p>
+                <h3 className="text-lg font-bold text-white mb-2">{facility.title}</h3>
+                <p className="text-sm text-slate-300 leading-relaxed">{facility.description}</p>
               </div>
             ))}
           </Carousel>
