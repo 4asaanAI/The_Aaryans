@@ -1,6 +1,25 @@
 import { ClipboardList, FileText, Calendar } from 'lucide-react';
+import { Carousel } from './Carousel';
 
 export function Admission() {
+  const admissionSteps = [
+    {
+      icon: FileText,
+      step: 'Step 1',
+      description: 'Download and fill the admission form from our website or collect it from the school office'
+    },
+    {
+      icon: Calendar,
+      step: 'Step 2',
+      description: 'Schedule a campus tour and submit the completed form with required documents'
+    },
+    {
+      icon: ClipboardList,
+      step: 'Step 3',
+      description: 'Complete the interaction process and document verification for final admission'
+    }
+  ];
+
   return (
     <section id="admission" className="py-20 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -14,36 +33,34 @@ export function Admission() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          <div className="bg-slate-50 rounded-xl p-8 border border-slate-200 text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FileText className="w-8 h-8 text-orange-600" />
+        <div className="hidden md:grid md:grid-cols-3 gap-8 mb-12">
+          {admissionSteps.map((item, index) => (
+            <div key={index} className="bg-slate-50 rounded-xl p-8 border border-slate-200 text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <item.icon className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{item.step}</h3>
+              <p className="text-slate-600">{item.description}</p>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Step 1</h3>
-            <p className="text-slate-600">
-              Download and fill the admission form from our website or collect it from the school office
-            </p>
-          </div>
+          ))}
+        </div>
 
-          <div className="bg-slate-50 rounded-xl p-8 border border-slate-200 text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Calendar className="w-8 h-8 text-orange-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Step 2</h3>
-            <p className="text-slate-600">
-              Schedule a campus tour and submit the completed form with required documents
-            </p>
-          </div>
-
-          <div className="bg-slate-50 rounded-xl p-8 border border-slate-200 text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ClipboardList className="w-8 h-8 text-orange-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Step 3</h3>
-            <p className="text-slate-600">
-              Complete the interaction process and document verification for final admission
-            </p>
-          </div>
+        <div className="md:hidden mb-12 px-4">
+          <Carousel
+            itemsPerView={{ mobile: 1, tablet: 1, desktop: 3 }}
+            autoPlay={true}
+            gap="1rem"
+          >
+            {admissionSteps.map((item, index) => (
+              <div key={index} className="bg-slate-50 rounded-lg p-6 border-2 border-slate-200 text-center h-full">
+                <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="w-7 h-7 text-orange-600" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{item.step}</h3>
+                <p className="text-sm text-slate-600">{item.description}</p>
+              </div>
+            ))}
+          </Carousel>
         </div>
 
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl overflow-hidden">
@@ -78,7 +95,7 @@ export function Admission() {
           </div>
         </div>
 
-        <div className="mt-12 grid md:grid-cols-2 gap-8">
+        <div className="mt-12 max-w-2xl mx-auto">
           <div className="bg-slate-50 rounded-xl p-8 border border-slate-200">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">Required Documents</h3>
             <ul className="space-y-3 text-slate-600">
@@ -103,30 +120,6 @@ export function Admission() {
                 <span>Address proof</span>
               </li>
             </ul>
-          </div>
-
-          <div className="bg-slate-50 rounded-xl p-8 border border-slate-200">
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Contact Information</h3>
-            <div className="space-y-4 text-slate-600">
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">For Admission Queries:</p>
-                <p>Phone: 8126965555, 8126968888</p>
-                <p>Email: theaaryansjoya@gmail.com</p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">Visit Us:</p>
-                <p>Prem Nagar, Joya, N.H.24</p>
-                <p>District - Amroha (U.P.), INDIA</p>
-              </div>
-              <div className="pt-4">
-                <a
-                  href="#fee"
-                  className="text-orange-600 font-semibold hover:text-orange-700 underline"
-                >
-                  View Fee Structure 2025-26 →
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </div>

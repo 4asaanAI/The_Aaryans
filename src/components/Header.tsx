@@ -49,13 +49,16 @@ export function Header() {
               </a>
             ))}
 
-            <div className="relative">
+            <div
+              className="relative"
+              onMouseEnter={() => setQuickLinksMenuOpen(true)}
+              onMouseLeave={() => setQuickLinksMenuOpen(false)}
+            >
               <button
-                onClick={() => setQuickLinksMenuOpen(!quickLinksMenuOpen)}
-                className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all active:scale-95"
-                aria-label="Toggle quick links menu"
+                className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
+                aria-label="Quick links menu"
               >
-                {quickLinksMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                <Menu className="w-5 h-5" />
               </button>
 
               {quickLinksMenuOpen && (
@@ -64,7 +67,6 @@ export function Header() {
                     <a
                       key={link.name}
                       href={link.href}
-                      onClick={() => setQuickLinksMenuOpen(false)}
                       className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                     >
                       {link.name}

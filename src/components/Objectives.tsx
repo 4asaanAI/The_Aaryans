@@ -39,18 +39,18 @@ export function Objectives() {
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 2 }}
             autoPlay={true}
-            gap="2rem"
+            gap="1.5rem"
           >
             {objectives.map((objective, index) => (
               <div
                 key={index}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 hover:bg-white/20 transition-all group h-full"
+                className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border-2 border-white/20 hover:bg-white/20 transition-all group h-full"
               >
-                <div className="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <objective.icon className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 bg-orange-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <objective.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">{objective.title}</h3>
-                <p className="text-slate-300 leading-relaxed">{objective.description}</p>
+                <h3 className="text-xl font-bold text-white mb-3">{objective.title}</h3>
+                <p className="text-sm text-slate-300 leading-relaxed">{objective.description}</p>
               </div>
             ))}
           </Carousel>

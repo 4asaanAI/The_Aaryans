@@ -49,18 +49,18 @@ export function Infrastructure() {
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
             autoPlay={true}
-            gap="2rem"
+            gap="1.5rem"
           >
             {facilities.map((facility, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all border border-slate-200 hover:border-orange-500 group h-full"
+                className="bg-white rounded-lg p-6 shadow-sm hover:shadow-xl transition-all border-2 border-slate-200 hover:border-orange-500 group h-full"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <facility.icon className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <facility.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{facility.description}</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{facility.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{facility.description}</p>
               </div>
             ))}
           </Carousel>

@@ -1,4 +1,4 @@
-import { GraduationCap, Users2, TrendingUp, Languages, Lightbulb, Heart } from 'lucide-react';
+import { GraduationCap, Users2, TrendingUp, Languages, Lightbulb, Heart, School, Plane } from 'lucide-react';
 import { Carousel } from './Carousel';
 
 export function Facilities() {
@@ -32,6 +32,16 @@ export function Facilities() {
       icon: Heart,
       title: 'Holistic Development',
       description: 'Balanced approach focusing on intellectual, emotional, social, and physical growth.'
+    },
+    {
+      icon: School,
+      title: 'Co-Educational System',
+      description: 'Our co-educational environment promotes mutual respect, collaborative learning, and prepares students for real-world interactions with equal opportunities for all.'
+    },
+    {
+      icon: Plane,
+      title: 'Educational Excursions',
+      description: 'Regular field trips and educational excursions enhance practical learning and provide real-world context to classroom lessons with safe and supervised trips.'
     }
   ];
 
@@ -60,18 +70,18 @@ export function Facilities() {
           <Carousel
             itemsPerView={{ mobile: 1, tablet: 2, desktop: 3 }}
             autoPlay={true}
-            gap="2rem"
+            gap="1.5rem"
           >
             {facilities.map((facility, index) => (
               <div
                 key={index}
-                className="group bg-slate-50 rounded-xl p-8 border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all h-full"
+                className="group bg-slate-50 rounded-lg p-6 border-2 border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all h-full"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <facility.icon className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <facility.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{facility.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{facility.description}</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{facility.title}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{facility.description}</p>
               </div>
             ))}
           </Carousel>
@@ -83,10 +93,10 @@ export function Facilities() {
             <Carousel
               itemsPerView={{ mobile: 1, tablet: 3, desktop: 4 }}
               autoPlay={true}
-              gap="1rem"
+              gap="0.75rem"
             >
               {galleryImages.map((img, idx) => (
-                <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all">
+                <div key={idx} className="aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-xl hover:scale-105 transition-all border-2 border-slate-200">
                   <img
                     src={img}
                     alt={`School activity ${idx + 1}`}
@@ -98,63 +108,6 @@ export function Facilities() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl overflow-hidden">
-            <div className="p-10 text-white">
-              <h3 className="text-2xl font-bold mb-4">Co-Educational System</h3>
-              <p className="text-slate-300 leading-relaxed mb-6">
-                Our co-educational environment promotes mutual respect, collaborative learning, and prepares students for real-world interactions.
-              </p>
-              <ul className="space-y-2 text-slate-300">
-                <li className="flex items-start gap-2">
-                  <span className="text-orange-500 font-bold">•</span>
-                  <span>Equal opportunities for all students</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-orange-500 font-bold">•</span>
-                  <span>Collaborative learning environment</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-orange-500 font-bold">•</span>
-                  <span>Balanced development of all students</span>
-                </li>
-              </ul>
-            </div>
-            <img
-              src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20250103-WA0026.jpg"
-              alt="Students in classroom"
-              className="w-full h-48 object-cover object-center"
-            />
-          </div>
-
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl overflow-hidden">
-            <div className="p-10 text-white">
-              <h3 className="text-2xl font-bold mb-4">Educational Excursions</h3>
-              <p className="leading-relaxed mb-6">
-                Regular field trips and educational excursions enhance practical learning and provide real-world context to classroom lessons.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">•</span>
-                  <span>Hands-on learning experiences</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">•</span>
-                  <span>Cultural and historical awareness</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold">•</span>
-                  <span>Safe and supervised trips</span>
-                </li>
-              </ul>
-            </div>
-            <img
-              src="https://theaaryans.in/wp-content/uploads/2025/09/IMG-20240816-WA0012.jpg"
-              alt="Educational activities"
-              className="w-full h-48 object-cover object-center"
-            />
-          </div>
-        </div>
       </div>
     </section>
   );

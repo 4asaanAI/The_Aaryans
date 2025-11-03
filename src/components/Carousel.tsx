@@ -149,14 +149,15 @@ export function Carousel({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="overflow-hidden">
-          <div className="relative w-full" style={{ minHeight: '350px' }}>
+        <div className="overflow-hidden px-4">
+          <div className="relative w-full" style={{ minHeight: '280px' }}>
             {children.map((child, index) => (
               <div
                 key={index}
                 className={`absolute inset-0 w-full transition-opacity duration-500 ${
                   index === currentIndex ? 'opacity-100' : 'opacity-0'
                 }`}
+                style={{ fontSize: '0.9rem' }}
               >
                 {child}
               </div>
@@ -165,14 +166,14 @@ export function Carousel({
         </div>
 
         {showDots && (
-          <div className="flex justify-center gap-2 mt-8">
+          <div className="flex justify-center gap-2 mt-6">
             {children.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
                   index === currentIndex
-                    ? 'bg-orange-500 w-8'
+                    ? 'bg-orange-500 w-7'
                     : 'bg-slate-300 hover:bg-slate-400'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}

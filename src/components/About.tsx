@@ -73,23 +73,6 @@ export function About() {
             </div>
           </div>
         </div>
-
-        <div className="grid md:grid-cols-4 gap-6">
-          {[
-            { icon: Users, title: 'Experienced Staff', desc: 'Trained educators for excellence' },
-            { icon: Award, title: 'CBSE Curriculum', desc: 'Career-oriented syllabus' },
-            { icon: Building2, title: 'Modern Infrastructure', desc: 'State-of-the-art facilities' },
-            { icon: Target, title: 'Holistic Development', desc: 'Activity-based learning' }
-          ].map((item, index) => (
-            <div key={index} className="text-center p-6 rounded-xl border border-slate-200 hover:border-orange-500 hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <item.icon className="w-7 h-7 text-orange-600" />
-              </div>
-              <h4 className="font-bold text-slate-900 mb-2">{item.title}</h4>
-              <p className="text-sm text-slate-600">{item.desc}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
