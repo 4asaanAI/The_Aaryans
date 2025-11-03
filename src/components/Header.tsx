@@ -51,12 +51,9 @@ export function Header() {
             >
               Login
             </a>
-            <div
-              className="relative"
-              onMouseEnter={() => setQuickLinksMenuOpen(true)}
-              onMouseLeave={() => setQuickLinksMenuOpen(false)}
-            >
+            <div className="relative">
               <button
+                onClick={() => setQuickLinksMenuOpen(!quickLinksMenuOpen)}
                 className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
                 aria-label="Menu"
               >
@@ -69,6 +66,7 @@ export function Header() {
                     <a
                       key={link.name}
                       href={link.href}
+                      onClick={() => setQuickLinksMenuOpen(false)}
                       className="block px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                     >
                       {link.name}
@@ -79,6 +77,7 @@ export function Header() {
                     <a
                       key={link.name}
                       href={link.href}
+                      onClick={() => setQuickLinksMenuOpen(false)}
                       className="block px-4 py-2.5 text-sm text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                     >
                       {link.name}
@@ -100,6 +99,22 @@ export function Header() {
 
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-3 animate-slideDown">
+            <div className="flex gap-2 mb-3">
+              <a
+                href="#signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 py-2.5 text-center text-sm font-medium text-slate-900 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all border border-slate-300"
+              >
+                Sign Up
+              </a>
+              <a
+                href="#login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 py-2.5 text-center text-sm font-medium text-white bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all"
+              >
+                Login
+              </a>
+            </div>
             <div className="space-y-2 border-b border-slate-200 pb-3">
               {navLinks.map((link) => (
                 <a
