@@ -66,7 +66,7 @@ export function Infrastructure() {
           </Carousel>
         </div>
 
-        <div className="mt-16 bg-white rounded-2xl overflow-hidden shadow-xl">
+        <div className="mt-16 bg-slate-50 rounded-2xl overflow-hidden shadow-xl">
           <div className="grid md:grid-cols-2">
             <div className="p-12 flex flex-col justify-center">
               <h3 className="text-3xl font-bold mb-4 text-slate-900">8-Acre Campus</h3>
