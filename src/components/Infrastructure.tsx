@@ -66,11 +66,11 @@ export function Infrastructure() {
           </Carousel>
         </div>
 
-        <div className="mt-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl overflow-hidden">
+        <div className="mt-16 bg-white rounded-2xl overflow-hidden shadow-xl">
           <div className="grid md:grid-cols-2">
             <div className="p-12 flex flex-col justify-center">
-              <h3 className="text-3xl font-bold mb-4 text-white">8-Acre Campus</h3>
-              <p className="text-lg text-slate-300 leading-relaxed">
+              <h3 className="text-3xl font-bold mb-4 text-slate-900">8-Acre Campus</h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
                 Spacious, peaceful campus spread across 8 acres providing ample space for learning, recreation, and holistic development in a serene environment.
               </p>
             </div>
