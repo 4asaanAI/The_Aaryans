@@ -44,25 +44,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (!error && data) {
-      setProfile(data);
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else if (data) {
+        setProfile(data);
+      } else {
+        console.log('No profile found for user:', userId);
+      }
+    } catch (err) {
+      console.error('Exception in fetchProfile:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const signUp = async (email: string, password: string, profileData: Partial<Profile>) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
 
-    if (!error && data.user) {
+      if (error) {
+        console.error('Signup error:', error);
+        return { error };
+      }
+
+      if (!data.user) {
+        console.error('No user data returned from signup');
+        return { error: new Error('No user data returned') };
+      }
+
+      console.log('User created:', data.user.id);
+
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -77,11 +98,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
       if (profileError) {
+        console.error('Profile creation error:', profileError);
         return { error: profileError };
       }
-    }
 
-    return { error };
+      console.log('Profile created successfully');
+      await fetchProfile(data.user.id);
+
+      return { error: null };
+    } catch (err) {
+      console.error('Exception in signUp:', err);
+      return { error: err };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
