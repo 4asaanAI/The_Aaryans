@@ -7,8 +7,8 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, profileData: Partial<Profile>) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, profileData: Partial<Profile>) => Promise<{ data: any; error: any }>;
+  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>;
   signOut: () => Promise<void>;
   hasPermission: (resource: string, action: string) => boolean;
 }
@@ -77,12 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Signup error:', error);
-        return { error };
+        return { data: null, error };
       }
 
       if (!data.user) {
         console.error('No user data returned from signup');
-        return { error: new Error('No user data returned') };
+        return { data: null, error: new Error('No user data returned') };
       }
 
       console.log('User created:', data.user.id);
@@ -102,16 +102,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
-        return { error: profileError };
+        return { data: null, error: profileError };
       }
 
       console.log('Profile created successfully');
       await fetchProfile(data.user.id);
 
-      return { error: null };
+      return { data, error: null };
     } catch (err) {
       console.error('Exception in signUp:', err);
-      return { error: err };
+      return { data: null, error: err };
     }
   };
 
@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('SignIn error:', error);
-        return { error };
+        return { data: null, error };
       }
 
       if (data.user) {
@@ -133,10 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchProfile(data.user.id);
       }
 
-      return { error: null };
+      return { data, error: null };
     } catch (err) {
       console.error('Exception in signIn:', err);
-      return { error: err };
+      return { data: null, error: err };
     }
   };
 
