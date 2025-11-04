@@ -16,12 +16,15 @@ export function Login() {
     setError('');
     setLoading(true);
 
+    console.log('Attempting to sign in with:', email);
     const { error } = await signIn(email, password);
 
     if (error) {
+      console.error('Sign in error:', error);
       setError(error.message);
       setLoading(false);
     } else {
+      console.log('Sign in successful, redirecting to dashboard');
       navigate('/dashboard');
     }
   };
