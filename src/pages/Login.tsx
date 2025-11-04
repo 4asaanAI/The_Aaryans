@@ -17,8 +17,8 @@ export function Login() {
     setLoading(true);
 
     console.log('Attempting to sign in with:', email);
-    const { error } = await signIn(email, password);
-
+    const {data, error } = await signIn(email, password);
+    console.log(data)
     if (error) {
       console.error('Sign in error:', error);
       setError(error.message);
