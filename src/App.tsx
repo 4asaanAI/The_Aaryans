@@ -1,45 +1,29 @@
-import { useState } from 'react';
-import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { About } from './components/About';
-import { Objectives } from './components/Objectives';
-import { Infrastructure } from './components/Infrastructure';
-import { Facilities } from './components/Facilities';
-import { Admission } from './components/Admission';
-import { Contact } from './components/Contact';
-import { Footer } from './components/Footer';
-import { Notification } from './components/Notification';
-import { ChatWidget } from './components/ChatWidget';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { Login } from './pages/Login';
+import { Signup } from './pages/Signup';
+import { DashboardRouter } from './pages/dashboards/DashboardRouter';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  const handleNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 5000);
-  };
-
   return (
-    <div className="min-h-screen bg-white">
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          onClose={() => setNotification(null)}
-        />
-      )}
-
-      <Header />
-      <Hero />
-      <About />
-      <Objectives />
-      <Infrastructure />
-      <Facilities />
-      <Admission />
-      <Contact onNotification={handleNotification} />
-      <Footer />
-      <ChatWidget />
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/dashboard/*"
+            element={
+              <ProtectedRoute>
+                <DashboardRouter />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
