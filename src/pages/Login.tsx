@@ -115,19 +115,14 @@ export function Login() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">Demo Accounts</span>
+              <span className="px-2 bg-gray-50 text-gray-500">Getting Started</span>
             </div>
           </div>
 
-          <div className="mt-4 text-xs text-gray-600 space-y-1">
-            <p>
-              <strong>Admin:</strong> admin@school.com / admin123
-            </p>
-            <p>
-              <strong>Professor:</strong> professor@school.com / prof123
-            </p>
-            <p>
-              <strong>Student:</strong> student@school.com / student123
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-800">
+              <strong>First time here?</strong> Create an account using the Sign Up button above.
+              You can choose your role (Admin, Professor, or Student) during registration.
             </p>
           </div>
         </div>
