@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, ArrowLeft } from 'lucide-react';
 import { Department } from '../types';
 import { adminSubRoles, professorSubRoles } from '../types';
 
@@ -64,6 +64,13 @@ export function Signup() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <Link
+          to="/"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Link>
         <div>
           <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center">
             <UserPlus className="h-6 w-6 text-white" />
