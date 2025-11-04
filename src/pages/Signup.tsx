@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { UserPlus, ArrowLeft } from 'lucide-react';
 import { Department } from '../types';
-import { adminSubRoles, professorSubRoles } from '../types';
+import { adminSubRoles, teacherSubRoles } from '../types';
 
 export function Signup() {
   const [formData, setFormData] = useState({
@@ -57,7 +57,7 @@ export function Signup() {
 
   const getSubRoles = () => {
     if (formData.role === 'admin') return adminSubRoles;
-    if (formData.role === 'professor') return professorSubRoles;
+    if (formData.role === 'professor') return teacherSubRoles;
     return [];
   };
 

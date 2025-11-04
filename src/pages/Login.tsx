@@ -18,13 +18,13 @@ export function Login() {
 
     console.log('Attempting to sign in with:', email);
     const {data, error } = await signIn(email, password);
-    console.log(data)
+    console.log('Sign in response:', data)
     if (error) {
       console.error('Sign in error:', error);
       setError(error.message);
       setLoading(false);
     } else {
-      console.lo('Sign in successful, redirecting to dashboard');
+      console.log('Sign in successful, redirecting to dashboard');
       navigate('/dashboard');
     }
   };

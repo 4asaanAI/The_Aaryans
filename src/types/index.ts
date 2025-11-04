@@ -7,7 +7,15 @@ export interface Profile {
   department_id?: string | null;
   avatar_url?: string | null;
   phone?: string | null;
-  status: 'active' | 'inactive' | 'suspended';
+  admission_no?: string | null;
+  employee_id?: string | null;
+  parent_name?: string | null;
+  parent_phone?: string | null;
+  address?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  blood_group?: string | null;
+  status: 'active' | 'inactive' | 'suspended' | 'pending_approval';
   created_at: string;
   updated_at: string;
 }
@@ -18,8 +26,222 @@ export interface Department {
   code: string;
   tuition_fee: number;
   description?: string;
+  hod_id?: string;
   created_at: string;
   updated_at: string;
+  hod?: Profile;
+}
+
+export interface Class {
+  id: string;
+  name: string;
+  grade_level: number;
+  section: string;
+  capacity: number;
+  current_strength: number;
+  class_teacher_id?: string;
+  academic_year: string;
+  status: 'active' | 'archived';
+  created_at: string;
+  updated_at: string;
+  class_teacher?: Profile;
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  department_id?: string;
+  grade_levels: number[];
+  created_at: string;
+  updated_at: string;
+  department?: Department;
+}
+
+export interface ClassSubject {
+  id: string;
+  class_id: string;
+  subject_id: string;
+  teacher_id?: string;
+  created_at: string;
+  class?: Class;
+  subject?: Subject;
+  teacher?: Profile;
+}
+
+export interface Timetable {
+  id: string;
+  class_id: string;
+  subject_id: string;
+  teacher_id?: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  room_number?: string;
+  created_at: string;
+  updated_at: string;
+  class?: Class;
+  subject?: Subject;
+  teacher?: Profile;
+}
+
+export interface Attendance {
+  id: string;
+  student_id: string;
+  class_id: string;
+  date: string;
+  status: 'present' | 'absent' | 'late' | 'excused';
+  marked_by?: string;
+  remarks?: string;
+  created_at: string;
+  student?: Profile;
+  class?: Class;
+  marker?: Profile;
+}
+
+export interface Assignment {
+  id: string;
+  class_id: string;
+  subject_id: string;
+  teacher_id?: string;
+  title: string;
+  description?: string;
+  due_date: string;
+  total_marks: number;
+  attachments: any[];
+  created_at: string;
+  updated_at: string;
+  class?: Class;
+  subject?: Subject;
+  teacher?: Profile;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  assignment_id: string;
+  student_id: string;
+  submission_date: string;
+  content?: string;
+  attachments: any[];
+  marks_obtained?: number;
+  feedback?: string;
+  status: 'pending' | 'submitted' | 'graded';
+  created_at: string;
+  updated_at: string;
+  assignment?: Assignment;
+  student?: Profile;
+}
+
+export interface Exam {
+  id: string;
+  name: string;
+  exam_type: 'midterm' | 'final' | 'quiz' | 'assignment';
+  class_id: string;
+  subject_id: string;
+  date: string;
+  total_marks: number;
+  duration_minutes: number;
+  created_at: string;
+  updated_at: string;
+  class?: Class;
+  subject?: Subject;
+}
+
+export interface ExamResult {
+  id: string;
+  exam_id: string;
+  student_id: string;
+  marks_obtained: number;
+  grade?: string;
+  remarks?: string;
+  created_at: string;
+  updated_at: string;
+  exam?: Exam;
+  student?: Profile;
+}
+
+export interface LeaveApplication {
+  id: string;
+  applicant_id: string;
+  leave_type: 'sick' | 'casual' | 'emergency';
+  start_date: string;
+  end_date: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approved_by?: string;
+  approval_date?: string;
+  created_at: string;
+  updated_at: string;
+  applicant?: Profile;
+  approver?: Profile;
+}
+
+export interface FeeRecord {
+  id: string;
+  student_id: string;
+  fee_type: 'tuition' | 'transport' | 'library' | 'exam' | 'other';
+  amount: number;
+  due_date: string;
+  paid_date?: string;
+  payment_status: 'pending' | 'paid' | 'overdue';
+  payment_method?: string;
+  transaction_id?: string;
+  created_at: string;
+  updated_at: string;
+  student?: Profile;
+}
+
+export interface TransportRoute {
+  id: string;
+  route_name: string;
+  route_number: string;
+  driver_name?: string;
+  vehicle_number?: string;
+  stops: any[];
+  monthly_fee: number;
+  status: 'active' | 'inactive';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudentTransport {
+  id: string;
+  student_id: string;
+  route_id: string;
+  stop_name: string;
+  pickup_time?: string;
+  created_at: string;
+  updated_at: string;
+  student?: Profile;
+  route?: TransportRoute;
+}
+
+export interface LibraryBook {
+  id: string;
+  title: string;
+  author: string;
+  isbn?: string;
+  category?: string;
+  total_copies: number;
+  available_copies: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LibraryTransaction {
+  id: string;
+  book_id: string;
+  user_id: string;
+  issue_date: string;
+  due_date: string;
+  return_date?: string;
+  status: 'issued' | 'returned' | 'overdue';
+  fine_amount: number;
+  created_at: string;
+  updated_at: string;
+  book?: LibraryBook;
+  user?: Profile;
 }
 
 export interface Course {
@@ -95,27 +317,23 @@ export interface AuditLog {
   user?: Profile;
 }
 
-export type SubRole =
-  | 'super_admin'
-  | 'academic_admin'
-  | 'finance_admin'
-  | 'department_admin'
-  | 'head_of_department'
-  | 'senior_professor'
-  | 'assistant_professor'
-  | 'guest_lecturer'
-  | null;
+export type AdminSubRole = 'head' | 'principal' | 'hod';
+export type TeacherSubRole = 'coordinator' | 'teacher';
+export type StudentSubRole = 'student';
+
+export type SubRole = AdminSubRole | TeacherSubRole | StudentSubRole | null;
 
 export const adminSubRoles = [
-  { value: 'super_admin', label: 'Super Admin', description: 'Full system access' },
-  { value: 'academic_admin', label: 'Academic Admin', description: 'Course and academic management' },
-  { value: 'finance_admin', label: 'Finance Admin', description: 'Financial operations and reports' },
-  { value: 'department_admin', label: 'Department Admin', description: 'Department-specific management' }
+  { value: 'head', label: 'Head', description: 'Global view, read-only access to all data' },
+  { value: 'principal', label: 'Principal', description: 'Full CRUD access to entire school' },
+  { value: 'hod', label: 'HOD (Head of Department)', description: 'Department-level management' }
 ];
 
-export const professorSubRoles = [
-  { value: 'head_of_department', label: 'Head of Department', description: 'Department leadership role' },
-  { value: 'senior_professor', label: 'Senior Professor', description: 'Full teaching privileges' },
-  { value: 'assistant_professor', label: 'Assistant Professor', description: 'Standard teaching role' },
-  { value: 'guest_lecturer', label: 'Guest Lecturer', description: 'Limited teaching access' }
+export const teacherSubRoles = [
+  { value: 'coordinator', label: 'Coordinator', description: 'Class and subject-level management' },
+  { value: 'teacher', label: 'Teacher', description: 'Assigned classes only' }
+];
+
+export const studentSubRoles = [
+  { value: 'student', label: 'Student', description: 'View-only access to personal data' }
 ];
