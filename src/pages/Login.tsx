@@ -24,7 +24,7 @@ export function Login() {
       setError(error.message);
       setLoading(false);
     } else {
-      console.log('Sign in successful, redirecting to dashboard');
+      console.lo('Sign in successful, redirecting to dashboard');
       navigate('/dashboard');
     }
   };
