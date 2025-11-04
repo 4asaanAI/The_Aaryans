@@ -317,7 +317,7 @@ export interface AuditLog {
   user?: Profile;
 }
 
-export type AdminSubRole = 'head' | 'principal' | 'hod';
+export type AdminSubRole = 'head' | 'principal' | 'hod' | 'other';
 export type TeacherSubRole = 'coordinator' | 'teacher';
 export type StudentSubRole = 'student';
 
@@ -326,7 +326,8 @@ export type SubRole = AdminSubRole | TeacherSubRole | StudentSubRole | null;
 export const adminSubRoles = [
   { value: 'head', label: 'Head', description: 'Global view, read-only access to all data' },
   { value: 'principal', label: 'Principal', description: 'Full CRUD access to entire school' },
-  { value: 'hod', label: 'HOD (Head of Department)', description: 'Department-level management' }
+  { value: 'hod', label: 'HOD (Head of Department)', description: 'Department-level management' },
+  { value: 'other', label: 'Other', description: 'Custom administrative role' }
 ];
 
 export const teacherSubRoles = [

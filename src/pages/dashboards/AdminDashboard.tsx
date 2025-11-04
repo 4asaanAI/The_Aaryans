@@ -15,6 +15,8 @@ export function AdminDashboard() {
       return <PrincipalDashboard />;
     case 'hod':
       return <HODDashboard />;
+    case 'other':
+      return <PrincipalDashboard />;
     default:
       return <PrincipalDashboard />;
   }

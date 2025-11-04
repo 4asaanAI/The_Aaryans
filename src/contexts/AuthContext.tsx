@@ -87,18 +87,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log('User created:', data.user.id);
 
+      const profileInsert: any = {
+        id: data.user.id,
+        email,
+        full_name: profileData.full_name || '',
+        role: profileData.role || 'student',
+        sub_role: profileData.sub_role,
+        department_id: profileData.department_id,
+        status: profileData.status || 'active'
+      };
+
+      if (profileData.phone) {
+        profileInsert.phone = profileData.phone;
+      }
+      if (profileData.admission_no) {
+        profileInsert.admission_no = profileData.admission_no;
+      }
+      if (profileData.employee_id) {
+        profileInsert.employee_id = profileData.employee_id;
+      }
+      if (profileData.parent_name) {
+        profileInsert.parent_name = profileData.parent_name;
+      }
+      if (profileData.parent_phone) {
+        profileInsert.parent_phone = profileData.parent_phone;
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: data.user.id,
-          email,
-          full_name: profileData.full_name || '',
-          role: profileData.role || 'student',
-          sub_role: profileData.sub_role,
-          department_id: profileData.department_id,
-          phone: profileData.phone,
-          status: 'active'
-        });
+        .insert(profileInsert);
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
