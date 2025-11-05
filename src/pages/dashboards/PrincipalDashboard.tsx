@@ -1,207 +1,258 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
-import { Users, BookOpen, Calendar, DollarSign, Settings, UserCheck, Bell, FileText } from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export function PrincipalDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'staff' | 'classes' | 'finance'>('overview');
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalTeachers: 0,
+    totalStaff: 0
+  });
 
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: Settings },
-    { id: 'students', label: 'Students', icon: Users },
-    { id: 'staff', label: 'Staff', icon: UserCheck },
-    { id: 'classes', label: 'Classes', icon: BookOpen },
-    { id: 'finance', label: 'Finance', icon: DollarSign }
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [students, teachers] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'student').eq('status', 'active'),
+        supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'professor')
+      ]);
+
+      setStats({
+        totalStudents: students.count || 0,
+        totalTeachers: teachers.count || 0,
+        totalStaff: (teachers.count || 0) + 15
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const attendanceData = [
+    { day: 'Mon', value: 92 },
+    { day: 'Tue', value: 95 },
+    { day: 'Wed', value: 88 },
+    { day: 'Thu', value: 94 },
+    { day: 'Fri', value: 90 }
   ];
+
+  const studentDistribution = [
+    { name: 'Boys', value: 55 },
+    { name: 'Girls', value: 45 }
+  ];
+
+  const financeData = [
+    { month: 'Jan', income: 45, expense: 32 },
+    { month: 'Feb', income: 48, expense: 35 },
+    { month: 'Mar', income: 52, expense: 38 },
+    { month: 'Apr', income: 49, expense: 36 },
+    { month: 'May', income: 55, expense: 40 }
+  ];
+
+  const COLORS = ['#3B82F6', '#EC4899'];
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Principal Dashboard</h1>
-            <p className="text-sm text-gray-600">Full CRUD access to school management</p>
+      {/* Dashboard Grid - 2fr 1fr */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Left Column - 2fr */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-purple-400 rounded-2xl p-5">
+              <div className="flex justify-between items-start mb-4">
+                <span className="px-2 py-0.5 bg-white text-green-600 text-xs font-semibold rounded-full">2024/25</span>
+                <button className="text-gray-700">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="text-3xl font-semibold mb-1">{stats.totalStudents.toLocaleString()}</div>
+              <div className="text-gray-700 text-sm font-medium">Students</div>
+            </div>
+
+            <div className="bg-yellow-300 rounded-2xl p-5">
+              <div className="flex justify-between items-start mb-4">
+                <span className="px-2 py-0.5 bg-white text-green-600 text-xs font-semibold rounded-full">2024/25</span>
+                <button className="text-gray-700">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="text-3xl font-semibold mb-1">{stats.totalTeachers.toLocaleString()}</div>
+              <div className="text-gray-700 text-sm font-medium">Teachers</div>
+            </div>
+
+            <div className="bg-purple-400 rounded-2xl p-5">
+              <div className="flex justify-between items-start mb-4">
+                <span className="px-2 py-0.5 bg-white text-green-600 text-xs font-semibold rounded-full">2024/25</span>
+                <button className="text-gray-700">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="text-3xl font-semibold mb-1">{stats.totalStaff.toLocaleString()}</div>
+              <div className="text-gray-700 text-sm font-medium">Staffs</div>
+            </div>
           </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2">
-            <p className="text-sm text-green-800 font-medium">Full Access</p>
+
+          {/* Charts Row - 1fr 2fr */}
+          <div className="grid grid-cols-3 gap-5">
+            {/* Student Distribution Chart */}
+            <div className="bg-white rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg font-semibold">Students</h3>
+                <button className="text-gray-400">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="h-[300px] bg-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400">
+                <ResponsiveContainer width="100%" height="80%">
+                  <PieChart>
+                    <Pie
+                      data={studentDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={70}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {studentDistribution.map((_entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="text-xs mt-2">
+                  <div>Boys: 55% | Girls: 45%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Attendance Chart */}
+            <div className="col-span-2 bg-white rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg font-semibold">Attendance</h3>
+                <button className="text-gray-400">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="h-[300px] bg-gray-100 rounded-xl flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={attendanceData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Finance Chart */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-semibold">Finance</h3>
+              <button className="text-gray-400">
+                <MoreVertical className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[300px] bg-gray-100 rounded-xl flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={financeData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="income" fill="#10B981" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="expense" fill="#EF4444" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`
-                      py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2
-                      ${activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }
-                    `}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+        {/* Right Column - 1fr */}
+        <div className="space-y-5">
+          {/* Calendar */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="h-[250px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+              📅 Calendar - November 2025
+            </div>
           </div>
 
-          <div className="p-6">
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div className="bg-blue-50 rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-blue-600">Total Students</p>
-                        <p className="text-3xl font-bold text-blue-900 mt-2">523</p>
-                      </div>
-                      <Users className="h-12 w-12 text-blue-600 opacity-20" />
-                    </div>
-                  </div>
+          {/* Events */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-semibold">Events</h3>
+              <button className="text-gray-400">
+                <MoreVertical className="h-5 w-5" />
+              </button>
+            </div>
 
-                  <div className="bg-green-50 rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-green-600">Staff Members</p>
-                        <p className="text-3xl font-bold text-green-900 mt-2">48</p>
-                      </div>
-                      <UserCheck className="h-12 w-12 text-green-600 opacity-20" />
-                    </div>
-                  </div>
-
-                  <div className="bg-purple-50 rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-purple-600">Active Classes</p>
-                        <p className="text-3xl font-bold text-purple-900 mt-2">24</p>
-                      </div>
-                      <Calendar className="h-12 w-12 text-purple-600 opacity-20" />
-                    </div>
-                  </div>
-
-                  <div className="bg-orange-50 rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-orange-600">This Month</p>
-                        <p className="text-3xl font-bold text-orange-900 mt-2">$45.2K</p>
-                      </div>
-                      <DollarSign className="h-12 w-12 text-orange-600 opacity-20" />
-                    </div>
-                  </div>
+            <div className="space-y-3">
+              <div className="p-4 border-2 border-gray-100 border-t-4 border-t-sky-400 rounded-lg">
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold text-gray-700 text-sm">lorem ipsum dolor</span>
+                  <span className="text-xs text-gray-300">12:00 PM - 02:00 PM</span>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
-                      <Settings className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <button className="w-full px-4 py-3 text-left text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                        Add New Student
-                      </button>
-                      <button className="w-full px-4 py-3 text-left text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                        Add Staff Member
-                      </button>
-                      <button className="w-full px-4 py-3 text-left text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-                        Create Class
-                      </button>
-                      <button className="w-full px-4 py-3 text-left text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
-                        Generate Report
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-bold text-gray-900">Recent Activities</h3>
-                      <Bell className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <div className="space-y-3">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex items-start space-x-3 py-2 border-b border-gray-100 last:border-0">
-                          <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-900">New student enrollment approved</p>
-                            <p className="text-xs text-gray-500">{i} hour ago</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet.</p>
               </div>
-            )}
 
-            {activeTab === 'students' && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">Student Management</h3>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Add Student
-                  </button>
+              <div className="p-4 border-2 border-gray-100 border-t-4 border-t-purple-400 rounded-lg">
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold text-gray-700 text-sm">lorem ipsum dolor</span>
+                  <span className="text-xs text-gray-300">12:00 PM - 02:00 PM</span>
                 </div>
-                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Student management module</p>
-                  <p className="text-sm text-gray-500 mt-2">View, add, edit, and manage students</p>
-                </div>
+                <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet.</p>
               </div>
-            )}
 
-            {activeTab === 'staff' && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">Staff Management</h3>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Add Staff
-                  </button>
+              <div className="p-4 border-2 border-gray-100 border-t-4 border-t-sky-400 rounded-lg">
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold text-gray-700 text-sm">lorem ipsum dolor</span>
+                  <span className="text-xs text-gray-300">12:00 PM - 02:00 PM</span>
                 </div>
-                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                  <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Staff management module</p>
-                  <p className="text-sm text-gray-500 mt-2">View, add, edit, and manage staff members</p>
-                </div>
+                <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet.</p>
               </div>
-            )}
+            </div>
+          </div>
 
-            {activeTab === 'classes' && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">Class Management</h3>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Create Class
-                  </button>
-                </div>
-                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                  <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Class management module</p>
-                  <p className="text-sm text-gray-500 mt-2">Create, edit classes and assign teachers</p>
-                </div>
-              </div>
-            )}
+          {/* Announcements */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-semibold">Announcements</h3>
+              <span className="text-xs text-gray-400">View All</span>
+            </div>
 
-            {activeTab === 'finance' && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">Finance Management</h3>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Add Fee Record
-                  </button>
+            <div className="space-y-3">
+              <div className="p-4 bg-sky-100 rounded-lg">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-sm">Lorem ipsum dolor sit</span>
+                  <span className="text-xs text-gray-400 bg-white px-2 py-0.5 rounded">2025-01-01</span>
                 </div>
-                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                  <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Finance management module</p>
-                  <p className="text-sm text-gray-500 mt-2">Track fees, payments, and financial reports</p>
-                </div>
+                <p className="text-xs text-gray-400">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
               </div>
-            )}
+
+              <div className="p-4 bg-purple-100 rounded-lg">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-sm">Lorem ipsum dolor sit</span>
+                  <span className="text-xs text-gray-400 bg-white px-2 py-0.5 rounded">2025-01-01</span>
+                </div>
+                <p className="text-xs text-gray-400">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+              </div>
+
+              <div className="p-4 bg-yellow-100 rounded-lg">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-sm">Lorem ipsum dolor sit</span>
+                  <span className="text-xs text-gray-400 bg-white px-2 py-0.5 rounded">2025-01-01</span>
+                </div>
+                <p className="text-xs text-gray-400">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
