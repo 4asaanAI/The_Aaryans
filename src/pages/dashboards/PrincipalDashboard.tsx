@@ -15,6 +15,7 @@ export function PrincipalDashboard() {
 
   useEffect(() => {
     fetchStats();
+    fetchAttendanceData();
   }, []);
 
   const fetchStats = async () => {
@@ -31,6 +32,20 @@ export function PrincipalDashboard() {
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
+    }
+  };
+
+  const fetchAttendanceData = async () => {
+    try {
+      const { error } = await supabase
+        .from('attendance')
+        .select('date, status')
+        .gte('date', new Date(new Date().getFullYear(), 0, 1).toISOString())
+        .order('date');
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error fetching attendance data:', error);
     }
   };
 
@@ -59,6 +74,15 @@ export function PrincipalDashboard() {
     { month: 'Apr', revenue: 69, profit: 33, costs: 36 },
     { month: 'May', revenue: 75, profit: 35, costs: 40 },
     { month: 'Jun', revenue: 78, profit: 36, costs: 42 }
+  ];
+
+  const attendanceData = [
+    { month: 'Jan', rate: 92 },
+    { month: 'Feb', rate: 88 },
+    { month: 'Mar', rate: 90 },
+    { month: 'Apr', rate: 85 },
+    { month: 'May', rate: 89 },
+    { month: 'Jun', rate: 91 }
   ];
 
   const filteredEvents = allEvents.filter(event => {
@@ -138,73 +162,97 @@ export function PrincipalDashboard() {
             </div>
           </div>
 
-          {/* Charts Row - 1fr 2fr */}
-          <div className="grid grid-cols-3 gap-5">
-            {/* Student Distribution Chart */}
-            <div className="bg-white rounded-2xl p-5">
-              <div className="flex justify-between items-center mb-5">
-                <h3 className="text-lg font-semibold">Students</h3>
-                <button className="text-gray-400">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
-                <ResponsiveContainer width="100%" height="80%">
-                  <PieChart>
-                    <Pie
-                      data={studentDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={70}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {studentDistribution.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="text-xs mt-2 text-gray-500">
-                  <div>Boys: 55% | Girls: 45%</div>
+          {/* Attendance Chart - Full Width */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-semibold">Attendance</h3>
+              <button className="text-gray-400">
+                <MoreVertical className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
+              <ResponsiveContainer width="100%" height="90%">
+                <LineChart data={attendanceData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="month" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" domain={[0, 100]} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="rate" stroke="#10B981" strokeWidth={3} dot={{ r: 5, fill: "#10B981" }} />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="flex justify-center gap-2 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-xs text-gray-600">Attendance Rate (%)</span>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Finance Chart */}
-            <div className="col-span-2 bg-white rounded-2xl p-5">
-              <div className="flex justify-between items-center mb-5">
-                <h3 className="text-lg font-semibold">Finance</h3>
-                <button className="text-gray-400">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
+          {/* Student Distribution Chart */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-semibold">Students</h3>
+              <button className="text-gray-400">
+                <MoreVertical className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
+              <ResponsiveContainer width="100%" height="80%">
+                <PieChart>
+                  <Pie
+                    data={studentDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {studentDistribution.map((_entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="text-xs mt-2 text-gray-500">
+                <div>Boys: 55% | Girls: 45%</div>
               </div>
-              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
-                <ResponsiveContainer width="100%" height="90%">
-                  <LineChart data={financeData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                    <XAxis dataKey="month" stroke="#9ca3af" />
-                    <YAxis stroke="#9ca3af" />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="costs" stroke="#EF4444" strokeWidth={2} dot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-                <div className="flex justify-center gap-6 mt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span className="text-xs text-gray-600">Revenue</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-xs text-gray-600">Profit</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs text-gray-600">Costs</span>
-                  </div>
+            </div>
+          </div>
+
+          {/* Finance Chart */}
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-lg font-semibold">Finance</h3>
+              <button className="text-gray-400">
+                <MoreVertical className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
+              <ResponsiveContainer width="100%" height="90%">
+                <LineChart data={financeData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="month" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="costs" stroke="#EF4444" strokeWidth={2} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="flex justify-center gap-6 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-xs text-gray-600">Revenue</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-xs text-gray-600">Profit</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-xs text-gray-600">Costs</span>
                 </div>
               </div>
             </div>
