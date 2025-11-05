@@ -162,66 +162,69 @@ export function PrincipalDashboard() {
             </div>
           </div>
 
-          {/* Attendance Chart - Full Width */}
-          <div className="bg-white rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold">Attendance</h3>
-              <button className="text-gray-400">
-                <MoreVertical className="h-5 w-5" />
-              </button>
+          {/* Row 1: Attendance and Students side by side */}
+          <div className="grid grid-cols-2 gap-5">
+            {/* Attendance Chart */}
+            <div className="bg-white rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg font-semibold">Attendance</h3>
+                <button className="text-gray-400">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
+                <ResponsiveContainer width="100%" height="90%">
+                  <LineChart data={attendanceData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="month" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" domain={[0, 100]} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="rate" stroke="#10B981" strokeWidth={3} dot={{ r: 5, fill: "#10B981" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-2 mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-xs text-gray-600">Attendance Rate (%)</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
-              <ResponsiveContainer width="100%" height="90%">
-                <LineChart data={attendanceData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                  <XAxis dataKey="month" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" domain={[0, 100]} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="rate" stroke="#10B981" strokeWidth={3} dot={{ r: 5, fill: "#10B981" }} />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="flex justify-center gap-2 mt-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-xs text-gray-600">Attendance Rate (%)</span>
+
+            {/* Student Distribution Chart */}
+            <div className="bg-white rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg font-semibold">Students</h3>
+                <button className="text-gray-400">
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
+                <ResponsiveContainer width="100%" height="80%">
+                  <PieChart>
+                    <Pie
+                      data={studentDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={70}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {studentDistribution.map((_entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="text-xs mt-2 text-gray-500">
+                  <div>Boys: 55% | Girls: 45%</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Student Distribution Chart */}
-          <div className="bg-white rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold">Students</h3>
-              <button className="text-gray-400">
-                <MoreVertical className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
-              <ResponsiveContainer width="100%" height="80%">
-                <PieChart>
-                  <Pie
-                    data={studentDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {studentDistribution.map((_entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="text-xs mt-2 text-gray-500">
-                <div>Boys: 55% | Girls: 45%</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Finance Chart */}
+          {/* Row 2: Finance Chart - Full Width */}
           <div className="bg-white rounded-2xl p-5">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-semibold">Finance</h3>
