@@ -3,7 +3,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Menu, X, Home, Users, BookOpen, FileText, Bell, Settings,
-  LogOut, GraduationCap, BarChart3, Calendar, Library
+  LogOut, Calendar, Library, MessageSquare, UserCircle, BarChart3,
+  ClipboardList, Award, CheckSquare
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -24,17 +25,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     if (!profile) return [];
 
     const commonItems = [
-      { name: 'Dashboard', href: '/dashboard', icon: Home }
+      { name: 'Home', href: '/dashboard', icon: Home }
     ];
 
     if (profile.role === 'admin') {
       return [
         ...commonItems,
         { name: 'Users', href: '/dashboard/users', icon: Users },
-        { name: 'Courses', href: '/dashboard/courses', icon: BookOpen },
-        { name: 'Enrollments', href: '/dashboard/enrollments', icon: FileText },
-        { name: 'Departments', href: '/dashboard/departments', icon: GraduationCap },
-        { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 }
+        { name: 'Classes', href: '/dashboard/classes', icon: BookOpen },
+        { name: 'Lessons', href: '/dashboard/lessons', icon: FileText },
+        { name: 'Exams', href: '/dashboard/exams', icon: ClipboardList },
+        { name: 'Assignments', href: '/dashboard/assignments', icon: Award },
+        { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
+        { name: 'Attendance', href: '/dashboard/attendance', icon: CheckSquare },
+        { name: 'Events', href: '/dashboard/events', icon: Calendar },
+        { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
+        { name: 'Announcements', href: '/dashboard/announcements', icon: Bell }
       ];
     }
 
@@ -78,6 +84,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <div className="flex items-center space-x-4">
           <button className="p-2 rounded-md hover:bg-blue-700 relative">
+            <MessageSquare className="h-5 w-5" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full"></span>
+          </button>
+
+          <button className="p-2 rounded-md hover:bg-blue-700 relative">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
@@ -118,7 +129,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </Link>
             ))}
 
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
+              <Link
+                to="/dashboard/profile"
+                className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <UserCircle className="h-5 w-5" />
+                <span className="font-medium">Profile</span>
+              </Link>
+
               <Link
                 to="/dashboard/settings"
                 className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"

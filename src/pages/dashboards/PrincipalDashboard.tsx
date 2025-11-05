@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export function PrincipalDashboard() {
   const [stats, setStats] = useState({
@@ -10,6 +10,8 @@ export function PrincipalDashboard() {
     totalTeachers: 0,
     totalStaff: 0
   });
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
     fetchStats();
@@ -32,12 +34,17 @@ export function PrincipalDashboard() {
     }
   };
 
-  const attendanceData = [
-    { day: 'Mon', value: 92 },
-    { day: 'Tue', value: 95 },
-    { day: 'Wed', value: 88 },
-    { day: 'Thu', value: 94 },
-    { day: 'Fri', value: 90 }
+  const allEvents = [
+    { date: '2025-11-05', title: 'Science Fair Preparation', time: '09:00 AM - 11:00 AM', description: 'Students showcase their innovative projects' },
+    { date: '2025-11-05', title: 'Parent-Teacher Meeting', time: '02:00 PM - 05:00 PM', description: 'Quarterly academic performance review' },
+    { date: '2025-11-10', title: 'Sports Day Practice', time: '03:30 PM - 05:00 PM', description: 'Athletic events preparation session' },
+    { date: '2025-11-15', title: 'Music Recital', time: '04:00 PM - 06:00 PM', description: 'Annual music performance by students' }
+  ];
+
+  const allAnnouncements = [
+    { date: '2025-11-05', title: 'Mid-Term Examination Schedule Released', text: 'All students must check their exam timetable on the portal.' },
+    { date: '2025-11-08', title: 'New Library Books Available', text: 'Over 500 new titles added to the school library collection.' },
+    { date: '2025-11-10', title: 'Winter Break Schedule Update', text: 'School will remain closed from December 20th to January 5th.' }
   ];
 
   const studentDistribution = [
@@ -46,54 +53,88 @@ export function PrincipalDashboard() {
   ];
 
   const financeData = [
-    { month: 'Jan', income: 45, expense: 32 },
-    { month: 'Feb', income: 48, expense: 35 },
-    { month: 'Mar', income: 52, expense: 38 },
-    { month: 'Apr', income: 49, expense: 36 },
-    { month: 'May', income: 55, expense: 40 }
+    { month: 'Jan', revenue: 65, profit: 33, costs: 32 },
+    { month: 'Feb', revenue: 68, profit: 33, costs: 35 },
+    { month: 'Mar', revenue: 72, profit: 34, costs: 38 },
+    { month: 'Apr', revenue: 69, profit: 33, costs: 36 },
+    { month: 'May', revenue: 75, profit: 35, costs: 40 },
+    { month: 'Jun', revenue: 78, profit: 36, costs: 42 }
   ];
+
+  const filteredEvents = allEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate.toDateString() === selectedDate.toDateString();
+  });
+
+  const filteredAnnouncements = allAnnouncements.filter(announcement => {
+    const announcementDate = new Date(announcement.date);
+    return announcementDate.toDateString() === selectedDate.toDateString();
+  });
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    return { daysInMonth, startingDayOfWeek, year, month };
+  };
+
+  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
+
+  const previousMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
+  const selectDate = (day: number) => setSelectedDate(new Date(year, month, day));
+  const isSelectedDate = (day: number) => new Date(year, month, day).toDateString() === selectedDate.toDateString();
+  const hasEvent = (day: number) => {
+    const date = new Date(year, month, day);
+    return allEvents.some(event => new Date(event.date).toDateString() === date.toDateString()) || allAnnouncements.some(ann => new Date(ann.date).toDateString() === date.toDateString());
+  };
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const COLORS = ['#3B82F6', '#EC4899'];
 
   return (
     <DashboardLayout>
-      {/* Dashboard Grid - 2fr 1fr */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left Column - 2fr */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-purple-400 rounded-2xl p-5">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-2 py-0.5 bg-white text-green-600 text-xs font-semibold rounded-full">2024/25</span>
-                <button className="text-gray-700">
+      <div className="space-y-5">
+        <div className="flex justify-between items-center">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Academic Year 2024/25</h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2 space-y-5">
+            <div className="grid grid-cols-3 gap-4">
+            <div className="bg-blue-400 rounded-2xl p-5">
+              <div className="flex justify-end items-start mb-4">
+                <button className="text-white opacity-70 hover:opacity-100">
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="text-3xl font-semibold mb-1">{stats.totalStudents.toLocaleString()}</div>
-              <div className="text-gray-700 text-sm font-medium">Students</div>
+              <div className="text-3xl font-semibold mb-1 text-white">{stats.totalStudents.toLocaleString()}</div>
+              <div className="text-blue-50 text-sm font-medium">Students</div>
             </div>
 
-            <div className="bg-yellow-300 rounded-2xl p-5">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-2 py-0.5 bg-white text-green-600 text-xs font-semibold rounded-full">2024/25</span>
-                <button className="text-gray-700">
+            <div className="bg-blue-300 rounded-2xl p-5">
+              <div className="flex justify-end items-start mb-4">
+                <button className="text-white opacity-70 hover:opacity-100">
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="text-3xl font-semibold mb-1">{stats.totalTeachers.toLocaleString()}</div>
-              <div className="text-gray-700 text-sm font-medium">Teachers</div>
+              <div className="text-3xl font-semibold mb-1 text-white">{stats.totalTeachers.toLocaleString()}</div>
+              <div className="text-blue-50 text-sm font-medium">Teachers</div>
             </div>
 
-            <div className="bg-purple-400 rounded-2xl p-5">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-2 py-0.5 bg-white text-green-600 text-xs font-semibold rounded-full">2024/25</span>
-                <button className="text-gray-700">
+            <div className="bg-blue-400 rounded-2xl p-5">
+              <div className="flex justify-end items-start mb-4">
+                <button className="text-white opacity-70 hover:opacity-100">
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="text-3xl font-semibold mb-1">{stats.totalStaff.toLocaleString()}</div>
-              <div className="text-gray-700 text-sm font-medium">Staffs</div>
+              <div className="text-3xl font-semibold mb-1 text-white">{stats.totalStaff.toLocaleString()}</div>
+              <div className="text-blue-50 text-sm font-medium">Staffs</div>
             </div>
           </div>
 
@@ -107,7 +148,7 @@ export function PrincipalDashboard() {
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="h-[300px] bg-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400">
+              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
                 <ResponsiveContainer width="100%" height="80%">
                   <PieChart>
                     <Pie
@@ -125,53 +166,47 @@ export function PrincipalDashboard() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="text-xs mt-2">
+                <div className="text-xs mt-2 text-gray-500">
                   <div>Boys: 55% | Girls: 45%</div>
                 </div>
               </div>
             </div>
 
-            {/* Attendance Chart */}
+            {/* Finance Chart */}
             <div className="col-span-2 bg-white rounded-2xl p-5">
               <div className="flex justify-between items-center mb-5">
-                <h3 className="text-lg font-semibold">Attendance</h3>
+                <h3 className="text-lg font-semibold">Finance</h3>
                 <button className="text-gray-400">
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="h-[300px] bg-gray-100 rounded-xl flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={attendanceData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="day" />
-                    <YAxis />
+              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
+                <ResponsiveContainer width="100%" height="90%">
+                  <LineChart data={financeData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="month" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#3B82F6" radius={[8, 8, 0, 0]} />
-                  </BarChart>
+                    <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="costs" stroke="#EF4444" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
                 </ResponsiveContainer>
+                <div className="flex justify-center gap-6 mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-xs text-gray-600">Revenue</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-xs text-gray-600">Profit</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-xs text-gray-600">Costs</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Finance Chart */}
-          <div className="bg-white rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold">Finance</h3>
-              <button className="text-gray-400">
-                <MoreVertical className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="h-[300px] bg-gray-100 rounded-xl flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={financeData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="income" fill="#10B981" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="expense" fill="#EF4444" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
             </div>
           </div>
         </div>
@@ -180,8 +215,43 @@ export function PrincipalDashboard() {
         <div className="space-y-5">
           {/* Calendar */}
           <div className="bg-white rounded-2xl p-5">
-            <div className="h-[250px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">
-              📅 Calendar - November 2025
+            <div className="flex justify-between items-center mb-4">
+              <button onClick={previousMonth} className="p-1 hover:bg-gray-100 rounded">
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <h3 className="font-semibold">{monthNames[month]} {year}</h3>
+              <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded">
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {dayNames.map(day => (
+                <div key={day} className="text-center text-xs font-semibold text-gray-500 py-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {Array.from({ length: startingDayOfWeek }).map((_, index) => (
+                <div key={'empty-' + index} className="aspect-square"></div>
+              ))}
+              {Array.from({ length: daysInMonth }).map((_, index) => {
+                const day = index + 1;
+                return (
+                  <button
+                    key={day}
+                    onClick={() => selectDate(day)}
+                    className={'aspect-square rounded-lg text-sm font-medium transition-colors relative ' +
+                      (isSelectedDate(day) ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 ') +
+                      (hasEvent(day) && !isSelectedDate(day) ? 'bg-blue-50 text-blue-600' : '')}
+                  >
+                    {day}
+                    {hasEvent(day) && (
+                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -195,29 +265,25 @@ export function PrincipalDashboard() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-4 border-2 border-gray-100 border-t-4 border-t-sky-400 rounded-lg">
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-gray-700 text-sm">lorem ipsum dolor</span>
-                  <span className="text-xs text-gray-300">12:00 PM - 02:00 PM</span>
+              {filteredEvents.length > 0 ? (
+                filteredEvents.map((event, index) => (
+                  <div
+                    key={index}
+                    className={'p-4 border-2 border-gray-100 border-t-4 rounded-lg ' +
+                      (index % 2 === 0 ? 'border-t-blue-400' : 'border-t-blue-300')}
+                  >
+                    <div className="flex justify-between mb-2">
+                      <span className="font-semibold text-gray-700 text-sm">{event.title}</span>
+                      <span className="text-xs text-gray-400">{event.time}</span>
+                    </div>
+                    <p className="text-sm text-gray-500">{event.description}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  No events for this date
                 </div>
-                <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet.</p>
-              </div>
-
-              <div className="p-4 border-2 border-gray-100 border-t-4 border-t-purple-400 rounded-lg">
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-gray-700 text-sm">lorem ipsum dolor</span>
-                  <span className="text-xs text-gray-300">12:00 PM - 02:00 PM</span>
-                </div>
-                <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet.</p>
-              </div>
-
-              <div className="p-4 border-2 border-gray-100 border-t-4 border-t-sky-400 rounded-lg">
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-gray-700 text-sm">lorem ipsum dolor</span>
-                  <span className="text-xs text-gray-300">12:00 PM - 02:00 PM</span>
-                </div>
-                <p className="text-sm text-gray-400">Lorem ipsum dolor sit amet.</p>
-              </div>
+              )}
             </div>
           </div>
 
@@ -229,32 +295,29 @@ export function PrincipalDashboard() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-4 bg-sky-100 rounded-lg">
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium text-sm">Lorem ipsum dolor sit</span>
-                  <span className="text-xs text-gray-400 bg-white px-2 py-0.5 rounded">2025-01-01</span>
+              {filteredAnnouncements.length > 0 ? (
+                filteredAnnouncements.map((announcement, index) => (
+                  <div
+                    key={index}
+                    className={'p-4 rounded-lg ' +
+                      (index === 0 ? 'bg-blue-50' : index === 1 ? 'bg-blue-100' : 'bg-blue-50')}
+                  >
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium text-sm">{announcement.title}</span>
+                      <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded">{announcement.date}</span>
+                    </div>
+                    <p className="text-xs text-gray-600">{announcement.text}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  No announcements for this date
                 </div>
-                <p className="text-xs text-gray-400">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
-              </div>
-
-              <div className="p-4 bg-purple-100 rounded-lg">
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium text-sm">Lorem ipsum dolor sit</span>
-                  <span className="text-xs text-gray-400 bg-white px-2 py-0.5 rounded">2025-01-01</span>
-                </div>
-                <p className="text-xs text-gray-400">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
-              </div>
-
-              <div className="p-4 bg-yellow-100 rounded-lg">
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium text-sm">Lorem ipsum dolor sit</span>
-                  <span className="text-xs text-gray-400 bg-white px-2 py-0.5 rounded">2025-01-01</span>
-                </div>
-                <p className="text-xs text-gray-400">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
-              </div>
+              )}
             </div>
           </div>
         </div>
+      </div>
       </div>
     </DashboardLayout>
   );
