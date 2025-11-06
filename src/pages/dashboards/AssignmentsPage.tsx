@@ -63,6 +63,11 @@ export function AssignmentsPage() {
     tooltip: isDark ? '#1f2937' : '#ffffff'
   };
 
+  // --- FIX 1: hoist isOverdue so all useMemos can use it safely ---
+  function isOverdue(dueDate: string) {
+    return new Date(dueDate) < new Date();
+  }
+
   useEffect(() => {
     fetchClasses();
     fetchAssignments();
@@ -115,7 +120,7 @@ export function AssignmentsPage() {
       const statsMap = new Map<string, SubmissionStats>();
 
       for (const assignment of assignments) {
-        // Count total students in the class
+        // NOTE: currently counts ALL active students, not per-class. Keep as-is unless you want per-class.
         const { count: totalStudents } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
@@ -156,11 +161,13 @@ export function AssignmentsPage() {
   const filteredAssignments = useMemo(() => {
     let filtered = filteredAssignmentsByClass;
 
+    // --- FIX 2: null-safe search to avoid .toLowerCase() on undefined ---
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(assignment =>
-        assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        assignment.subject?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        assignment.class?.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (assignment.title || '').toLowerCase().includes(q) ||
+        (assignment.subject?.name || '').toLowerCase().includes(q) ||
+        (assignment.class?.name || '').toLowerCase().includes(q)
       );
     }
 
@@ -213,6 +220,7 @@ export function AssignmentsPage() {
 
     return Array.from(classGrouped.entries()).map(([className, data]) => ({
       class: className,
+      // Placeholder avg score; replace with real scoring if available.
       avgScore: data.count > 0 ? Math.round(75 + Math.random() * 20) : 0,
       submissions: data.totalSubmissions,
       totalStudents: data.totalPossible
@@ -227,10 +235,10 @@ export function AssignmentsPage() {
     filteredAssignmentsByClass.forEach(assignment => {
       const stats = submissionStats.get(assignment.id);
       if (stats) {
-        const isLate = isOverdue(assignment.due_date);
+        const overdue = isOverdue(assignment.due_date);
         if (stats.submissionPercentage >= 90) {
           completed += stats.submittedCount;
-        } else if (isLate) {
+        } else if (overdue) {
           late += (stats.totalStudents - stats.submittedCount);
         } else {
           pending += (stats.totalStudents - stats.submittedCount);
@@ -240,6 +248,7 @@ export function AssignmentsPage() {
 
     const total = completed + pending + late;
     if (total === 0) {
+      // Provide stable fallback data so the PieChart always has something to render
       return [
         { name: 'Completed', value: 75, color: '#10B981' },
         { name: 'Pending', value: 15, color: '#F59E0B' },
@@ -321,15 +330,14 @@ export function AssignmentsPage() {
     return { totalAssignments, avgCompletion, onTimeSubmissions, avgScore };
   }, [filteredAssignmentsByClass, submissionStats]);
 
-  const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date();
-  };
-
   const handleColumnFilterChange = (column: keyof ColumnFilters, values: string[]) => {
     setColumnFilters(prev => ({ ...prev, [column]: values }));
   };
 
   const stats = getOverallStats;
+
+  // Helper to get unique values for ColumnFilter (prevents duplicates in the dropdowns)
+  const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
 
   return (
     <DashboardLayout>
@@ -537,7 +545,7 @@ export function AssignmentsPage() {
                         Class
                         <ColumnFilter
                           column="Class"
-                          values={filteredAssignmentsByClass.map(a => a.class?.name || '')}
+                          values={uniq(filteredAssignmentsByClass.map(a => a.class?.name || ''))}
                           selectedValues={columnFilters.class}
                           onFilterChange={(values) => handleColumnFilterChange('class', values)}
                           isDark={isDark}
@@ -549,7 +557,7 @@ export function AssignmentsPage() {
                         Subject
                         <ColumnFilter
                           column="Subject"
-                          values={filteredAssignmentsByClass.map(a => a.subject?.name || '')}
+                          values={uniq(filteredAssignmentsByClass.map(a => a.subject?.name || ''))}
                           selectedValues={columnFilters.subject}
                           onFilterChange={(values) => handleColumnFilterChange('subject', values)}
                           isDark={isDark}
@@ -561,7 +569,7 @@ export function AssignmentsPage() {
                         Teacher
                         <ColumnFilter
                           column="Teacher"
-                          values={filteredAssignmentsByClass.map(a => a.teacher?.full_name || '')}
+                          values={uniq(filteredAssignmentsByClass.map(a => a.teacher?.full_name || ''))}
                           selectedValues={columnFilters.teacher}
                           onFilterChange={(values) => handleColumnFilterChange('teacher', values)}
                           isDark={isDark}
@@ -580,7 +588,7 @@ export function AssignmentsPage() {
                         Status
                         <ColumnFilter
                           column="Status"
-                          values={filteredAssignmentsByClass.map(a => isOverdue(a.due_date) ? 'Overdue' : 'Active')}
+                          values={uniq(filteredAssignmentsByClass.map(a => (isOverdue(a.due_date) ? 'Overdue' : 'Active')))}
                           selectedValues={columnFilters.status}
                           onFilterChange={(values) => handleColumnFilterChange('status', values)}
                           isDark={isDark}
@@ -592,7 +600,7 @@ export function AssignmentsPage() {
                 <tbody>
                   {filteredAssignments.map((assignment) => {
                     const stats = submissionStats.get(assignment.id);
-                    const submissionPercentage = stats?.submissionPercentage || 0;
+                    const submissionPercentage = stats?.submissionPercentage ?? 0;
 
                     return (
                       <tr
