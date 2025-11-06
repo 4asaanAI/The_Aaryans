@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
-import { Download, FileText, Image as ImageIcon, TrendingUp, TrendingDown, Edit2, Save, X } from 'lucide-react';
+import { Download, FileText, Image as ImageIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../contexts/AuthContext';
 import {
   BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -15,7 +14,6 @@ interface ClassData {
   name: string;
   grade_level: number;
   section: string;
-  remarks?: string;
 }
 
 interface TeacherSubject {
@@ -39,14 +37,10 @@ interface PerformanceMetrics {
 
 export function ClassesPage() {
   const { theme } = useTheme();
-  const { profile } = useAuth();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [classTeachers, setClassTeachers] = useState<TeacherSubject[]>([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
-  const [editingRemarks, setEditingRemarks] = useState(false);
-  const [remarksText, setRemarksText] = useState('');
-  const [savingRemarks, setSavingRemarks] = useState(false);
 
   const isDark = theme === 'dark';
   const chartColors = {
@@ -84,11 +78,8 @@ export function ClassesPage() {
   useEffect(() => {
     if (selectedClass) {
       fetchClassTeachers();
-      const currentClass = classes.find(c => c.id === selectedClass);
-      setRemarksText(currentClass?.remarks || '');
-      setEditingRemarks(false);
     }
-  }, [selectedClass, classes]);
+  }, [selectedClass]);
 
   const fetchClasses = async () => {
     try {
@@ -168,35 +159,6 @@ export function ClassesPage() {
     alert('Image export functionality would be implemented here');
   };
 
-  const handleSaveRemarks = async () => {
-    if (!selectedClass) return;
-
-    setSavingRemarks(true);
-    try {
-      const { error } = await supabase
-        .from('classes')
-        .update({ remarks: remarksText.trim() || null })
-        .eq('id', selectedClass);
-
-      if (error) throw error;
-
-      setClasses(prev => prev.map(c =>
-        c.id === selectedClass ? { ...c, remarks: remarksText.trim() || undefined } : c
-      ));
-      setEditingRemarks(false);
-      alert('Remarks saved successfully!');
-    } catch (error) {
-      console.error('Error saving remarks:', error);
-      alert('Failed to save remarks. Please try again.');
-    } finally {
-      setSavingRemarks(false);
-    }
-  };
-
-  const canEditRemarks = () => {
-    return profile?.sub_role === 'head' || profile?.sub_role === 'principal';
-  };
-
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -260,64 +222,6 @@ export function ClassesPage() {
               </div>
             </div>
           </div>
-
-          {canEditRemarks() && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Class Remarks</h3>
-                {!editingRemarks ? (
-                  <button
-                    onClick={() => setEditingRemarks(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    Edit Remarks
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSaveRemarks}
-                      disabled={savingRemarks}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Save className="h-4 w-4" />
-                      {savingRemarks ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingRemarks(false);
-                        const currentClass = classes.find(c => c.id === selectedClass);
-                        setRemarksText(currentClass?.remarks || '');
-                      }}
-                      disabled={savingRemarks}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <X className="h-4 w-4" />
-                      Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {editingRemarks ? (
-                <textarea
-                  value={remarksText}
-                  onChange={(e) => setRemarksText(e.target.value)}
-                  placeholder="Enter remarks for this class..."
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
-                />
-              ) : (
-                <div className="min-h-[100px] px-4 py-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                  {remarksText ? (
-                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{remarksText}</p>
-                  ) : (
-                    <p className="text-gray-400 dark:text-gray-500 italic">No remarks added yet</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
 
           <div className="grid grid-cols-4 gap-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-blue-500">
