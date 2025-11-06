@@ -109,15 +109,15 @@ export function ClassesPage() {
         <div className="lg:col-span-2 space-y-5">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">Class Performance Analytics</h2>
-              <p className="text-sm text-gray-500 mt-1">Comprehensive performance metrics and insights</p>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Class Performance Analytics</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Comprehensive performance metrics and insights</p>
             </div>
 
             <div className="flex items-center gap-3">
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]"
+                className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 {classes.map(classItem => (
                   <option key={classItem.id} value={classItem.id}>
@@ -129,21 +129,21 @@ export function ClassesPage() {
               <div className="flex gap-2">
                 <button
                   onClick={exportToPDF}
-                  className="p-2.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                  className="p-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                   title="Export as PDF"
                 >
                   <FileText className="h-5 w-5" />
                 </button>
                 <button
                   onClick={exportToExcel}
-                  className="p-2.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                  className="p-2.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                   title="Export as Excel"
                 >
                   <Download className="h-5 w-5" />
                 </button>
                 <button
                   onClick={exportToImage}
-                  className="p-2.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                  className="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
                   title="Export as Image"
                 >
                   <ImageIcon className="h-5 w-5" />
@@ -152,51 +152,55 @@ export function ClassesPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 rounded-2xl p-6 text-white">
             <h3 className="text-xl font-bold mb-1">{getSelectedClassName()} Performance Overview</h3>
-            <p className="text-blue-100 text-sm">Academic Year 2024-25 - Term 2</p>
+            <div className="flex flex-wrap items-center gap-4 mt-2">
+              <p className="text-blue-100 dark:text-blue-200 text-sm">Class Monitor: John Doe</p>
+              <span className="text-blue-200 dark:text-blue-300">•</span>
+              <p className="text-blue-100 dark:text-blue-200 text-sm">Academic Year 2024-25 - Term 2</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl p-5 border-l-4 border-blue-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-blue-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Avg. Marks</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Avg. Marks</span>
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800">{metrics.avgMarks.toFixed(1)}%</div>
-              <div className="text-xs text-green-600 mt-1">+3.2% from last term</div>
+              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgMarks.toFixed(1)}%</div>
+              <div className="text-xs text-green-600 dark:text-green-400 mt-1">+3.2% from last term</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 border-l-4 border-green-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-green-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Attendance</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Attendance</span>
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800">{metrics.avgAttendance.toFixed(1)}%</div>
-              <div className="text-xs text-green-600 mt-1">+1.5% from last term</div>
+              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgAttendance.toFixed(1)}%</div>
+              <div className="text-xs text-green-600 dark:text-green-400 mt-1">+1.5% from last term</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 border-l-4 border-purple-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-orange-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Assignments</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Assignments</span>
                 <TrendingDown className="h-5 w-5 text-red-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800">{metrics.avgAssignment.toFixed(1)}%</div>
-              <div className="text-xs text-red-600 mt-1">-0.8% from last term</div>
+              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgAssignment.toFixed(1)}%</div>
+              <div className="text-xs text-red-600 dark:text-red-400 mt-1">-0.8% from last term</div>
             </div>
 
-            <div className="bg-white rounded-xl p-5 border-l-4 border-orange-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-yellow-500">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Participation</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Participation</span>
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800">{metrics.avgParticipation.toFixed(1)}%</div>
-              <div className="text-xs text-green-600 mt-1">+2.1% from last term</div>
+              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgParticipation.toFixed(1)}%</div>
+              <div className="text-xs text-green-600 dark:text-green-400 mt-1">+2.1% from last term</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5">
-            <h3 className="text-lg font-semibold mb-4">Subject-wise Performance Metrics</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Subject-wise Performance Metrics</h3>
             <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={performanceData}>
@@ -215,8 +219,8 @@ export function ClassesPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-5">
-            <div className="bg-white rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-4">Performance Radar Analysis</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Performance Radar Analysis</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
@@ -231,8 +235,8 @@ export function ClassesPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-4">Performance Trend - Last 3 Exams</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Performance Trend - Last 3 Exams</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData}>
@@ -249,9 +253,9 @@ export function ClassesPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Detailed Performance Table</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Detailed Performance Table</h3>
               <button className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
                 Download Table
               </button>
@@ -260,21 +264,21 @@ export function ClassesPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Subject</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Avg Marks</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Attendance %</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Assignment Rate</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Participation</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Top</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Mid</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Low</th>
+                  <tr className="border-b-2 border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Subject</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Avg Marks</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Attendance %</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Assignment Rate</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Participation</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Top</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Mid</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Low</th>
                   </tr>
                 </thead>
                 <tbody>
                   {performanceData.map((item, index) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-4 font-medium text-gray-800">{item.subject}</td>
+                    <tr key={index} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{item.subject}</td>
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2.5 py-1 rounded-full text-sm font-medium ${
                           item.avgMarks >= 80 ? 'bg-green-100 text-green-700' :
@@ -284,9 +288,9 @@ export function ClassesPage() {
                           {item.avgMarks}%
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center text-gray-600">{item.attendance}%</td>
-                      <td className="py-3 px-4 text-center text-gray-600">{item.assignmentRate}%</td>
-                      <td className="py-3 px-4 text-center text-gray-600">{item.participation}%</td>
+                      <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">{item.attendance}%</td>
+                      <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">{item.assignmentRate}%</td>
+                      <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">{item.participation}%</td>
                       <td className="py-3 px-4 text-center">
                         <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                           {item.topStudents}
