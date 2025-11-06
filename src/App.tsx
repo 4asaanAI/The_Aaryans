@@ -9,6 +9,8 @@ import { UsersPage } from './pages/dashboards/UsersPage';
 import { ClassesPage } from './pages/dashboards/ClassesPage';
 import { ProfilePage } from './pages/dashboards/ProfilePage';
 import { MessagesPage } from './pages/dashboards/MessagesPage';
+import { AnnouncementsPage } from './pages/dashboards/AnnouncementsPage';
+import { AssignmentsPage } from './pages/dashboards/AssignmentsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -58,6 +60,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MessagesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/announcements"
+              element={
+                <ProtectedRoute>
+                  <AnnouncementsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/assignments"
+              element={
+                <ProtectedRoute>
+                  <AssignmentsPage />
                 </ProtectedRoute>
               }
             />

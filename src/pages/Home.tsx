@@ -9,7 +9,6 @@ import { Admission } from '../components/Admission';
 import { Contact } from '../components/Contact';
 import { Footer } from '../components/Footer';
 import { Notification } from '../components/Notification';
-import { ChatWidget } from '../components/ChatWidget';
 
 export function Home() {
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -38,7 +37,6 @@ export function Home() {
       <Admission />
       <Contact onNotification={handleNotification} />
       <Footer />
-      <ChatWidget />
     </div>
   );
 }

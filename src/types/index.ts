@@ -306,17 +306,6 @@ export interface Announcement {
   department?: Department;
 }
 
-export interface AuditLog {
-  id: string;
-  user_id?: string;
-  action: string;
-  resource_type: string;
-  resource_id?: string;
-  changes: Record<string, any>;
-  ip_address?: string;
-  created_at: string;
-  user?: Profile;
-}
 
 export type AdminSubRole = 'head' | 'principal' | 'hod' | 'other';
 export type TeacherSubRole = 'coordinator' | 'teacher';
