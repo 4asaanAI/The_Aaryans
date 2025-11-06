@@ -4,6 +4,8 @@ import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { DashboardRouter } from './pages/dashboards/DashboardRouter';
+import { UsersPage } from './pages/dashboards/UsersPage';
+import { ClassesPage } from './pages/dashboards/ClassesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -16,10 +18,26 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/signup" element={<Register />} />
           <Route
-            path="/dashboard/*"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <DashboardRouter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/users"
+            element={
+              <ProtectedRoute>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/classes"
+            element={
+              <ProtectedRoute>
+                <ClassesPage />
               </ProtectedRoute>
             }
           />

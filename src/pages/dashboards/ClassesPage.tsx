@@ -1,0 +1,317 @@
+import { useState, useEffect } from 'react';
+import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
+import { RightSidebar } from '../../components/dashboard/RightSidebar';
+import { Download, FileText, Image as ImageIcon, TrendingUp, TrendingDown } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import {
+  BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+
+interface ClassData {
+  id: string;
+  name: string;
+  grade_level: number;
+  section: string;
+}
+
+interface PerformanceMetrics {
+  subject: string;
+  avgMarks: number;
+  attendance: number;
+  assignmentRate: number;
+  participation: number;
+  topStudents: number;
+  midStudents: number;
+  lowStudents: number;
+}
+
+export function ClassesPage() {
+  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string>('');
+
+  const performanceData: PerformanceMetrics[] = [
+    { subject: 'Mathematics', avgMarks: 78, attendance: 92, assignmentRate: 85, participation: 88, topStudents: 12, midStudents: 18, lowStudents: 5 },
+    { subject: 'Science', avgMarks: 82, attendance: 90, assignmentRate: 88, participation: 85, topStudents: 15, midStudents: 15, lowStudents: 5 },
+    { subject: 'English', avgMarks: 75, attendance: 88, assignmentRate: 90, participation: 92, topStudents: 10, midStudents: 20, lowStudents: 5 },
+    { subject: 'History', avgMarks: 80, attendance: 85, assignmentRate: 82, participation: 80, topStudents: 13, midStudents: 17, lowStudents: 5 },
+    { subject: 'Geography', avgMarks: 76, attendance: 87, assignmentRate: 84, participation: 83, topStudents: 11, midStudents: 19, lowStudents: 5 }
+  ];
+
+  const trendData = [
+    { exam: 'Term 1', avgScore: 72, attendance: 88 },
+    { exam: 'Mid-Term', avgScore: 76, attendance: 90 },
+    { exam: 'Term 2', avgScore: 78, attendance: 89 }
+  ];
+
+  const radarData = performanceData.map(item => ({
+    subject: item.subject,
+    Performance: item.avgMarks,
+    Attendance: item.attendance,
+    Assignments: item.assignmentRate,
+    Participation: item.participation
+  }));
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('status', 'active')
+        .order('grade_level', { ascending: true });
+
+      if (error) throw error;
+
+      setClasses(data || []);
+      if (data && data.length > 0) {
+        setSelectedClass(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
+
+  const getSelectedClassName = () => {
+    const classData = classes.find(c => c.id === selectedClass);
+    return classData ? `${classData.name}` : 'Select a Class';
+  };
+
+  const calculateOverallMetrics = () => {
+    const avgMarks = performanceData.reduce((sum, item) => sum + item.avgMarks, 0) / performanceData.length;
+    const avgAttendance = performanceData.reduce((sum, item) => sum + item.attendance, 0) / performanceData.length;
+    const avgAssignment = performanceData.reduce((sum, item) => sum + item.assignmentRate, 0) / performanceData.length;
+    const avgParticipation = performanceData.reduce((sum, item) => sum + item.participation, 0) / performanceData.length;
+
+    return { avgMarks, avgAttendance, avgAssignment, avgParticipation };
+  };
+
+  const metrics = calculateOverallMetrics();
+
+  const exportToPDF = () => {
+    alert('PDF export functionality would be implemented here');
+  };
+
+  const exportToExcel = () => {
+    alert('Excel export functionality would be implemented here');
+  };
+
+  const exportToImage = () => {
+    alert('Image export functionality would be implemented here');
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 space-y-5">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Class Performance Analytics</h2>
+              <p className="text-sm text-gray-500 mt-1">Comprehensive performance metrics and insights</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px]"
+              >
+                {classes.map(classItem => (
+                  <option key={classItem.id} value={classItem.id}>
+                    {classItem.name}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={exportToPDF}
+                  className="p-2.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                  title="Export as PDF"
+                >
+                  <FileText className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  className="p-2.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                  title="Export as Excel"
+                >
+                  <Download className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={exportToImage}
+                  className="p-2.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                  title="Export as Image"
+                >
+                  <ImageIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
+            <h3 className="text-xl font-bold mb-1">{getSelectedClassName()} Performance Overview</h3>
+            <p className="text-blue-100 text-sm">Academic Year 2024-25 - Term 2</p>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl p-5 border-l-4 border-blue-500">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Avg. Marks</span>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-800">{metrics.avgMarks.toFixed(1)}%</div>
+              <div className="text-xs text-green-600 mt-1">+3.2% from last term</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border-l-4 border-green-500">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Attendance</span>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-800">{metrics.avgAttendance.toFixed(1)}%</div>
+              <div className="text-xs text-green-600 mt-1">+1.5% from last term</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border-l-4 border-purple-500">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Assignments</span>
+                <TrendingDown className="h-5 w-5 text-red-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-800">{metrics.avgAssignment.toFixed(1)}%</div>
+              <div className="text-xs text-red-600 mt-1">-0.8% from last term</div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border-l-4 border-orange-500">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Participation</span>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-800">{metrics.avgParticipation.toFixed(1)}%</div>
+              <div className="text-xs text-green-600 mt-1">+2.1% from last term</div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5">
+            <h3 className="text-lg font-semibold mb-4">Subject-wise Performance Metrics</h3>
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={performanceData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="subject" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="avgMarks" fill="#3B82F6" name="Avg Marks" />
+                  <Bar dataKey="attendance" fill="#10B981" name="Attendance %" />
+                  <Bar dataKey="assignmentRate" fill="#8B5CF6" name="Assignment Rate" />
+                  <Bar dataKey="participation" fill="#F59E0B" name="Participation" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-5">
+            <div className="bg-white rounded-2xl p-5">
+              <h3 className="text-lg font-semibold mb-4">Performance Radar Analysis</h3>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radarData}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="subject" />
+                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                    <Radar name="Performance" dataKey="Performance" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
+                    <Radar name="Attendance" dataKey="Attendance" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
+                    <Legend />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5">
+              <h3 className="text-lg font-semibold mb-4">Performance Trend - Last 3 Exams</h3>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="exam" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="avgScore" stroke="#3B82F6" strokeWidth={3} name="Avg Score" />
+                    <Line type="monotone" dataKey="attendance" stroke="#10B981" strokeWidth={3} name="Attendance" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Detailed Performance Table</h3>
+              <button className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                Download Table
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Subject</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Avg Marks</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Attendance %</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Assignment Rate</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Participation</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Top</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Mid</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Low</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {performanceData.map((item, index) => (
+                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-gray-800">{item.subject}</td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-sm font-medium ${
+                          item.avgMarks >= 80 ? 'bg-green-100 text-green-700' :
+                          item.avgMarks >= 70 ? 'bg-blue-100 text-blue-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {item.avgMarks}%
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center text-gray-600">{item.attendance}%</td>
+                      <td className="py-3 px-4 text-center text-gray-600">{item.assignmentRate}%</td>
+                      <td className="py-3 px-4 text-center text-gray-600">{item.participation}%</td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                          {item.topStudents}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                          {item.midStudents}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                          {item.lowStudents}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <RightSidebar />
+      </div>
+    </DashboardLayout>
+  );
+}
