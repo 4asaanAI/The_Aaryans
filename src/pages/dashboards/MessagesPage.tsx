@@ -60,44 +60,50 @@ export function MessagesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const subscribeToMessages = (contactId: string) => {
-    if (messageSubscription.current) {
-      messageSubscription.current.unsubscribe();
-    }
+const subscribeToMessages = (contactId: string) => {
+  if (messageSubscription.current) {
+    messageSubscription.current.unsubscribe();
+  }
 
-    const channel = supabase
-      .channel('messages-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `or(and(sender_id.eq.${profile?.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profile?.id}))`
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const newMsg = payload.new as Message;
-            setMessages((prev) => [...prev, newMsg]);
+  const channel = supabase
+    .channel(`messages-${profile?.id}-${contactId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'messages' },
+      (payload) => {
+        const newMsg = (payload.new || payload.old) as Message;
 
-            if (newMsg.receiver_id === profile?.id) {
-              markMessagesAsRead(contactId);
-            }
-          } else if (payload.eventType === 'UPDATE') {
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === payload.new.id ? (payload.new as Message) : msg
-              )
-            );
+        // Only react to messages in THIS conversation
+        const isForThisThread =
+          (newMsg.sender_id === profile?.id && newMsg.receiver_id === contactId) ||
+          (newMsg.sender_id === contactId && newMsg.receiver_id === profile?.id);
+
+        if (!isForThisThread) return;
+
+        if (payload.eventType === 'INSERT') {
+          setMessages((prev) => [...prev, payload.new as Message]);
+
+          // If it's incoming to me, mark as read
+          if ((payload.new as Message).receiver_id === profile?.id) {
+            markMessagesAsRead(contactId);
           }
-
-          fetchContacts();
+        } else if (payload.eventType === 'UPDATE') {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
+          );
+        } else if (payload.eventType === 'DELETE') {
+          setMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
         }
-      )
-      .subscribe();
 
-    messageSubscription.current = channel;
-  };
+        // Update sidebar previews/unread badges
+        fetchContacts();
+      }
+    )
+    .subscribe();
+
+  messageSubscription.current = channel;
+};
+
 
   const fetchContacts = async () => {
     if (!profile) return;
