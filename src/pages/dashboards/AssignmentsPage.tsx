@@ -115,10 +115,12 @@ export function AssignmentsPage() {
       const statsMap = new Map<string, SubmissionStats>();
 
       for (const assignment of assignments) {
+        // Count total students in the class
         const { count: totalStudents } = await supabase
-          .from('enrollments')
+          .from('profiles')
           .select('*', { count: 'exact', head: true })
-          .eq('class_id', assignment.class_id);
+          .eq('role', 'student')
+          .eq('status', 'active');
 
         const { count: submittedCount } = await supabase
           .from('assignment_submissions')

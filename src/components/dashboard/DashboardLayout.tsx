@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
   LogOut, Calendar, Library, UserCircle, BarChart3,
@@ -12,21 +13,109 @@ interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  created_at: string;
+}
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [, setPendingApprovalsCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const navigate = useNavigate();
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  const notifications: any[] = [];
-
   useEffect(() => {
-    if (profile) {
-      // Setup any subscriptions if needed
+    if (profile?.role === 'admin') {
+      fetchPendingApprovals();
+      subscribeToApprovals();
     }
   }, [profile]);
+
+  const fetchPendingApprovals = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('approval_status', 'pending');
+
+      if (error) throw error;
+      setPendingApprovalsCount(count || 0);
+
+      // Generate notifications for pending approvals
+      if (count && count > 0) {
+        const { data: pendingData } = await supabase
+          .from('profiles')
+          .select('full_name, created_at, role')
+          .eq('approval_status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (pendingData) {
+          const notifs: Notification[] = pendingData.map((profile) => ({
+            id: profile.created_at,
+            title: 'New User Registration',
+            message: `${profile.full_name} has requested ${profile.role} account approval`,
+            created_at: profile.created_at
+          }));
+          setNotifications(notifs);
+        }
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error('Error fetching pending approvals:', error);
+    }
+  };
+
+  const subscribeToApprovals = () => {
+    const channel = supabase
+      .channel('approval-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'profiles',
+          filter: 'approval_status=eq.pending'
+        },
+        () => {
+          fetchPendingApprovals();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchPendingApprovals();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchPendingApprovals();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -141,22 +230,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                   ) : (
                     <>
-                      {notifications.slice(0, 5).map((notif: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 cursor-pointer"
+                      {notifications.slice(0, 5).map((notif) => (
+                        <Link
+                          key={notif.id}
+                          to="/dashboard/approvals"
+                          onClick={() => setNotificationsOpen(false)}
+                          className="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700"
                         >
                           <p className="text-sm font-medium text-gray-900 dark:text-white">{notif.title}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{notif.message}</p>
-                        </div>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            {new Date(notif.created_at).toLocaleString()}
+                          </p>
+                        </Link>
                       ))}
                       {notifications.length > 5 && (
                         <Link
-                          to="/dashboard/announcements"
+                          to="/dashboard/approvals"
                           onClick={() => setNotificationsOpen(false)}
                           className="block px-4 py-3 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
-                          See all notifications
+                          See all pending approvals
                         </Link>
                       )}
                     </>
