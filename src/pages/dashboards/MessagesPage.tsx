@@ -2,15 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Search, Send, MoreVertical, Phone, Video } from 'lucide-react';
+import { Search, Send, MoreVertical, Phone, Video, Check, CheckCheck } from 'lucide-react';
 
 interface Contact {
   id: string;
   name: string;
   email: string;
+  role: string;
   lastMessage?: string;
-  lastMessageTime?: string;
-  unread?: number;
+  lastMessageTime?: Date;
+  unreadCount: number;
+  hasMessages: boolean;
 }
 
 interface Message {
@@ -19,9 +21,8 @@ interface Message {
   receiver_id: string;
   content: string;
   created_at: string;
-  sender?: {
-    full_name: string;
-  };
+  is_read: boolean;
+  read_at?: string;
 }
 
 export function MessagesPage() {
@@ -33,53 +34,144 @@ export function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageSubscription = useRef<any>(null);
 
   useEffect(() => {
-    fetchContacts();
-  }, []);
+    if (profile) {
+      fetchContacts();
+    }
+  }, [profile]);
 
   useEffect(() => {
     if (selectedContact) {
       fetchMessages(selectedContact.id);
+      markMessagesAsRead(selectedContact.id);
+      subscribeToMessages(selectedContact.id);
     }
+
+    return () => {
+      if (messageSubscription.current) {
+        messageSubscription.current.unsubscribe();
+      }
+    };
   }, [selectedContact]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const subscribeToMessages = (contactId: string) => {
+    if (messageSubscription.current) {
+      messageSubscription.current.unsubscribe();
+    }
+
+    const channel = supabase
+      .channel('messages-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `or(and(sender_id.eq.${profile?.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profile?.id}))`
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newMsg = payload.new as Message;
+            setMessages((prev) => [...prev, newMsg]);
+
+            if (newMsg.receiver_id === profile?.id) {
+              markMessagesAsRead(contactId);
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === payload.new.id ? (payload.new as Message) : msg
+              )
+            );
+          }
+
+          fetchContacts();
+        }
+      )
+      .subscribe();
+
+    messageSubscription.current = channel;
+  };
+
   const fetchContacts = async () => {
+    if (!profile) return;
+
     try {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, full_name, email, role')
-        .neq('id', profile?.id)
-        .limit(20);
+        .neq('id', profile.id)
+        .order('full_name');
 
       if (error) throw error;
 
-      const contactsList: Contact[] = (data || []).map(user => ({
-        id: user.id,
-        name: user.full_name,
-        email: user.email,
-        lastMessage: 'Start a conversation',
-        lastMessageTime: '',
-        unread: 0
-      }));
+      const { data: allMessages, error: msgError } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
+        .order('created_at', { ascending: false });
 
-      setContacts(contactsList);
+      if (msgError) throw msgError;
+
+      const contactsList: Contact[] = (profiles || []).map((user) => {
+        const userMessages = (allMessages || []).filter(
+          (msg) =>
+            (msg.sender_id === profile.id && msg.receiver_id === user.id) ||
+            (msg.sender_id === user.id && msg.receiver_id === profile.id)
+        );
+
+        const lastMsg = userMessages[0];
+        const unreadCount = userMessages.filter(
+          (msg) => msg.receiver_id === profile.id && !msg.is_read
+        ).length;
+
+        return {
+          id: user.id,
+          name: user.full_name,
+          email: user.email,
+          role: user.role,
+          lastMessage: lastMsg?.content,
+          lastMessageTime: lastMsg ? new Date(lastMsg.created_at) : undefined,
+          unreadCount,
+          hasMessages: userMessages.length > 0
+        };
+      });
+
+      const withMessages = contactsList
+        .filter((c) => c.hasMessages)
+        .sort((a, b) => {
+          const timeA = a.lastMessageTime?.getTime() || 0;
+          const timeB = b.lastMessageTime?.getTime() || 0;
+          return timeB - timeA;
+        });
+
+      const withoutMessages = contactsList
+        .filter((c) => !c.hasMessages)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      setContacts([...withMessages, ...withoutMessages]);
     } catch (error) {
       console.error('Error fetching contacts:', error);
     }
   };
 
   const fetchMessages = async (contactId: string) => {
+    if (!profile) return;
+
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*, sender:profiles!messages_sender_id_fkey(full_name)')
-        .or(`and(sender_id.eq.${profile?.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profile?.id})`)
+        .select('*')
+        .or(
+          `and(sender_id.eq.${profile.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profile.id})`
+        )
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -93,22 +185,39 @@ export function MessagesPage() {
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedContact || !profile) return;
+  const markMessagesAsRead = async (contactId: string) => {
+    if (!profile) return;
 
     try {
       const { error } = await supabase
         .from('messages')
-        .insert({
-          sender_id: profile.id,
-          receiver_id: selectedContact.id,
-          content: newMessage.trim()
-        });
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq('receiver_id', profile.id)
+        .eq('sender_id', contactId)
+        .eq('is_read', false);
+
+      if (error) throw error;
+
+      fetchContacts();
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedContact || !profile) return;
+
+    try {
+      const { error } = await supabase.from('messages').insert({
+        sender_id: profile.id,
+        receiver_id: selectedContact.id,
+        content: newMessage.trim(),
+        is_read: false
+      });
 
       if (error) throw error;
 
       setNewMessage('');
-      fetchMessages(selectedContact.id);
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -121,10 +230,28 @@ export function MessagesPage() {
     }
   };
 
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredContacts = contacts.filter(
+    (contact) =>
+      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatTime = (date?: Date) => {
+    if (!date) return '';
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+
+    if (hours < 24) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (hours < 48) {
+      return 'Yesterday';
+    } else if (hours < 168) {
+      return date.toLocaleDateString([], { weekday: 'short' });
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -159,31 +286,49 @@ export function MessagesPage() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-semibold">
-                        {contact.name.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold">
+                          {contact.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      {contact.unreadCount > 0 && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-xs text-white font-semibold">
+                            {contact.unreadCount > 9 ? '9+' : contact.unreadCount}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                        <h3
+                          className={`font-semibold truncate ${
+                            contact.unreadCount > 0
+                              ? 'text-gray-900 dark:text-white'
+                              : 'text-gray-700 dark:text-gray-300'
+                          }`}
+                        >
                           {contact.name}
                         </h3>
                         {contact.lastMessageTime && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {contact.lastMessageTime}
+                          <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">
+                            {formatTime(contact.lastMessageTime)}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                        {contact.lastMessage}
-                      </p>
-                    </div>
-                    {contact.unread && contact.unread > 0 && (
-                      <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs text-white font-semibold">{contact.unread}</span>
+                      <div className="flex items-center gap-2">
+                        <p
+                          className={`text-sm truncate ${
+                            contact.unreadCount > 0
+                              ? 'text-gray-900 dark:text-white font-medium'
+                              : 'text-gray-600 dark:text-gray-400'
+                          }`}
+                        >
+                          {contact.lastMessage || 'Start a conversation'}
+                        </p>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))
@@ -220,8 +365,8 @@ export function MessagesPage() {
                       <h3 className="font-semibold text-gray-900 dark:text-white">
                         {selectedContact.name}
                       </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {selectedContact.email}
+                      <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                        {selectedContact.role}
                       </p>
                     </div>
                   </div>
@@ -264,17 +409,28 @@ export function MessagesPage() {
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
                             }`}
                           >
-                            <p className="text-sm">{message.content}</p>
-                            <p
-                              className={`text-xs mt-1 ${
-                                isSent ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
-                              }`}
-                            >
-                              {new Date(message.created_at).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
+                            <p className="text-sm break-words">{message.content}</p>
+                            <div className="flex items-center justify-end gap-1 mt-1">
+                              <p
+                                className={`text-xs ${
+                                  isSent ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
+                                }`}
+                              >
+                                {new Date(message.created_at).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                              {isSent && (
+                                <span className="text-blue-100">
+                                  {message.is_read ? (
+                                    <CheckCheck className="h-4 w-4" />
+                                  ) : (
+                                    <Check className="h-4 w-4" />
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
