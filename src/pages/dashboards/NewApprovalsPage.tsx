@@ -120,24 +120,22 @@ export function NewApprovalsPage() {
   };
 
   const handleReject = async (profileId: string) => {
-    if (!confirm('Are you sure you want to reject this user? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to reject this user? This will permanently delete their data and they will need to sign up again.')) {
       return;
     }
 
     setApproving(profileId);
     try {
+      // Delete the user's profile from the database
       const { error } = await supabase
         .from('profiles')
-        .update({
-          approval_status: 'rejected',
-          status: 'inactive'
-        })
+        .delete()
         .eq('id', profileId);
 
       if (error) throw error;
 
       setPendingProfiles(prev => prev.filter(p => p.id !== profileId));
-      alert('User rejected successfully.');
+      alert('User rejected and data deleted successfully.');
     } catch (error) {
       console.error('Error rejecting user:', error);
       alert('Failed to reject user. Please try again.');

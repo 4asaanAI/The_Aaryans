@@ -5,7 +5,7 @@ import { ColumnFilter } from '../../components/ColumnFilter';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users as UsersIcon, GraduationCap, Briefcase, Eye, Edit, Trash2, Plus, ChevronDown, ChevronUp, UserCheck } from 'lucide-react';
+import { Search, Users as UsersIcon, GraduationCap, Briefcase, Eye, Edit, Trash2, Plus, ChevronDown, ChevronUp, UserCheck, X, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface Profile {
@@ -38,6 +38,9 @@ export function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPendingDropdown, setShowPendingDropdown] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
     role: [],
     status: [],
@@ -90,7 +93,7 @@ export function UsersPage() {
         .from('profiles')
         .select('*')
         .eq('approval_status', 'pending')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false});
 
       if (error) throw error;
       setPendingApprovals(data || []);
@@ -145,6 +148,102 @@ export function UsersPage() {
     } catch (error) {
       console.error('Error approving user:', error);
       alert('Failed to approve user. Please try again.');
+    }
+  };
+
+  const canEditUser = (targetProfile: Profile): boolean => {
+    if (!currentProfile) return false;
+
+    if (currentProfile.sub_role !== 'head' && currentProfile.sub_role !== 'principal') {
+      return false;
+    }
+
+    if (targetProfile.id === currentProfile.id) {
+      return false;
+    }
+
+    if (targetProfile.sub_role === 'head') {
+      return false;
+    }
+
+    if (currentProfile.sub_role === 'head' && targetProfile.sub_role === 'principal') {
+      return false;
+    }
+
+    return true;
+  };
+
+  const canDeleteUser = (targetProfile: Profile): boolean => {
+    return canEditUser(targetProfile);
+  };
+
+  const handleEditClick = (profile: Profile) => {
+    setEditingProfile(profile);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProfile) return;
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          role: editingProfile.role,
+          sub_role: editingProfile.sub_role
+        })
+        .eq('id', editingProfile.id);
+
+      if (error) throw error;
+
+      alert('User updated successfully!');
+      setShowEditModal(false);
+      setEditingProfile(null);
+      fetchProfiles();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Failed to update user. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async (profile: Profile) => {
+    if (!canDeleteUser(profile)) {
+      alert('You do not have permission to delete this user.');
+      return;
+    }
+
+    const confirmMessage = `Are you sure you want to delete ${profile.full_name}?\n\nThis will permanently delete:\n- User profile\n- All messages sent/received\n- Student records (attendance, assignments, exam results, fees, etc.)\n- Leave applications\n- Library transactions\n- Transport records\n\nThis action CANNOT be undone!`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    const doubleConfirm = confirm(`Final confirmation: Type DELETE to confirm deletion of ${profile.full_name}'s account.`);
+    if (!doubleConfirm) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      alert('User deleted successfully.');
+      fetchProfiles();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      if (error.message.includes('foreign key')) {
+        alert('Cannot delete user: This user is referenced in other records (e.g., as HOD, class teacher, or assignment teacher). Please reassign those roles first.');
+      } else {
+        alert('Failed to delete user. Please try again.');
+      }
     }
   };
 
@@ -205,6 +304,13 @@ export function UsersPage() {
       default:
         return 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
     }
+  };
+
+  const availableRoles = ['admin', 'professor', 'student'];
+  const availableSubRoles: Record<string, string[]> = {
+    admin: ['head', 'principal', 'hod', 'other'],
+    professor: ['coordinator', 'teacher'],
+    student: ['student']
   };
 
   return (
@@ -436,12 +542,22 @@ export function UsersPage() {
                             <button className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors">
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                            {canEditUser(profile) && (
+                              <button
+                                onClick={() => handleEditClick(profile)}
+                                className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                            )}
+                            {canDeleteUser(profile) && (
+                              <button
+                                onClick={() => handleDeleteUser(profile)}
+                                className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -461,6 +577,82 @@ export function UsersPage() {
 
         <RightSidebar />
       </div>
+
+      {showEditModal && editingProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit User Role</h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProfile} className="p-6 space-y-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-900 dark:text-blue-300">
+                    <p className="font-semibold mb-1">Editing: {editingProfile.full_name}</p>
+                    <p className="text-blue-800 dark:text-blue-400">{editingProfile.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Role
+                </label>
+                <select
+                  value={editingProfile.role}
+                  onChange={(e) => setEditingProfile({ ...editingProfile, role: e.target.value, sub_role: '' })}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  {availableRoles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Sub Role
+                </label>
+                <select
+                  value={editingProfile.sub_role || ''}
+                  onChange={(e) => setEditingProfile({ ...editingProfile, sub_role: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Select sub role</option>
+                  {availableSubRoles[editingProfile.role]?.map(subRole => (
+                    <option key={subRole} value={subRole}>{subRole}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                >
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

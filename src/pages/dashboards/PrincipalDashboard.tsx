@@ -56,11 +56,6 @@ export function PrincipalDashboard() {
     { date: '2025-11-15', title: 'Music Recital', time: '04:00 PM - 06:00 PM', description: 'Annual music performance by students' }
   ];
 
-  const allAnnouncements = [
-    { date: '2025-11-05', title: 'Mid-Term Examination Schedule Released', text: 'All students must check their exam timetable on the portal.' },
-    { date: '2025-11-08', title: 'New Library Books Available', text: 'Over 500 new titles added to the school library collection.' },
-    { date: '2025-11-10', title: 'Winter Break Schedule Update', text: 'School will remain closed from December 20th to January 5th.' }
-  ];
 
   const studentDistribution = [
     { name: 'Boys', value: 55 },
@@ -90,11 +85,6 @@ export function PrincipalDashboard() {
     return eventDate.toDateString() === selectedDate.toDateString();
   });
 
-  const filteredAnnouncements = allAnnouncements.filter(announcement => {
-    const announcementDate = new Date(announcement.date);
-    return announcementDate.toDateString() === selectedDate.toDateString();
-  });
-
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -113,7 +103,7 @@ export function PrincipalDashboard() {
   const isSelectedDate = (day: number) => new Date(year, month, day).toDateString() === selectedDate.toDateString();
   const hasEvent = (day: number) => {
     const date = new Date(year, month, day);
-    return allEvents.some(event => new Date(event.date).toDateString() === date.toDateString()) || allAnnouncements.some(ann => new Date(ann.date).toDateString() === date.toDateString());
+    return allEvents.some(event => new Date(event.date).toDateString() === date.toDateString());
   };
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -338,35 +328,6 @@ export function PrincipalDashboard() {
             </div>
           </div>
 
-          {/* Announcements */}
-          <div className="bg-white rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold">Announcements</h3>
-              <span className="text-xs text-gray-400">View All</span>
-            </div>
-
-            <div className="space-y-3">
-              {filteredAnnouncements.length > 0 ? (
-                filteredAnnouncements.map((announcement, index) => (
-                  <div
-                    key={index}
-                    className={'p-4 rounded-lg ' +
-                      (index === 0 ? 'bg-blue-50' : index === 1 ? 'bg-blue-100' : 'bg-blue-50')}
-                  >
-                    <div className="flex justify-between mb-1">
-                      <span className="font-medium text-sm">{announcement.title}</span>
-                      <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded">{announcement.date}</span>
-                    </div>
-                    <p className="text-xs text-gray-600">{announcement.text}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-400 text-sm">
-                  No announcements for this date
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
       </div>
