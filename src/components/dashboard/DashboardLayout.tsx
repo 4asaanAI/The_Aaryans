@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
   LogOut, Calendar, Library, UserCircle, BarChart3,
-  ClipboardList, Award, CheckSquare, UserCheck
+  ClipboardList, Award, UserCheck
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -65,7 +65,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Exams', href: '/dashboard/exams', icon: ClipboardList },
         { name: 'Assignments', href: '/dashboard/assignments', icon: Award },
         { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
-        { name: 'Attendance', href: '/dashboard/attendance', icon: CheckSquare },
         { name: 'Events', href: '/dashboard/events', icon: Calendar },
         { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
         { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
