@@ -261,7 +261,7 @@ const subscribeToMessages = (contactId: string) => {
   };
 
   return (
-    <DashboardLayout>
+ 
       <HashRouter>
       <div className="flex h-[calc(100vh-8rem)] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="w-full md:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -472,6 +472,6 @@ const subscribeToMessages = (contactId: string) => {
         </div>
       </div>
         </HashRouter>
-    </DashboardLayout>
+   
   );
 }
