@@ -81,6 +81,14 @@ function App() {
               }
             />
             <Route
+              path="/dashboard/events"
+              element={
+                <ProtectedRoute>
+                  <AssignmentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/approvals"
               element={
                 <ProtectedRoute>
