@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
   LogOut, Calendar, Library, MessageSquare, UserCircle, BarChart3,
@@ -18,12 +19,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const messagesRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  const messages: any[] = [];
   const notifications: any[] = [];
+
+  useEffect(() => {
+    if (profile) {
+      fetchUnreadCount();
+      subscribeToMessages();
+    }
+  }, [profile]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -43,6 +51,46 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [messagesOpen, notificationsOpen]);
+
+  const fetchUnreadCount = async () => {
+    if (!profile) return;
+
+    try {
+      const { count, error } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', profile.id)
+        .eq('is_read', false);
+
+      if (error) throw error;
+
+      setUnreadCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
+
+  const subscribeToMessages = () => {
+    const channel = supabase
+      .channel('unread-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${profile?.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -120,50 +168,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div className="relative" ref={messagesRef}>
             <button
-              onClick={() => setMessagesOpen(!messagesOpen)}
+              onClick={() => navigate('/dashboard/messages')}
               className="p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700 relative"
             >
               <MessageSquare className="h-5 w-5" />
-              {messages.length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </button>
-
-            {messagesOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
-                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Messages</h3>
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {messages.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                      You don't have any messages
-                    </div>
-                  ) : (
-                    <>
-                      {messages.slice(0, 5).map((msg: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 cursor-pointer"
-                        >
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{msg.title}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{msg.preview}</p>
-                        </div>
-                      ))}
-                      {messages.length > 5 && (
-                        <Link
-                          to="/dashboard/messages"
-                          onClick={() => setMessagesOpen(false)}
-                          className="block px-4 py-3 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >
-                          See all messages
-                        </Link>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="relative" ref={notificationsRef}>
@@ -242,11 +256,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link
                 key={item.name}
                 to={item.href}
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className="flex items-center justify-between px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 onClick={() => setSidebarOpen(false)}
               >
-                <item.icon className="h-5 w-5" />
-                <span className="font-medium">{item.name}</span>
+                <div className="flex items-center space-x-3">
+                  <item.icon className="h-5 w-5" />
+                  <span className="font-medium">{item.name}</span>
+                </div>
+                {item.name === 'Messages' && unreadCount > 0 && (
+                  <span className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             ))}
 
