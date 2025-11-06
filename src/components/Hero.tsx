@@ -41,7 +41,7 @@ export function Hero() {
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-20">
         <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-          THE AARYAN
+          THE AARYANS
         </h1>
         <p className="text-xl md:text-2xl text-orange-400 mb-4 font-semibold">
           Chariot of Knowledge
