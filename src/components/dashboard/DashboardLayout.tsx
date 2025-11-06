@@ -156,7 +156,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
         { name: 'Events', href: '/dashboard/events', icon: Calendar },
         { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
-        { name: 'Messages', href: '/dashboard/messages', icon: MailOpen }
+        { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
         { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
       ];
     }
