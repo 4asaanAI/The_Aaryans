@@ -15,6 +15,14 @@ interface ClassData {
   section: string;
 }
 
+interface TeacherSubject {
+  id: string;
+  subject_name: string;
+  subject_code: string;
+  teacher_name: string;
+  teacher_email: string;
+}
+
 interface PerformanceMetrics {
   subject: string;
   avgMarks: number;
@@ -29,6 +37,8 @@ interface PerformanceMetrics {
 export function ClassesPage() {
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('');
+  const [classTeachers, setClassTeachers] = useState<TeacherSubject[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
 
   const performanceData: PerformanceMetrics[] = [
     { subject: 'Mathematics', avgMarks: 78, attendance: 92, assignmentRate: 85, participation: 88, topStudents: 12, midStudents: 18, lowStudents: 5 },
@@ -56,6 +66,12 @@ export function ClassesPage() {
     fetchClasses();
   }, []);
 
+  useEffect(() => {
+    if (selectedClass) {
+      fetchClassTeachers();
+    }
+  }, [selectedClass]);
+
   const fetchClasses = async () => {
     try {
       const { data, error } = await supabase
@@ -72,6 +88,37 @@ export function ClassesPage() {
       }
     } catch (error) {
       console.error('Error fetching classes:', error);
+    }
+  };
+
+  const fetchClassTeachers = async () => {
+    setLoadingTeachers(true);
+    try {
+      const { data, error } = await supabase
+        .from('class_subjects')
+        .select(`
+          id,
+          subjects(name, code),
+          profiles(full_name, email)
+        `)
+        .eq('class_id', selectedClass);
+
+      if (error) throw error;
+
+      const formattedData: TeacherSubject[] = (data || []).map((item: any) => ({
+        id: item.id,
+        subject_name: item.subjects?.name || 'N/A',
+        subject_code: item.subjects?.code || 'N/A',
+        teacher_name: item.profiles?.full_name || 'N/A',
+        teacher_email: item.profiles?.email || 'N/A'
+      }));
+
+      setClassTeachers(formattedData);
+    } catch (error) {
+      console.error('Error fetching class teachers:', error);
+      setClassTeachers([]);
+    } finally {
+      setLoadingTeachers(false);
     }
   };
 
@@ -311,6 +358,48 @@ export function ClassesPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Subject Teachers</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Teachers assigned to {getSelectedClassName()}</p>
+              </div>
+            </div>
+
+            {loadingTeachers ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : classTeachers.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p>No teachers assigned to this class yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {classTeachers.map((teacher) => (
+                  <div
+                    key={teacher.id}
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-900/50 transition-shadow"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 dark:text-white">{teacher.subject_name}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{teacher.subject_code}</p>
+                      </div>
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center font-semibold text-sm">
+                        {teacher.teacher_name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{teacher.teacher_name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{teacher.teacher_email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
