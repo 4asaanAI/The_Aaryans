@@ -17,6 +17,9 @@ export interface Profile {
   blood_group?: string | null;
   bio?: string | null;
   status: 'active' | 'inactive' | 'suspended' | 'pending_approval';
+  approval_status?: 'pending' | 'approved' | 'rejected';
+  approved_at?: string | null;
+  approved_by?: string | null;
   created_at: string;
   updated_at: string;
 }

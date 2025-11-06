@@ -11,6 +11,7 @@ import { ProfilePage } from './pages/dashboards/ProfilePage';
 import { MessagesPage } from './pages/dashboards/MessagesPage';
 import { AnnouncementsPage } from './pages/dashboards/AnnouncementsPage';
 import { AssignmentsPage } from './pages/dashboards/AssignmentsPage';
+import { NewApprovalsPage } from './pages/dashboards/NewApprovalsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -76,6 +77,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AssignmentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/approvals"
+              element={
+                <ProtectedRoute>
+                  <NewApprovalsPage />
                 </ProtectedRoute>
               }
             />

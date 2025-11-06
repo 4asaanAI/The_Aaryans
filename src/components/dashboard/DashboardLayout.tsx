@@ -2,11 +2,10 @@ import { ReactNode, useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
-  LogOut, Calendar, Library, MessageSquare, UserCircle, BarChart3,
-  ClipboardList, Award, CheckSquare
+  LogOut, Calendar, Library, UserCircle, BarChart3,
+  ClipboardList, Award, CheckSquare, UserCheck
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -17,80 +16,34 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [messagesOpen, setMessagesOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
-  const messagesRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   const notifications: any[] = [];
 
   useEffect(() => {
     if (profile) {
-      fetchUnreadCount();
-      subscribeToMessages();
+      // Setup any subscriptions if needed
     }
   }, [profile]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (messagesRef.current && !messagesRef.current.contains(event.target as Node)) {
-        setMessagesOpen(false);
-      }
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setNotificationsOpen(false);
       }
     }
 
-    if (messagesOpen || notificationsOpen) {
+    if (notificationsOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [messagesOpen, notificationsOpen]);
+  }, [notificationsOpen]);
 
-  const fetchUnreadCount = async () => {
-    if (!profile) return;
-
-    try {
-      const { count, error } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', profile.id)
-        .eq('is_read', false);
-
-      if (error) throw error;
-
-      setUnreadCount(count || 0);
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  };
-
-  const subscribeToMessages = () => {
-    const channel = supabase
-      .channel('unread-messages')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${profile?.id}`
-        },
-        () => {
-          fetchUnreadCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-    };
-  };
 
   const handleLogout = async () => {
     await signOut();
@@ -114,8 +67,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
         { name: 'Attendance', href: '/dashboard/attendance', icon: CheckSquare },
         { name: 'Events', href: '/dashboard/events', icon: Calendar },
-        { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
-        { name: 'Announcements', href: '/dashboard/announcements', icon: Bell }
+        { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
+        { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
       ];
     }
 
@@ -165,20 +118,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </button>
-
-          <div className="relative" ref={messagesRef}>
-            <button
-              onClick={() => navigate('/dashboard/messages')}
-              className="p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700 relative"
-            >
-              <MessageSquare className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-          </div>
 
           <div className="relative" ref={notificationsRef}>
             <button
@@ -263,11 +202,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.name}</span>
                 </div>
-                {item.name === 'Messages' && unreadCount > 0 && (
-                  <span className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
               </Link>
             ))}
 

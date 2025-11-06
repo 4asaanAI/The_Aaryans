@@ -19,16 +19,38 @@ export function DashboardRouter() {
     return <Navigate to="/login" replace />;
   }
 
-  if (profile.status === 'pending_approval') {
+  if (profile.approval_status === 'pending') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
-          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center">
+          <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">⏳</span>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pending Approval</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Pending Approval</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Your registration is under review. You will be notified once an admin approves your account.
+          </p>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (profile.approval_status === 'rejected') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">❌</span>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Registration Rejected</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Your registration request has been rejected. Please contact the administrator for more information.
           </p>
           <button
             onClick={() => window.location.href = '/login'}
