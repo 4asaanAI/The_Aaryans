@@ -282,7 +282,7 @@ export function MessagesPage() {
         {/* Sidebar */}
         <div className="w-full md:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Message</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
