@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
   LogOut, Calendar, Library, UserCircle, BarChart3,
-  ClipboardList, Award, UserCheck
+  ClipboardList, Award, UserCheck, MailOpen
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -156,6 +156,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
         { name: 'Events', href: '/dashboard/events', icon: Calendar },
         { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
+        { name: 'Messages', href: '/dashboard/messages', icon: }
         { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
       ];
     }
