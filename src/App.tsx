@@ -7,6 +7,8 @@ import { Register } from './pages/Register';
 import { DashboardRouter } from './pages/dashboards/DashboardRouter';
 import { UsersPage } from './pages/dashboards/UsersPage';
 import { ClassesPage } from './pages/dashboards/ClassesPage';
+import { ProfilePage } from './pages/dashboards/ProfilePage';
+import { MessagesPage } from './pages/dashboards/MessagesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -40,6 +42,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClassesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/messages"
+              element={
+                <ProtectedRoute>
+                  <MessagesPage />
                 </ProtectedRoute>
               }
             />

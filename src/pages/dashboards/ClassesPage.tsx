@@ -3,6 +3,7 @@ import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
 import { Download, FileText, Image as ImageIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -35,10 +36,18 @@ interface PerformanceMetrics {
 }
 
 export function ClassesPage() {
+  const { theme } = useTheme();
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [classTeachers, setClassTeachers] = useState<TeacherSubject[]>([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
+
+  const isDark = theme === 'dark';
+  const chartColors = {
+    text: isDark ? '#e5e7eb' : '#374151',
+    grid: isDark ? '#374151' : '#e5e7eb',
+    tooltip: isDark ? '#1f2937' : '#ffffff'
+  };
 
   const performanceData: PerformanceMetrics[] = [
     { subject: 'Mathematics', avgMarks: 78, attendance: 92, assignmentRate: 85, participation: 88, topStudents: 12, midStudents: 18, lowStudents: 5 },
@@ -200,11 +209,17 @@ export function ClassesPage() {
           </div>
 
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 rounded-2xl p-6 text-white">
-            <h3 className="text-xl font-bold mb-1">{getSelectedClassName()} Performance Overview</h3>
-            <div className="flex flex-wrap items-center gap-4 mt-2">
-              <p className="text-blue-100 dark:text-blue-200 text-sm">Class Monitor: John Doe</p>
+            <h3 className="text-xl font-bold mb-3">{getSelectedClassName()} Performance Overview (2024-25)</h3>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-100 dark:text-blue-200 text-sm font-medium">Class Teacher:</span>
+                <p className="text-white text-sm">Ms. Sarah Johnson</p>
+              </div>
               <span className="text-blue-200 dark:text-blue-300">•</span>
-              <p className="text-blue-100 dark:text-blue-200 text-sm">Academic Year 2024-25 - Term 2</p>
+              <div className="flex items-center gap-2">
+                <span className="text-blue-100 dark:text-blue-200 text-sm font-medium">Class Monitor:</span>
+                <p className="text-white text-sm">John Doe</p>
+              </div>
             </div>
           </div>
 
@@ -251,11 +266,18 @@ export function ClassesPage() {
             <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="subject" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                  <XAxis dataKey="subject" stroke={chartColors.text} />
+                  <YAxis stroke={chartColors.text} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: chartColors.tooltip,
+                      border: `1px solid ${chartColors.grid}`,
+                      borderRadius: '8px'
+                    }}
+                    labelStyle={{ color: chartColors.text }}
+                  />
+                  <Legend wrapperStyle={{ color: chartColors.text }} />
                   <Bar dataKey="avgMarks" fill="#3B82F6" name="Avg Marks" />
                   <Bar dataKey="attendance" fill="#10B981" name="Attendance %" />
                   <Bar dataKey="assignmentRate" fill="#8B5CF6" name="Assignment Rate" />
@@ -271,12 +293,12 @@ export function ClassesPage() {
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                    <PolarGrid stroke={chartColors.grid} />
+                    <PolarAngleAxis dataKey="subject" stroke={chartColors.text} />
+                    <PolarRadiusAxis angle={90} domain={[0, 100]} stroke={chartColors.text} />
                     <Radar name="Performance" dataKey="Performance" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
                     <Radar name="Attendance" dataKey="Attendance" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
-                    <Legend />
+                    <Legend wrapperStyle={{ color: chartColors.text }} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
@@ -287,11 +309,18 @@ export function ClassesPage() {
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="exam" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                    <XAxis dataKey="exam" stroke={chartColors.text} />
+                    <YAxis stroke={chartColors.text} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartColors.tooltip,
+                        border: `1px solid ${chartColors.grid}`,
+                        borderRadius: '8px'
+                      }}
+                      labelStyle={{ color: chartColors.text }}
+                    />
+                    <Legend wrapperStyle={{ color: chartColors.text }} />
                     <Line type="monotone" dataKey="avgScore" stroke="#3B82F6" strokeWidth={3} name="Avg Score" />
                     <Line type="monotone" dataKey="attendance" stroke="#10B981" strokeWidth={3} name="Attendance" />
                   </LineChart>

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickLinksMenuOpen, setQuickLinksMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const quickLinksRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { name: 'Home', href: '#home' },
@@ -23,6 +25,25 @@ export function Header() {
     { name: 'Enquiry', href: '#contact' },
     { name: 'Verify TC', href: '#verify-tc' }
   ];
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+      if (quickLinksRef.current && !quickLinksRef.current.contains(event.target as Node)) {
+        setQuickLinksMenuOpen(false);
+      }
+    }
+
+    if (mobileMenuOpen || quickLinksMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileMenuOpen, quickLinksMenuOpen]);
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-sm">
@@ -52,7 +73,7 @@ export function Header() {
             >
               Login
             </Link>
-            <div className="relative">
+            <div className="relative" ref={quickLinksRef}>
               <button
                 onClick={() => setQuickLinksMenuOpen(!quickLinksMenuOpen)}
                 className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
@@ -99,7 +120,7 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-3 animate-slideDown">
+          <div ref={mobileMenuRef} className="md:hidden mt-4 pb-4 space-y-3 animate-slideDown">
             <div className="flex gap-2 mb-3">
               <Link
                 to="/signup"
