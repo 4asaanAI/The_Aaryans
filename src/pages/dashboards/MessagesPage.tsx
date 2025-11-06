@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Search, Send, MoreVertical, Phone, Video, Check, CheckCheck } from 'lucide-react';
-import { HashRouter } from 'react-router-dom';
 
 interface Contact {
   id: string;
@@ -35,79 +34,16 @@ export function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageSubscription = useRef<any>(null);
+  const messageSubscription = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  useEffect(() => {
-    if (profile) {
-      fetchContacts();
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    if (selectedContact) {
-      fetchMessages(selectedContact.id);
-      markMessagesAsRead(selectedContact.id);
-      subscribeToMessages(selectedContact.id);
-    }
-
-    return () => {
-      if (messageSubscription.current) {
-        messageSubscription.current.unsubscribe();
-      }
-    };
-  }, [selectedContact]);
-
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-const subscribeToMessages = (contactId: string) => {
-  if (messageSubscription.current) {
-    messageSubscription.current.unsubscribe();
-  }
-
-  const channel = supabase
-    .channel(`messages-${profile?.id}-${contactId}`)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'messages' },
-      (payload) => {
-        const newMsg = (payload.new || payload.old) as Message;
-
-        // Only react to messages in THIS conversation
-        const isForThisThread =
-          (newMsg.sender_id === profile?.id && newMsg.receiver_id === contactId) ||
-          (newMsg.sender_id === contactId && newMsg.receiver_id === profile?.id);
-
-        if (!isForThisThread) return;
-
-        if (payload.eventType === 'INSERT') {
-          setMessages((prev) => [...prev, payload.new as Message]);
-
-          // If it's incoming to me, mark as read
-          if ((payload.new as Message).receiver_id === profile?.id) {
-            markMessagesAsRead(contactId);
-          }
-        } else if (payload.eventType === 'UPDATE') {
-          setMessages((prev) =>
-            prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
-          );
-        } else if (payload.eventType === 'DELETE') {
-          setMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
-        }
-
-        // Update sidebar previews/unread badges
-        fetchContacts();
-      }
-    )
-    .subscribe();
-
-  messageSubscription.current = channel;
-};
-
-
-  const fetchContacts = async () => {
-    if (!profile) return;
+  // ---------- Data fetchers ----------
+  const fetchContacts = useCallback(async () => {
+    if (!profile?.id) return;
 
     try {
       const { data: profiles, error } = await supabase
@@ -146,91 +82,171 @@ const subscribeToMessages = (contactId: string) => {
           lastMessage: lastMsg?.content,
           lastMessageTime: lastMsg ? new Date(lastMsg.created_at) : undefined,
           unreadCount,
-          hasMessages: userMessages.length > 0
+          hasMessages: userMessages.length > 0,
         };
       });
 
       const withMessages = contactsList
         .filter((c) => c.hasMessages)
-        .sort((a, b) => {
-          const timeA = a.lastMessageTime?.getTime() || 0;
-          const timeB = b.lastMessageTime?.getTime() || 0;
-          return timeB - timeA;
-        });
+        .sort((a, b) => (b.lastMessageTime?.getTime() || 0) - (a.lastMessageTime?.getTime() || 0));
 
       const withoutMessages = contactsList
         .filter((c) => !c.hasMessages)
         .sort((a, b) => a.name.localeCompare(b.name));
 
       setContacts([...withMessages, ...withoutMessages]);
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
+    } catch (err) {
+      console.error('Error fetching contacts:', err);
     }
-  };
+  }, [profile?.id]);
 
-  const fetchMessages = async (contactId: string) => {
-    if (!profile) return;
+  const fetchMessages = useCallback(
+    async (contactId: string) => {
+      if (!profile?.id) return;
 
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(
-          `and(sender_id.eq.${profile.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profile.id})`
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .or(
+            `and(sender_id.eq.${profile.id},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${profile.id})`
+          )
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        setMessages(data || []);
+      } catch (err) {
+        console.error('Error fetching messages:', err);
+        setMessages([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [profile?.id]
+  );
+
+  const markMessagesAsRead = useCallback(
+    async (contactId: string) => {
+      if (!profile?.id) return;
+
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .eq('receiver_id', profile.id)
+          .eq('sender_id', contactId)
+          .eq('is_read', false);
+
+        if (error) throw error;
+        fetchContacts(); // update unread badges
+      } catch (err) {
+        console.error('Error marking messages as read:', err);
+      }
+    },
+    [profile?.id, fetchContacts]
+  );
+
+  // ---------- Realtime subscription (fixed) ----------
+  const subscribeToMessages = useCallback(
+    (contactId: string) => {
+      // cleanup any previous channel
+      if (messageSubscription.current) {
+        messageSubscription.current.unsubscribe();
+        messageSubscription.current = null;
+      }
+
+      const channel = supabase
+        .channel(`messages-${profile?.id}-${contactId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'messages' },
+          (payload) => {
+            const row = (payload.new || payload.old) as Message;
+
+            // Only handle events for this conversation
+            const isForThisThread =
+              (row.sender_id === profile?.id && row.receiver_id === contactId) ||
+              (row.sender_id === contactId && row.receiver_id === profile?.id);
+
+            if (!isForThisThread) return;
+
+            if (payload.eventType === 'INSERT') {
+              setMessages((prev) => {
+                const next = [...prev, payload.new as Message];
+                // keep sorted in case of clock skew
+                return next.sort(
+                  (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                );
+              });
+
+              if ((payload.new as Message).receiver_id === profile?.id) {
+                // auto-mark incoming as read
+                markMessagesAsRead(contactId);
+              }
+            } else if (payload.eventType === 'UPDATE') {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
+              );
+            } else if (payload.eventType === 'DELETE') {
+              setMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
+            }
+
+            // refresh sidebar list/unread counts and last message preview
+            fetchContacts();
+          }
         )
-        .order('created_at', { ascending: true });
+        .subscribe();
 
-      if (error) throw error;
+      messageSubscription.current = channel;
+    },
+    [profile?.id, fetchContacts, markMessagesAsRead]
+  );
 
-      setMessages(data || []);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      setMessages([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markMessagesAsRead = async (contactId: string) => {
-    if (!profile) return;
-
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq('receiver_id', profile.id)
-        .eq('sender_id', contactId)
-        .eq('is_read', false);
-
-      if (error) throw error;
-
+  // ---------- Effects ----------
+  useEffect(() => {
+    if (profile?.id) {
       fetchContacts();
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
     }
-  };
+  }, [profile?.id, fetchContacts]);
 
+  useEffect(() => {
+    if (selectedContact?.id) {
+      fetchMessages(selectedContact.id);
+      markMessagesAsRead(selectedContact.id);
+      subscribeToMessages(selectedContact.id);
+    }
+
+    return () => {
+      if (messageSubscription.current) {
+        messageSubscription.current.unsubscribe();
+        messageSubscription.current = null;
+      }
+    };
+  }, [selectedContact?.id, fetchMessages, markMessagesAsRead, subscribeToMessages]);
+
+  // ---------- Actions ----------
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedContact || !profile) return;
+    if (!newMessage.trim() || !selectedContact || !profile?.id) return;
 
     try {
       const { error } = await supabase.from('messages').insert({
         sender_id: profile.id,
         receiver_id: selectedContact.id,
         content: newMessage.trim(),
-        is_read: false
+        is_read: false,
       });
 
       if (error) throw error;
 
       setNewMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
+      // No manual refetch needed; realtime will add it
+    } catch (err) {
+      console.error('Error sending message:', err);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -261,9 +277,9 @@ const subscribeToMessages = (contactId: string) => {
   };
 
   return (
- 
-      <HashRouter>
+    <DashboardLayout>
       <div className="flex h-[calc(100vh-8rem)] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {/* Sidebar */}
         <div className="w-full md:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
@@ -281,9 +297,7 @@ const subscribeToMessages = (contactId: string) => {
 
           <div className="flex-1 overflow-y-auto">
             {filteredContacts.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                No contacts found
-              </div>
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">No contacts found</div>
             ) : (
               filteredContacts.map((contact) => (
                 <div
@@ -312,9 +326,7 @@ const subscribeToMessages = (contactId: string) => {
                       <div className="flex items-center justify-between mb-1">
                         <h3
                           className={`font-semibold truncate ${
-                            contact.unreadCount > 0
-                              ? 'text-gray-900 dark:text-white'
-                              : 'text-gray-700 dark:text-gray-300'
+                            contact.unreadCount > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {contact.name}
@@ -344,6 +356,7 @@ const subscribeToMessages = (contactId: string) => {
           </div>
         </div>
 
+        {/* Chat Pane */}
         <div className="flex-1 flex flex-col">
           {!selectedContact ? (
             <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -351,16 +364,13 @@ const subscribeToMessages = (contactId: string) => {
                 <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Send className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Select a conversation
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Choose a contact to start messaging
-                </p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Select a conversation</h3>
+                <p className="text-gray-600 dark:text-gray-400">Choose a contact to start messaging</p>
               </div>
             </div>
           ) : (
             <>
+              {/* Header */}
               <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -370,12 +380,8 @@ const subscribeToMessages = (contactId: string) => {
                       </span>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {selectedContact.name}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                        {selectedContact.role}
-                      </p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{selectedContact.name}</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{selectedContact.role}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -392,6 +398,7 @@ const subscribeToMessages = (contactId: string) => {
                 </div>
               </div>
 
+              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
                 {loading ? (
                   <div className="flex justify-center items-center h-full">
@@ -406,10 +413,7 @@ const subscribeToMessages = (contactId: string) => {
                     {messages.map((message) => {
                       const isSent = message.sender_id === profile?.id;
                       return (
-                        <div
-                          key={message.id}
-                          className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}
-                        >
+                        <div key={message.id} className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}>
                           <div
                             className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                               isSent
@@ -419,23 +423,12 @@ const subscribeToMessages = (contactId: string) => {
                           >
                             <p className="text-sm break-words">{message.content}</p>
                             <div className="flex items-center justify-end gap-1 mt-1">
-                              <p
-                                className={`text-xs ${
-                                  isSent ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
-                                }`}
-                              >
-                                {new Date(message.created_at).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                              <p className={`text-xs ${isSent ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </p>
                               {isSent && (
                                 <span className="text-blue-100">
-                                  {message.is_read ? (
-                                    <CheckCheck className="h-4 w-4" />
-                                  ) : (
-                                    <Check className="h-4 w-4" />
-                                  )}
+                                  {message.is_read ? <CheckCheck className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                                 </span>
                               )}
                             </div>
@@ -448,13 +441,14 @@ const subscribeToMessages = (contactId: string) => {
                 )}
               </div>
 
+              {/* Composer */}
               <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
                     className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -471,7 +465,6 @@ const subscribeToMessages = (contactId: string) => {
           )}
         </div>
       </div>
-        </HashRouter>
-   
+    </DashboardLayout>
   );
 }
