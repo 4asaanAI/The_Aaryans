@@ -12,6 +12,8 @@ import { MessagesPage } from './pages/dashboards/MessagesPage';
 import { AnnouncementsPage } from './pages/dashboards/AnnouncementsPage';
 import { AssignmentsPage } from './pages/dashboards/AssignmentsPage';
 import { NewApprovalsPage } from './pages/dashboards/NewApprovalsPage';
+import { ExamsPage } from './pages/dashboards/ExamsPage';
+import { ResultsPage } from './pages/dashboards/ResultsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -93,6 +95,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <NewApprovalsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/exams"
+              element={
+                <ProtectedRoute>
+                  <ExamsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/results"
+              element={
+                <ProtectedRoute>
+                  <ResultsPage />
                 </ProtectedRoute>
               }
             />
