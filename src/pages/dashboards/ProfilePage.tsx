@@ -7,7 +7,6 @@ import { Camera, Save, Loader2 } from 'lucide-react';
 export function ProfilePage() {
   const { profile } = useAuth();
   const [saving, setSaving] = useState(false);
-  const [callEffect, setCallEffect] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [formData, setFormData] = useState({
@@ -19,6 +18,7 @@ export function ProfilePage() {
     bio: ''
   });
 
+  // Initialize/Resync form when auth profile changes (e.g., first load)
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -44,6 +44,7 @@ export function ProfilePage() {
     setMessage(null);
 
     try {
+      // Persist changes
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -58,13 +59,35 @@ export function ProfilePage() {
 
       if (error) throw error;
 
+      // Re-fetch the latest profile so UI reflects DB without a full refresh
+      const { data: fresh, error: fetchErr } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profile.id)
+        .single();
+
+      if (fetchErr) {
+        // Not fatal; we can still optimistically keep formData
+        console.warn('Profile refetch failed, keeping local state:', fetchErr);
+      } else if (fresh) {
+        // Sync form with DB (in case DB has triggers/defaults/normalization)
+        setFormData(fd => ({
+          ...fd,
+          full_name: fresh.full_name || '',
+          email: fresh.email || fd.email, // email is disabled, but keep in sync if present
+          phone: fresh.phone || '',
+          address: fresh.address || '',
+          date_of_birth: fresh.date_of_birth || '',
+          bio: fresh.bio || ''
+        }));
+      }
+
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
-    } catch (error: any) {
-      console.error('Error updating profile:', error);
-      setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
+    } catch (err: any) {
+      console.error('Error updating profile:', err);
+      setMessage({ type: 'error', text: err?.message || 'Failed to update profile' });
     } finally {
       setSaving(false);
-      setCallEffect(true);
     }
   };
 
@@ -82,7 +105,7 @@ export function ProfilePage() {
               <div className="relative">
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-3xl font-bold">
-                    {profile?.full_name?.charAt(0).toUpperCase()}
+                    {(formData.full_name || profile?.full_name || '?')?.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <button
@@ -93,20 +116,27 @@ export function ProfilePage() {
                 </button>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{profile?.full_name}</h2>
+                {/* Use formData so changes reflect instantly after save */}
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {formData.full_name || profile?.full_name}
+                </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{profile?.role}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{profile?.email}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                  {formData.email || profile?.email}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="p-6 space-y-6">
             {message && (
-              <div className={`p-4 rounded-lg ${
-                message.type === 'success'
-                  ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
-                  : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
-              }`}>
+              <div
+                className={`p-4 rounded-lg ${
+                  message.type === 'success'
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800'
+                }`}
+              >
                 {message.text}
               </div>
             )}
@@ -120,7 +150,7 @@ export function ProfilePage() {
                   type="text"
                   name="full_name"
                   value={formData.full_name}
-                  onChange={(e)=>handleChange(e)}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -146,7 +176,7 @@ export function ProfilePage() {
                   type="tel"
                   name="phone"
                   value={formData.phone}
-                  onChange={(e)=>handleChange(e)}
+                  onChange={handleChange}
                   placeholder="+1 (555) 000-0000"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -160,7 +190,7 @@ export function ProfilePage() {
                   type="date"
                   name="date_of_birth"
                   value={formData.date_of_birth}
-                  onChange={(e)=>handleChange(e)}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -173,7 +203,7 @@ export function ProfilePage() {
                   type="text"
                   name="address"
                   value={formData.address}
-                  onChange={(e)=>handleChange(e)}
+                  onChange={handleChange}
                   placeholder="123 Main St, City, State, ZIP"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -186,7 +216,7 @@ export function ProfilePage() {
                 <textarea
                   name="bio"
                   value={formData.bio}
-                 onChange={(e)=>handleChange(e)}
+                  onChange={handleChange}
                   rows={4}
                   placeholder="Tell us about yourself..."
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
