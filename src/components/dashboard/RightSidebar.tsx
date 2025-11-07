@@ -1,31 +1,77 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+
+interface Event {
+  id: string;
+  name: string;
+  event_date: string;
+  start_time: string;
+  end_time: string;
+  description: string;
+}
+
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+}
 
 export function RightSidebar() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'events' | 'announcements'>('events');
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [allAnnouncements, setAllAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const allEvents = [
-    { date: '2025-11-05', title: 'Science Fair Preparation', time: '09:00 AM - 11:00 AM', description: 'Students showcase their innovative projects' },
-    { date: '2025-11-05', title: 'Parent-Teacher Meeting', time: '02:00 PM - 05:00 PM', description: 'Quarterly academic performance review' },
-    { date: '2025-11-10', title: 'Sports Day Practice', time: '03:30 PM - 05:00 PM', description: 'Athletic events preparation session' },
-    { date: '2025-11-15', title: 'Music Recital', time: '04:00 PM - 06:00 PM', description: 'Annual music performance by students' }
-  ];
+  useEffect(() => {
+    fetchEvents();
+    fetchAnnouncements();
+  }, []);
 
-  const allAnnouncements = [
-    { date: '2025-11-05', title: 'Mid-Term Examination Schedule Released', text: 'All students must check their exam timetable on the portal.' },
-    { date: '2025-11-08', title: 'New Library Books Available', text: 'Over 500 new titles added to the school library collection.' },
-    { date: '2025-11-10', title: 'Winter Break Schedule Update', text: 'School will remain closed from December 20th to January 5th.' }
-  ];
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, name, event_date, start_time, end_time, description')
+        .eq('status', 'active')
+        .gte('event_date', new Date().toISOString().split('T')[0])
+        .order('event_date', { ascending: true })
+        .limit(50);
+
+      if (error) throw error;
+      setAllEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('id, title, content, created_at')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setAllAnnouncements(data || []);
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+    }
+  };
 
   const filteredEvents = allEvents.filter(event => {
-    const eventDate = new Date(event.date);
+    const eventDate = new Date(event.event_date);
     return eventDate.toDateString() === selectedDate.toDateString();
   });
 
   const filteredAnnouncements = allAnnouncements.filter(announcement => {
-    const announcementDate = new Date(announcement.date);
+    const announcementDate = new Date(announcement.created_at);
     return announcementDate.toDateString() === selectedDate.toDateString();
   });
 
@@ -47,7 +93,7 @@ export function RightSidebar() {
   const isSelectedDate = (day: number) => new Date(year, month, day).toDateString() === selectedDate.toDateString();
   const hasEvent = (day: number) => {
     const date = new Date(year, month, day);
-    return allEvents.some(event => new Date(event.date).toDateString() === date.toDateString()) || allAnnouncements.some(ann => new Date(ann.date).toDateString() === date.toDateString());
+    return allEvents.some(event => new Date(event.event_date).toDateString() === date.toDateString()) || allAnnouncements.some(ann => new Date(ann.created_at).toDateString() === date.toDateString());
   };
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -122,20 +168,36 @@ export function RightSidebar() {
 
         {activeTab === 'events' ? (
           <div className="space-y-3">
-            {filteredEvents.length > 0 ? (
-              filteredEvents.map((event, index) => (
-                <div
-                  key={index}
-                  className={'p-4 border-2 border-gray-100 border-t-4 rounded-lg ' +
-                    (index % 2 === 0 ? 'border-t-blue-400' : 'border-t-blue-300')}
-                >
-                  <div className="flex justify-between mb-2">
-                    <span className="font-semibold text-gray-700 text-sm">{event.title}</span>
-                    <span className="text-xs text-gray-400">{event.time}</span>
+            {loading ? (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                Loading events...
+              </div>
+            ) : filteredEvents.length > 0 ? (
+              filteredEvents.map((event, index) => {
+                const formatTime = (time: string) => {
+                  if (!time) return '';
+                  const [hours, minutes] = time.split(':');
+                  const hour = parseInt(hours);
+                  const ampm = hour >= 12 ? 'PM' : 'AM';
+                  const formattedHour = hour % 12 || 12;
+                  return `${formattedHour}:${minutes} ${ampm}`;
+                };
+                const timeRange = `${formatTime(event.start_time)} - ${formatTime(event.end_time)}`;
+
+                return (
+                  <div
+                    key={event.id}
+                    className={'p-4 border-2 border-gray-100 border-t-4 rounded-lg ' +
+                      (index % 2 === 0 ? 'border-t-blue-400' : 'border-t-blue-300')}
+                  >
+                    <div className="flex justify-between mb-2">
+                      <span className="font-semibold text-gray-700 text-sm">{event.name}</span>
+                      <span className="text-xs text-gray-400">{timeRange}</span>
+                    </div>
+                    <p className="text-sm text-gray-500">{event.description}</p>
                   </div>
-                  <p className="text-sm text-gray-500">{event.description}</p>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8 text-gray-400 text-sm">
                 No events for this date
@@ -144,18 +206,24 @@ export function RightSidebar() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredAnnouncements.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                Loading announcements...
+              </div>
+            ) : filteredAnnouncements.length > 0 ? (
               filteredAnnouncements.map((announcement, index) => (
                 <div
-                  key={index}
+                  key={announcement.id}
                   className={'p-4 rounded-lg ' +
                     (index === 0 ? 'bg-blue-50' : index === 1 ? 'bg-blue-100' : 'bg-blue-50')}
                 >
                   <div className="flex justify-between mb-1">
                     <span className="font-medium text-sm">{announcement.title}</span>
-                    <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded">{announcement.date}</span>
+                    <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded">
+                      {new Date(announcement.created_at).toLocaleDateString()}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-600">{announcement.text}</p>
+                  <p className="text-xs text-gray-600">{announcement.content}</p>
                 </div>
               ))
             ) : (
