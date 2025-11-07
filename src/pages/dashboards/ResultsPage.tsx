@@ -312,6 +312,29 @@ export function ResultsPage() {
     marks: r.percentage
   }));
 
+  const examTermAnalysis = () => {
+    const termMap = new Map<string, { total: number; count: number; exams: number }>();
+
+    results.forEach(result => {
+      const term = result.exam_type;
+      if (!termMap.has(term)) {
+        termMap.set(term, { total: 0, count: 0, exams: 0 });
+      }
+      const data = termMap.get(term)!;
+      data.total += result.percentage;
+      data.count++;
+      data.exams++;
+    });
+
+    return Array.from(termMap.entries()).map(([term, data]) => ({
+      term: term.charAt(0).toUpperCase() + term.slice(1),
+      average: Math.round(data.total / data.count),
+      exams: data.exams
+    }));
+  };
+
+  const termAnalysisData = examTermAnalysis();
+
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -490,32 +513,75 @@ export function ResultsPage() {
           )}
 
           {searchMode === 'class' && classStats.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                Class Performance Overview
-              </h3>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={classPerformanceChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                    <XAxis dataKey="name" stroke={chartColors.text} angle={-45} textAnchor="end" height={120} />
-                    <YAxis stroke={chartColors.text} domain={[0, 100]} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: chartColors.tooltip,
-                        border: `1px solid ${chartColors.grid}`,
-                        borderRadius: '8px'
-                      }}
-                      labelStyle={{ color: chartColors.text }}
-                    />
-                    <Legend wrapperStyle={{ color: chartColors.text }} />
-                    <Bar dataKey="avg" fill="#3B82F6" name="Average" />
-                    <Bar dataKey="highest" fill="#10B981" name="Highest" />
-                    <Bar dataKey="lowest" fill="#EF4444" name="Lowest" />
-                  </BarChart>
-                </ResponsiveContainer>
+            <>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                  Class Performance Overview
+                </h3>
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={classPerformanceChart}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                      <XAxis dataKey="name" stroke={chartColors.text} angle={-45} textAnchor="end" height={120} />
+                      <YAxis stroke={chartColors.text} domain={[0, 100]} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: chartColors.tooltip,
+                          border: `1px solid ${chartColors.grid}`,
+                          borderRadius: '8px'
+                        }}
+                        labelStyle={{ color: chartColors.text }}
+                      />
+                      <Legend wrapperStyle={{ color: chartColors.text }} />
+                      <Bar dataKey="avg" fill="#3B82F6" name="Average" />
+                      <Bar dataKey="highest" fill="#10B981" name="Highest" />
+                      <Bar dataKey="lowest" fill="#EF4444" name="Lowest" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
+
+              {termAnalysisData.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                    Performance Analysis by Exam Terms
+                  </h3>
+                  <div className="h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={termAnalysisData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                        <XAxis dataKey="term" stroke={chartColors.text} />
+                        <YAxis stroke={chartColors.text} domain={[0, 100]} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: chartColors.tooltip,
+                            border: `1px solid ${chartColors.grid}`,
+                            borderRadius: '8px'
+                          }}
+                          labelStyle={{ color: chartColors.text }}
+                        />
+                        <Legend wrapperStyle={{ color: chartColors.text }} />
+                        <Bar dataKey="average" fill="#8B5CF6" name="Average Score %" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3 mt-4">
+                    {termAnalysisData.map((term, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600"
+                      >
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{term.term}</div>
+                        <div className="text-lg font-bold text-gray-800 dark:text-white">{term.average}%</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          {term.exams} exam{term.exams !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">

@@ -4,6 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
 import { DashboardRouter } from './pages/dashboards/DashboardRouter';
 import { UsersPage } from './pages/dashboards/UsersPage';
 import { ClassesPage } from './pages/dashboards/ClassesPage';
@@ -14,6 +15,7 @@ import { AssignmentsPage } from './pages/dashboards/AssignmentsPage';
 import { NewApprovalsPage } from './pages/dashboards/NewApprovalsPage';
 import { ExamsPage } from './pages/dashboards/ExamsPage';
 import { ResultsPage } from './pages/dashboards/ResultsPage';
+import { EventsPage } from './pages/dashboards/EventsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -26,6 +28,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/signup" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route
               path="/dashboard"
               element={
@@ -86,7 +89,7 @@ function App() {
               path="/dashboard/events"
               element={
                 <ProtectedRoute>
-                  <AssignmentsPage />
+                  <EventsPage />
                 </ProtectedRoute>
               }
             />

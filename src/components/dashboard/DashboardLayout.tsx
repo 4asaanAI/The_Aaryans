@@ -196,7 +196,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
-          <h1 className="text-xl font-bold">School ERP System</h1>
+          <h1 className="text-xl font-bold">The Aaryans</h1>
         </div>
 
         <div className="flex items-center space-x-4">

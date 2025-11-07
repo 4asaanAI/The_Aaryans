@@ -44,7 +44,7 @@ export function Login() {
             <LogIn className="h-6 w-6 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            School ERP System
+            The Aaryans
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to your account
@@ -102,13 +102,17 @@ export function Login() {
             </button>
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                Forgot password?
+              </Link>
+            </div>
+            <div className="text-sm">
               <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
                 Sign up here
               </Link>
-            </p>
+            </div>
           </div>
         </form>
 
