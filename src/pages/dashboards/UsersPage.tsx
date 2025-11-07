@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Search, Users as UsersIcon, GraduationCap, Briefcase, Eye, Edit, Trash2, Plus, ChevronDown, ChevronUp, UserCheck, X, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { Notification } from '../../components/Notification';
 
 interface Profile {
   id: string;
@@ -46,6 +47,8 @@ export function UsersPage() {
     status: [],
     subRole: []
   });
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState<{ type: 'approve' | 'delete'; profile: Profile } | null>(null);
 
   const isDark = theme === 'dark';
 
@@ -125,10 +128,7 @@ export function UsersPage() {
   };
 
   const handleApprove = async (profileId: string) => {
-    if (!confirm('Are you sure you want to approve this user? This action cannot be undone.')) {
-      return;
-    }
-
+    setShowConfirmModal(null);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -144,10 +144,10 @@ export function UsersPage() {
 
       setPendingApprovals(prev => prev.filter(p => p.id !== profileId));
       fetchProfiles();
-      alert('User approved successfully!');
+      setNotification({ type: 'success', message: 'User approved successfully!' });
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('Failed to approve user. Please try again.');
+      setNotification({ type: 'error', message: 'Failed to approve user. Please try again.' });
     }
   };
 
@@ -198,13 +198,13 @@ export function UsersPage() {
 
       if (error) throw error;
 
-      alert('User updated successfully!');
+      setNotification({ type: 'success', message: 'User updated successfully!' });
       setShowEditModal(false);
       setEditingProfile(null);
       fetchProfiles();
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user. Please try again.');
+      setNotification({ type: 'error', message: 'Failed to update user. Please try again.' });
     } finally {
       setSubmitting(false);
     }
@@ -212,21 +212,11 @@ export function UsersPage() {
 
   const handleDeleteUser = async (profile: Profile) => {
     if (!canDeleteUser(profile)) {
-      alert('You do not have permission to delete this user.');
+      setNotification({ type: 'error', message: 'You do not have permission to delete this user.' });
       return;
     }
 
-    const confirmMessage = `Are you sure you want to delete ${profile.full_name}?\n\nThis will permanently delete:\n- User profile\n- All messages sent/received\n- Student records (attendance, assignments, exam results, fees, etc.)\n- Leave applications\n- Library transactions\n- Transport records\n\nThis action CANNOT be undone!`;
-
-    if (!confirm(confirmMessage)) {
-      return;
-    }
-
-    const doubleConfirm = confirm(`Final confirmation: Type DELETE to confirm deletion of ${profile.full_name}'s account.`);
-    if (!doubleConfirm) {
-      return;
-    }
-
+    setShowConfirmModal(null);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -235,14 +225,14 @@ export function UsersPage() {
 
       if (error) throw error;
 
-      alert('User deleted successfully.');
+      setNotification({ type: 'success', message: 'User deleted successfully.' });
       fetchProfiles();
     } catch (error: any) {
       console.error('Error deleting user:', error);
       if (error.message.includes('foreign key')) {
-        alert('Cannot delete user: This user is referenced in other records (e.g., as HOD, class teacher, or assignment teacher). Please reassign those roles first.');
+        setNotification({ type: 'error', message: 'Cannot delete user: This user is referenced in other records (e.g., as HOD, class teacher, or assignment teacher). Please reassign those roles first.' });
       } else {
-        alert('Failed to delete user. Please try again.');
+        setNotification({ type: 'error', message: 'Failed to delete user. Please try again.' });
       }
     }
   };
@@ -362,7 +352,7 @@ export function UsersPage() {
                                 </div>
                               </div>
                               <button
-                                onClick={() => handleApprove(pending.id)}
+                                onClick={() => setShowConfirmModal({ type: 'approve', profile: pending })}
                                 className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded text-xs font-medium flex items-center gap-1"
                               >
                                 <UserCheck className="h-3 w-3" />
@@ -552,7 +542,7 @@ export function UsersPage() {
                             )}
                             {canDeleteUser(profile) && (
                               <button
-                                onClick={() => handleDeleteUser(profile)}
+                                onClick={() => setShowConfirmModal({ type: 'delete', profile })}
                                 className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -650,6 +640,64 @@ export function UsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  {showConfirmModal.type === 'approve' ? 'Approve User' : 'Delete User'}
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {showConfirmModal.type === 'approve'
+                    ? `Are you sure you want to approve ${showConfirmModal.profile.full_name}? This action cannot be undone.`
+                    : `Are you sure you want to delete ${showConfirmModal.profile.full_name}?`}
+                </p>
+                {showConfirmModal.type === 'delete' && (
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-sm text-red-900 dark:text-red-300 font-semibold mb-2">This will permanently delete:</p>
+                    <ul className="text-xs text-red-800 dark:text-red-400 list-disc list-inside space-y-1">
+                      <li>User profile</li>
+                      <li>All messages sent/received</li>
+                      <li>Student records (attendance, assignments, exam results, fees, etc.)</li>
+                      <li>Leave applications</li>
+                      <li>Library transactions</li>
+                      <li>Transport records</li>
+                    </ul>
+                    <p className="text-sm text-red-900 dark:text-red-300 font-semibold mt-2">This action CANNOT be undone!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmModal(null)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => showConfirmModal.type === 'approve' ? handleApprove(showConfirmModal.profile.id) : handleDeleteUser(showConfirmModal.profile)}
+                className={`px-4 py-2 text-white rounded-lg transition-colors ${
+                  showConfirmModal.type === 'approve'
+                    ? 'bg-green-500 hover:bg-green-600'
+                    : 'bg-red-500 hover:bg-red-600'
+                }`}
+              >
+                {showConfirmModal.type === 'approve' ? 'Approve' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

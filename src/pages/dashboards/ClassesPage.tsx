@@ -5,6 +5,7 @@ import { Download, FileText, Image as ImageIcon, TrendingUp, TrendingDown, Edit2
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { Notification } from '../../components/Notification';
 import {
   BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -47,6 +48,7 @@ export function ClassesPage() {
   const [editingRemarks, setEditingRemarks] = useState(false);
   const [remarksText, setRemarksText] = useState('');
   const [savingRemarks, setSavingRemarks] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const isDark = theme === 'dark';
   const chartColors = {
@@ -157,15 +159,15 @@ export function ClassesPage() {
   const metrics = calculateOverallMetrics();
 
   const exportToPDF = () => {
-    alert('PDF export functionality would be implemented here');
+    setNotification({ type: 'success', message: 'PDF export functionality would be implemented here' });
   };
 
   const exportToExcel = () => {
-    alert('Excel export functionality would be implemented here');
+    setNotification({ type: 'success', message: 'Excel export functionality would be implemented here' });
   };
 
   const exportToImage = () => {
-    alert('Image export functionality would be implemented here');
+    setNotification({ type: 'success', message: 'Image export functionality would be implemented here' });
   };
 
   const handleSaveRemarks = async () => {
@@ -184,10 +186,10 @@ export function ClassesPage() {
         c.id === selectedClass ? { ...c, remarks: remarksText.trim() || undefined } : c
       ));
       setEditingRemarks(false);
-      alert('Remarks saved successfully!');
+      setNotification({ type: 'success', message: 'Remarks saved successfully!' });
     } catch (error) {
       console.error('Error saving remarks:', error);
-      alert('Failed to save remarks. Please try again.');
+      setNotification({ type: 'error', message: 'Failed to save remarks. Please try again.' });
     } finally {
       setSavingRemarks(false);
     }
@@ -530,6 +532,13 @@ export function ClassesPage() {
 
         <RightSidebar />
       </div>
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

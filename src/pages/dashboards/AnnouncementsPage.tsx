@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Calendar, Search, Bell, AlertCircle, Info, Plus, X } from 'lucide-react';
 import { Announcement } from '../../types';
+import { Notification } from '../../components/Notification';
 
 export function AnnouncementsPage() {
   const { profile } = useAuth();
@@ -16,6 +17,7 @@ export function AnnouncementsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [departments, setDepartments] = useState<any[]>([]);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -66,7 +68,7 @@ export function AnnouncementsPage() {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.content.trim()) {
-      alert('Please fill in all required fields');
+      setNotification({ type: 'error', message: 'Please fill in all required fields' });
       return;
     }
 
@@ -90,7 +92,7 @@ export function AnnouncementsPage() {
 
       if (error) throw error;
 
-      alert('Announcement created successfully!');
+      setNotification({ type: 'success', message: 'Announcement created successfully!' });
       setShowCreateForm(false);
       setFormData({
         title: '',
@@ -102,7 +104,7 @@ export function AnnouncementsPage() {
       fetchAnnouncements();
     } catch (error) {
       console.error('Error creating announcement:', error);
-      alert('Failed to create announcement. Please try again.');
+      setNotification({ type: 'error', message: 'Failed to create announcement. Please try again.' });
     } finally {
       setSubmitting(false);
     }
@@ -417,6 +419,13 @@ export function AnnouncementsPage() {
           )}
         </div>
       </div>
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </DashboardLayout>
   );
 }

@@ -5,6 +5,7 @@ import { ColumnFilter } from '../../components/ColumnFilter';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Search, UserCheck, XCircle, AlertCircle, CheckCircle, Calendar, Mail, Phone } from 'lucide-react';
+import { Notification } from '../../components/Notification';
 
 interface PendingProfile {
   id: string;
@@ -40,6 +41,8 @@ export function NewApprovalsPage() {
     role: [],
     gender: []
   });
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState<{ type: 'approve' | 'reject'; profileId: string; profileName: string } | null>(null);
 
   const isDark = theme === 'dark';
 
@@ -91,11 +94,8 @@ export function NewApprovalsPage() {
   };
 
   const handleApprove = async (profileId: string) => {
-    if (!confirm('Are you sure you want to approve this user? This action cannot be undone.')) {
-      return;
-    }
-
     setApproving(profileId);
+    setShowConfirmModal(null);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -110,21 +110,18 @@ export function NewApprovalsPage() {
       if (error) throw error;
 
       setPendingProfiles(prev => prev.filter(p => p.id !== profileId));
-      alert('User approved successfully!');
+      setNotification({ type: 'success', message: 'User approved successfully!' });
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('Failed to approve user. Please try again.');
+      setNotification({ type: 'error', message: 'Failed to approve user. Please try again.' });
     } finally {
       setApproving(null);
     }
   };
 
   const handleReject = async (profileId: string) => {
-    if (!confirm('Are you sure you want to reject this user? This will permanently delete their data and they will need to sign up again.')) {
-      return;
-    }
-
     setApproving(profileId);
+    setShowConfirmModal(null);
     try {
       // Delete the user's profile from the database
       const { error } = await supabase
@@ -135,10 +132,10 @@ export function NewApprovalsPage() {
       if (error) throw error;
 
       setPendingProfiles(prev => prev.filter(p => p.id !== profileId));
-      alert('User rejected and data deleted successfully.');
+      setNotification({ type: 'success', message: 'User rejected and data deleted successfully.' });
     } catch (error) {
       console.error('Error rejecting user:', error);
-      alert('Failed to reject user. Please try again.');
+      setNotification({ type: 'error', message: 'Failed to reject user. Please try again.' });
     } finally {
       setApproving(null);
     }
@@ -354,7 +351,7 @@ export function NewApprovalsPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleApprove(pendingProfile.id)}
+                            onClick={() => setShowConfirmModal({ type: 'approve', profileId: pendingProfile.id, profileName: pendingProfile.full_name })}
                             disabled={approving === pendingProfile.id}
                             className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
                           >
@@ -362,7 +359,7 @@ export function NewApprovalsPage() {
                             {approving === pendingProfile.id ? 'Processing...' : 'Approve'}
                           </button>
                           <button
-                            onClick={() => handleReject(pendingProfile.id)}
+                            onClick={() => setShowConfirmModal({ type: 'reject', profileId: pendingProfile.id, profileName: pendingProfile.full_name })}
                             disabled={approving === pendingProfile.id}
                             className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
                           >
@@ -396,6 +393,50 @@ export function NewApprovalsPage() {
           </div>
         )}
       </div>
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                  {showConfirmModal.type === 'approve' ? 'Approve User' : 'Reject User'}
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {showConfirmModal.type === 'approve'
+                    ? `Are you sure you want to approve ${showConfirmModal.profileName}? This action cannot be undone.`
+                    : `Are you sure you want to reject ${showConfirmModal.profileName}? This will permanently delete their data and they will need to sign up again.`}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmModal(null)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => showConfirmModal.type === 'approve' ? handleApprove(showConfirmModal.profileId) : handleReject(showConfirmModal.profileId)}
+                className={`px-4 py-2 text-white rounded-lg transition-colors ${
+                  showConfirmModal.type === 'approve'
+                    ? 'bg-green-500 hover:bg-green-600'
+                    : 'bg-red-500 hover:bg-red-600'
+                }`}
+              >
+                {showConfirmModal.type === 'approve' ? 'Approve' : 'Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
