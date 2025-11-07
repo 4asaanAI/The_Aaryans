@@ -36,38 +36,35 @@ export function ProfilePage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
- const handleSave = async () => {
-  if (!profile) return;
-  setSaving(true);
-  setMessage(null);
+  const handleSave = async () => {
+    if (!profile) return;
 
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        full_name: formData.full_name,
-        phone: formData.phone,
-        address: formData.address,
-        date_of_birth: formData.date_of_birth,
-        bio: formData.bio,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', profile.id);
+    setSaving(true);
+    setMessage(null);
 
-    if (error) throw error;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.full_name,
+          phone: formData.phone,
+          address: formData.address,
+          date_of_birth: formData.date_of_birth,
+          bio: formData.bio,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', profile.id);
 
-    // Re-fetch to keep profile + form in sync (optional)
-    // const { data: fresh } = await supabase.from('profiles').select('*').eq('id', profile.id).single();
-    // setFormData({ ...formData, ...fresh });
+      if (error) throw error;
 
-    setMessage({ type: 'success', text: 'Profile updated successfully!' });
-  } catch (e: any) {
-    setMessage({ type: 'error', text: e.message || 'Failed to update profile' });
-  } finally {
-    setSaving(false);
-  }
-};
-
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <DashboardLayout>
