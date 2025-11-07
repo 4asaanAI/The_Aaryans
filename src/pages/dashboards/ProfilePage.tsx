@@ -63,8 +63,6 @@ export function ProfilePage() {
       setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
     } finally {
       setSaving(false);
-      window.location.reload();
-
     }
   };
 
