@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { Camera, Save, Loader2 } from 'lucide-react';
 
 export function ProfilePage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -57,6 +57,7 @@ export function ProfilePage() {
 
       if (error) throw error;
 
+      await refreshProfile();
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
     } catch (error: any) {
       console.error('Error updating profile:', error);
