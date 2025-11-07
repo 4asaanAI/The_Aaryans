@@ -64,6 +64,7 @@ export function ProfilePage() {
     } finally {
       setSaving(false);
       window.location.reload();
+
     }
   };
 
