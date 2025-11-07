@@ -7,6 +7,7 @@ import { Camera, Save, Loader2 } from 'lucide-react';
 export function ProfilePage() {
   const { profile } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [callEffect, setCallEffect] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [formData, setFormData] = useState({
@@ -63,6 +64,7 @@ export function ProfilePage() {
       setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
     } finally {
       setSaving(false);
+      setCallEffect(true);
     }
   };
 
