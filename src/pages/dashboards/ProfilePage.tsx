@@ -144,7 +144,7 @@ export function ProfilePage() {
                   type="tel"
                   name="phone"
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={(e)=>handleChange(e)}
                   placeholder="+1 (555) 000-0000"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -158,7 +158,7 @@ export function ProfilePage() {
                   type="date"
                   name="date_of_birth"
                   value={formData.date_of_birth}
-                  onChange={handleChange}
+                  onChange={(e)=>handleChange(e)}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -171,7 +171,7 @@ export function ProfilePage() {
                   type="text"
                   name="address"
                   value={formData.address}
-                  onChange={handleChange}
+                  onChange={(e)=>handleChange(e)}
                   placeholder="123 Main St, City, State, ZIP"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -184,7 +184,7 @@ export function ProfilePage() {
                 <textarea
                   name="bio"
                   value={formData.bio}
-                  onChange={handleChange}
+                 onChange={(e)=>handleChange(e)}
                   rows={4}
                   placeholder="Tell us about yourself..."
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
