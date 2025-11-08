@@ -8,6 +8,7 @@ import {
   LogOut, Calendar, Library, UserCircle, BarChart3,
   ClipboardList, Award, UserCheck, MailOpen
 } from 'lucide-react';
+import { DashboardChatbot } from './DashboardChatbot';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -331,6 +332,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      <DashboardChatbot />
     </div>
   );
 }
