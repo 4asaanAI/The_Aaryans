@@ -39,7 +39,7 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
         throw new Error('Service endpoint not found');
       } else if (response.status === 401 || response.status === 403) {
         throw new Error('Authentication failed');
-      } else if (response.status >= 500) {
+      } else if (response.status === 500) {
         throw new Error('Service temporarily unavailable');
       }
 
