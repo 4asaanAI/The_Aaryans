@@ -5,91 +5,67 @@ export interface N8NResponse {
 }
 
 export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
-  const N8N_URL = import.meta.env.VITE_N8N_URL;
-  const N8N_KEY = import.meta.env.VITE_N8N_KEY;
+  const N8N_URL = import.meta.env.VITE_N8N_URL; // e.g. http://localhost:5678/webhook-test/chat
+  const N8N_KEY = import.meta.env.VITE_N8N_KEY; // optional
 
   if (!N8N_URL) {
-    console.error('N8N URL not configured');
     return {
       response: 'Chatbot service is not configured. Please contact the administrator.',
       success: false,
-      error: 'Missing N8N URL configuration'
+      error: 'Missing N8N URL configuration',
     };
   }
 
   try {
-    const response = await fetch(N8N_URL, {
+    const res = await fetch(N8N_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(N8N_KEY && { 'Authorization': `Bearer ${N8N_KEY}` })
+        ...(N8N_KEY ? { Authorization: `Bearer ${N8N_KEY}` } : {}),
       },
       body: JSON.stringify({
         query: userQuery,
-        timestamp: new Date().toISOString()
-      })
+        timestamp: new Date().toISOString(),
+      }),
     });
 
-    if (!response.ok) {
-      console.error('N8N webhook error:', response.status, response.statusText);
-
-      if (response.status === 404) {
-        throw new Error('N8N webhook endpoint not found');
-      } else if (response.status === 401 || response.status === 403) {
-        throw new Error('Authentication failed');
-      } else if (response.status >= 500) {
-        throw new Error('N8N service is temporarily unavailable');
-      }
-
-      throw new Error(`N8N webhook error: ${response.status}`);
+    if (!res.ok) {
+      if (res.status === 404) throw new Error('N8N webhook endpoint not found');
+      if (res.status === 401 || res.status === 403) throw new Error('Authentication failed');
+      if (res.status >= 500) throw new Error('N8N service is temporarily unavailable');
+      throw new Error(`N8N webhook error: ${res.status} ${res.statusText}`);
     }
 
-    const data = await response.json();
+    // Try JSON first, then fall back to text
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { /* not JSON */ }
 
-    if (data.response) {
-      return {
-        response: data.response,
-        success: true
-      };
-    } else if (data.answer) {
-      return {
-        response: data.answer,
-        success: true
-      };
-    } else if (data.result) {
-      return {
-        response: data.result,
-        success: true
-      };
-    } else if (typeof data === 'string') {
-      return {
-        response: data,
-        success: true
-      };
+    const normalized =
+      (data && (data.response ?? data.answer ?? data.result)) ??
+      (typeof data === 'string' ? data : text);
+
+    if (typeof normalized === 'string' && normalized.length > 0) {
+      return { response: normalized, success: true };
     }
 
-    console.error('Unexpected N8N response format:', data);
     return {
       response: 'Received an unexpected response format. Please try again.',
       success: false,
-      error: 'Invalid response format'
+      error: 'Invalid response format',
     };
-  console.log('hi')
-  } catch (error) {
-    console.error('Error querying N8N:', error);
+  } catch (err: any) {
+    // Browser fetch hides CORS details; map the common messages
+    let msg = 'Unable to process your query. Please try again.';
+    const s = String(err?.message ?? err);
 
-    let errorMessage = 'Unable to process your query. Please try again.';
-
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      errorMessage = 'Network error. Please check your connection and try again.';
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
+    if (s.includes('Failed to fetch') || s.includes('NetworkError')) {
+      msg =
+        'Network error. Possible causes: wrong URL, CORS/mixed content, or n8n is unreachable.';
+    } else {
+      msg = s;
     }
 
-    return {
-      response: errorMessage,
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
+    return { response: msg, success: false, error: s };
   }
 }
