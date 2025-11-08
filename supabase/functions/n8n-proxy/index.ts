@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
         ...(n8nKey && { "Authorization": `Bearer ${n8nKey}` }),
       },
-      body: JSON.stringify({ query, timestamp: ts }),
+      body: JSON.stringify({ message: query }),
     });
 
     const responseText = await n8nResponse.text();
