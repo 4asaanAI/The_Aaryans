@@ -8,7 +8,17 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: 5173
+    port: 5173,
+    proxy: {
+      // ✅ Proxy to n8n to avoid HTTPS→HTTP mixed content
+      '/api/n8n/chat': {
+        target: 'http://localhost:5678',
+        changeOrigin: true,
+        secure: false,
+        // Workflow is ACTIVE → use /webhook/chat
+        rewrite: () => '/webhook/chat',
+      },
+    },
   },
   preview: {
     port: 5173
