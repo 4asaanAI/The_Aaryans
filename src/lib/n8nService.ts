@@ -74,7 +74,7 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
       success: false,
       error: 'Invalid response format'
     };
-
+  console.log('hi')
   } catch (error) {
     console.error('Error querying N8N:', error);
 
