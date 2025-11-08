@@ -19,10 +19,6 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
   try {
     const res = await fetch(N8N_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(N8N_KEY ? { Authorization: `Bearer ${N8N_KEY}` } : {}),
-      },
       body: JSON.stringify({
         query: userQuery,
         timestamp: new Date().toISOString(),
