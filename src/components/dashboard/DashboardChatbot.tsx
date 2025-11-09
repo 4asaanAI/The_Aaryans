@@ -129,7 +129,7 @@ export function DashboardChatbot() {
                 <Database className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <h3 className="text-white font-semibold">SQL Assistant</h3>
+                <h3 className="text-white font-semibold">AI Assistant</h3>
                 <p className="text-blue-100 text-xs">Query database in natural language</p>
               </div>
             </div>
