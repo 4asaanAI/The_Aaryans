@@ -169,7 +169,7 @@ export function DashboardChatbot() {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3">
-                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> Checking Database
                 </div>
               </div>
             )}
