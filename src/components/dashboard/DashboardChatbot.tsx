@@ -130,7 +130,7 @@ export function DashboardChatbot() {
               </div>
               <div>
                 <h3 className="text-white font-semibold">AI Assistant</h3>
-                <p className="text-blue-100 text-xs">Query database in natural language</p>
+                <p className="text-blue-100 text-xs">Help to gather or edit data for you</p>
               </div>
             </div>
             <button
