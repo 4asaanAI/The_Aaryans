@@ -51,7 +51,7 @@ export function DashboardChatbot() {
     const welcomeMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'assistant',
-      content: 'Hello! I can help you query the database using natural language. Ask me anything about students, courses, grades, attendance, or any other data in the system.',
+      content: 'Hello! I can help you to get any specific details or perform any editable action for you. Please be sure to list your query as detailed and accurate as possible',
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
