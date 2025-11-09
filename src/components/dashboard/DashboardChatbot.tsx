@@ -169,12 +169,23 @@ export function DashboardChatbot() {
               </div>
             ))}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3">
-                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> Processing your request…
-                </div>
-              </div>
-            )}
+  <div className="flex justify-start">
+    <div className="flex items-center gap-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-2xl px-5 py-3 shadow-md">
+      <div className="relative flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin" />
+        <span className="absolute w-10 h-10 border-2 border-blue-300 dark:border-blue-700 rounded-full animate-ping opacity-20" />
+      </div>
+      <div className="flex flex-col">
+        <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+          Fetching data from the database...
+        </p>
+        <p className="text-xs text-blue-500 dark:text-blue-400 animate-pulse">
+          Please wait a moment while I process your query.
+        </p>
+      </div>
+    </div>
+  </div>
+)}
             <div ref={messagesEndRef} />
           </div>
 
