@@ -27,8 +27,7 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({
-        query: userQuery,
-        ts: new Date().toISOString()
+        query: userQuery
       })
     });
 
