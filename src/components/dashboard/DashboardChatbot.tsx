@@ -51,7 +51,8 @@ export function DashboardChatbot() {
     const welcomeMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'assistant',
-      content: 'Hello! I can help you to get any specific details or perform any editable action for you. Please be sure to list your query as detailed and accurate as possible',
+      content:
+        'Hi! I can fetch, summarize, and update data in your ERP. Ask a clear, specific question with names, classes, and dates when possible.\n\nExamples:\n• “Show absent students for Class 8 today.”\n• “Update Rahul Sharma’s phone to 98xxxxxxx.”\n• “List fees pending for Section B.”\n\nI’ll confirm before making any edits.',
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -88,7 +89,8 @@ export function DashboardChatbot() {
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'I encountered an error processing your request. Please try again or contact support if the issue persists.',
+        content:
+          'Sorry—something went wrong while processing that request. Please try again, or refine your query.',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -129,8 +131,8 @@ export function DashboardChatbot() {
                 <Database className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <h3 className="text-white font-semibold">AI Assistant</h3>
-                <p className="text-blue-100 text-xs">Help to gather or edit data for you</p>
+                <h3 className="text-white font-semibold">AI Data Assistant</h3>
+                <p className="text-blue-100 text-xs">Query or update ERP data securely</p>
               </div>
             </div>
             <button
@@ -169,7 +171,7 @@ export function DashboardChatbot() {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3">
-                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> Checking Database
+                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" /> Processing your request…
                 </div>
               </div>
             )}
@@ -192,7 +194,7 @@ export function DashboardChatbot() {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about students, courses, grades..."
+                placeholder='Ask something specific… e.g., “Attendance for Class 8 today” or “Change Ananya’s address”'
                 className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <button
