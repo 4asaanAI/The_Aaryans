@@ -21,11 +21,13 @@ export function PrincipalDashboard() {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [showYearDropdown, setShowYearDropdown] = useState(false);
+  const [yearComparisonData, setYearComparisonData] = useState<any[]>([]);
 
   useEffect(() => {
     fetchAcademicYears();
     fetchStats();
     fetchAttendanceData();
+    fetchYearComparison();
   }, []);
 
   const fetchAcademicYears = async () => {
@@ -43,6 +45,39 @@ export function PrincipalDashboard() {
       }
     } catch (error) {
       console.error('Error fetching academic years:', error);
+    }
+  };
+
+  const fetchYearComparison = async () => {
+    try {
+      const { data: years, error: yearsError } = await supabase
+        .from('academic_years')
+        .select('id, year_label')
+        .order('start_date', { ascending: false })
+        .limit(3);
+
+      if (yearsError) throw yearsError;
+
+      const { data: stats, error: statsError } = await supabase
+        .from('academic_year_stats')
+        .select('*')
+        .eq('metric_name', 'students')
+        .in('academic_year_id', years?.map(y => y.id) || []);
+
+      if (statsError) throw statsError;
+
+      const monthlyData = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'].map(month => {
+        const entry: any = { month };
+        years?.forEach(year => {
+          const stat = stats?.find(s => s.academic_year_id === year.id && s.month === month);
+          entry[year.year_label] = stat?.metric_value || 0;
+        });
+        return entry;
+      });
+
+      setYearComparisonData(monthlyData);
+    } catch (error) {
+      console.error('Error fetching year comparison:', error);
     }
   };
 
@@ -282,6 +317,42 @@ export function PrincipalDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Year Comparison Chart */}
+          {yearComparisonData.length > 0 && (
+            <div className="bg-white rounded-2xl p-5">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-lg font-semibold">Student Enrollment - Year Comparison</h3>
+              </div>
+              <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
+                <ResponsiveContainer width="100%" height="90%">
+                  <LineChart data={yearComparisonData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis dataKey="month" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="2024/25" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="2023/24" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="2022/23" stroke="#F59E0B" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-6 mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-xs text-gray-600">2024/25</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-xs text-gray-600">2023/24</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <span className="text-xs text-gray-600">2022/23</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column - 1fr */}
