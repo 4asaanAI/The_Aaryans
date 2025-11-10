@@ -33,13 +33,10 @@ export function HeadDashboard() {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [showYearDropdown, setShowYearDropdown] = useState(false);
 
-  const [aiUpdate, setAiUpdate] = useState<string | null>(null);
-
   useEffect(() => {
     fetchAcademicYears();
     fetchStats();
     fetchAttendanceData();
-    fetchAIUpdate();
   }, []);
 
   const fetchAcademicYears = async () => {
@@ -57,19 +54,6 @@ export function HeadDashboard() {
       }
     } catch (error) {
       console.error('Error fetching academic years:', error);
-    }
-  };
-
-  const fetchAIUpdate = async () => {
-    try {
-      const result = await sendQueryToN8N(
-        'Generate random short, positive, and fresh fact related to school life, learning, students, or education.'
-      );
-      setAiUpdate(result.response); // keep for later use if needed
-      console.log('AI update:', result.response); // no UI change, just log
-    } catch (error) {
-      console.error('Error sending message to N8N:', error);
-      // keep behavior silent to avoid UI changes
     }
   };
 
@@ -193,19 +177,6 @@ export function HeadDashboard() {
               <div className="text-blue-50 text-sm font-medium">Employees</div>
             </div>
           </div>
-          {aiUpdate && (
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm mt-5 animate-fade-in">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                  AI School Update
-                </h3>
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
-                {aiUpdate}
-              </p>
-            </div>
-          )}
           {/* Row 1: Attendance and Students side by side */}
           <div className="grid grid-cols-2 gap-5">
             {/* Attendance Chart */}
