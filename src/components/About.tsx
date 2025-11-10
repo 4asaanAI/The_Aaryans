@@ -1,7 +1,7 @@
 import { Building2, Users, Award, Target, MapPin } from 'lucide-react';
 import { Carousel } from './Carousel';
 
-export function Abou() {
+export function About() {
   const infoCards = [
     {
       icon: Target,
