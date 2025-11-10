@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
-import { MoreVertical } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
   LineChart,
@@ -15,7 +15,13 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { sendQueryToN8N } from '../../lib/n8nService'; // ← added
+import { sendQueryToN8N } from '../../lib/n8nService';
+
+interface AcademicYear {
+  id: string;
+  year_label: string;
+  is_current: boolean;
+}
 
 export function HeadDashboard() {
   const [stats, setStats] = useState({
@@ -23,15 +29,36 @@ export function HeadDashboard() {
     totalTeachers: 0,
     totalStaff: 0,
   });
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [showYearDropdown, setShowYearDropdown] = useState(false);
 
-  // store AI update without changing UI functionality
-  const [aiUpdate, setAiUpdate] = useState<string | null>(null); // ← added
+  const [aiUpdate, setAiUpdate] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchAcademicYears();
     fetchStats();
     fetchAttendanceData();
-    fetchAIUpdate(); // ← added
+    fetchAIUpdate();
   }, []);
+
+  const fetchAcademicYears = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('academic_years')
+        .select('*')
+        .order('start_date', { ascending: false });
+
+      if (error) throw error;
+      if (data) {
+        setAcademicYears(data);
+        const current = data.find(y => y.is_current);
+        if (current) setSelectedYear(current.id);
+      }
+    } catch (error) {
+      console.error('Error fetching academic years:', error);
+    }
+  };
 
   const fetchAIUpdate = async () => {
     try {
@@ -114,45 +141,56 @@ export function HeadDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              Academic Year 2024/25
-            </h2>
+            <div className="relative">
+              <button
+                onClick={() => setShowYearDropdown(!showYearDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Academic Year: {academicYears.find(y => y.id === selectedYear)?.year_label || '2024/25'}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-500" />
+              </button>
+              {showYearDropdown && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                  {academicYears.map(year => (
+                    <button
+                      key={year.id}
+                      onClick={() => {
+                        setSelectedYear(year.id);
+                        setShowYearDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                        selectedYear === year.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {year.year_label} {year.is_current && '(Current)'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-blue-400 rounded-2xl p-5">
-              <div className="flex justify-end items-start mb-4">
-                <button className="text-white opacity-70 hover:opacity-100">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="text-3xl font-semibold mb-1 text-white">
+              <div className="text-3xl font-semibold mb-1 text-white pt-9">
                 {stats.totalStudents.toLocaleString()}
               </div>
               <div className="text-blue-50 text-sm font-medium">Students</div>
             </div>
 
             <div className="bg-blue-300 rounded-2xl p-5">
-              <div className="flex justify-end items-start mb-4">
-                <button className="text-white opacity-70 hover:opacity-100">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="text-3xl font-semibold mb-1 text-white">
+              <div className="text-3xl font-semibold mb-1 text-white pt-9">
                 {stats.totalTeachers.toLocaleString()}
               </div>
               <div className="text-blue-50 text-sm font-medium">Teachers</div>
             </div>
 
             <div className="bg-blue-400 rounded-2xl p-5">
-              <div className="flex justify-end items-start mb-4">
-                <button className="text-white opacity-70 hover:opacity-100">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="text-3xl font-semibold mb-1 text-white">
+              <div className="text-3xl font-semibold mb-1 text-white pt-9">
                 {stats.totalStaff.toLocaleString()}
               </div>
-              <div className="text-blue-50 text-sm font-medium">Staffs</div>
+              <div className="text-blue-50 text-sm font-medium">Employees</div>
             </div>
           </div>
           {aiUpdate && (
@@ -174,9 +212,6 @@ export function HeadDashboard() {
             <div className="bg-white rounded-2xl p-5">
               <div className="flex justify-between items-center mb-5">
                 <h3 className="text-lg font-semibold">Attendance</h3>
-                <button className="text-gray-400">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
               </div>
               <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
                 <ResponsiveContainer width="100%" height="90%">
@@ -213,9 +248,6 @@ export function HeadDashboard() {
             <div className="bg-white rounded-2xl p-5">
               <div className="flex justify-between items-center mb-5">
                 <h3 className="text-lg font-semibold">Students</h3>
-                <button className="text-gray-400">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
               </div>
               <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
                 <ResponsiveContainer width="100%" height="80%">
@@ -246,9 +278,6 @@ export function HeadDashboard() {
           <div className="bg-white rounded-2xl p-5">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-semibold">Finance</h3>
-              <button className="text-gray-400">
-                <MoreVertical className="h-5 w-5" />
-              </button>
             </div>
             <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
               <ResponsiveContainer width="100%" height="90%">

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Search, Send, MoreVertical, Phone, Video, Check, CheckCheck } from 'lucide-react';
+import { Search, Send, Check, CheckCheck } from 'lucide-react';
 
 interface Contact {
   id: string;
@@ -385,15 +385,6 @@ export function MessagesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                      <Phone className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </button>
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                      <Video className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </button>
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                      <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </button>
                   </div>
                 </div>
               </div>
