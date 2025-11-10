@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
   LogOut, Calendar, Library, UserCircle, BarChart3,
-  ClipboardList, Award, UserCheck, MailOpen
+  ClipboardList, Award, UserCheck, MailOpen, DollarSign, HelpCircle
 } from 'lucide-react';
 import { DashboardChatbot } from './DashboardChatbot';
 
@@ -147,7 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       { name: 'Home', href: '/dashboard', icon: Home }
     ];
 
-    if (profile.role === 'admin') {
+    if (profile.role === 'admin' || (profile.sub_role && (profile.sub_role === 'principal' || profile.sub_role === 'head'))) {
       return [
         ...commonItems,
         { name: 'Users', href: '/dashboard/users', icon: Users },
@@ -158,6 +158,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Events', href: '/dashboard/events', icon: Calendar },
         { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
         { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
+        { name: 'Finance', href: '/dashboard/finance', icon: DollarSign },
+        { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
         { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
       ];
     }

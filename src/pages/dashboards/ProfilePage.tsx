@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Camera, Save, Loader2 } from 'lucide-react';
+import { Camera, Save, Loader2, Upload, Link as LinkIcon } from 'lucide-react';
 
 export function ProfilePage() {
   const { profile, refreshProfile } = useAuth();
@@ -15,8 +15,13 @@ export function ProfilePage() {
     phone: '',
     address: '',
     date_of_birth: '',
-    bio: ''
+    bio: '',
+    photo_url: ''
   });
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photoUploadMethod, setPhotoUploadMethod] = useState<'url' | 'file'>('url');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -26,7 +31,8 @@ export function ProfilePage() {
         phone: profile.phone || '',
         address: profile.address || '',
         date_of_birth: profile.date_of_birth || '',
-        bio: profile.bio || ''
+        bio: profile.bio || '',
+        photo_url: profile.photo_url || ''
       });
     }
   }, [profile]);
@@ -51,6 +57,7 @@ export function ProfilePage() {
           address: formData.address,
           date_of_birth: formData.date_of_birth,
           bio: formData.bio,
+          photo_url: formData.photo_url,
           updated_at: new Date().toISOString()
         })
         .eq('id', profile.id);
@@ -67,6 +74,40 @@ export function ProfilePage() {
     }
   };
 
+  const handlePhotoUpload = async (file: File) => {
+    if (!profile) return;
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      setShowPhotoModal(false);
+    } catch (error: any) {
+      console.error('Error uploading photo:', error);
+      setMessage({ type: 'error', text: 'Failed to upload photo' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePhotoUrl = () => {
+    if (photoUrl.trim()) {
+      setFormData(prev => ({ ...prev, photo_url: photoUrl }));
+      setShowPhotoModal(false);
+      setPhotoUrl('');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
@@ -79,12 +120,17 @@ export function ProfilePage() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-6">
               <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-3xl font-bold">
-                    {profile?.full_name?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+                {formData.photo_url ? (
+                  <img src={formData.photo_url} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-3xl font-bold">
+                      {profile?.full_name?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <button
+                  onClick={() => setShowPhotoModal(true)}
                   className="absolute bottom-0 right-0 p-2 bg-white dark:bg-gray-700 rounded-full shadow-lg border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   title="Change photo"
                 >
@@ -215,6 +261,90 @@ export function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {showPhotoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Upload Photo</h3>
+
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setPhotoUploadMethod('url')}
+                className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+                  photoUploadMethod === 'url'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                <LinkIcon className="h-4 w-4 inline mr-2" />
+                URL
+              </button>
+              <button
+                onClick={() => setPhotoUploadMethod('file')}
+                className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+                  photoUploadMethod === 'file'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                <Upload className="h-4 w-4 inline mr-2" />
+                File
+              </button>
+            </div>
+
+            {photoUploadMethod === 'url' ? (
+              <div className="space-y-4">
+                <input
+                  type="url"
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  placeholder="https://example.com/photo.jpg"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowPhotoModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePhotoUrl}
+                    disabled={!photoUrl.trim()}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                  >
+                    Set Photo
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePhotoUpload(file);
+                  }}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                {uploading && (
+                  <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Uploading...</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setShowPhotoModal(false)}
+                  className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

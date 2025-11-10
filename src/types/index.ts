@@ -16,6 +16,7 @@ export interface Profile {
   gender?: string | null;
   blood_group?: string | null;
   bio?: string | null;
+  photo_url?: string | null;
   status: 'active' | 'inactive' | 'suspended' | 'pending_approval';
   approval_status?: 'pending' | 'approved' | 'rejected';
   approved_at?: string | null;

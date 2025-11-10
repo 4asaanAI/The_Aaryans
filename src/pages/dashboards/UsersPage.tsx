@@ -55,7 +55,7 @@ export function UsersPage() {
   const [stats, setStats] = useState({
     students: 0,
     teachers: 0,
-    crew: 0
+    employees: 0
   });
 
   useEffect(() => {
@@ -80,9 +80,9 @@ export function UsersPage() {
 
       const students = data?.filter(p => p.role === 'student').length || 0;
       const teachers = data?.filter(p => p.role === 'professor' || p.role === 'teacher').length || 0;
-      const crew = data?.filter(p => p.role === 'admin' || p.role === 'staff').length || 0;
+      const employees = data?.filter(p => p.role === 'admin' || p.role === 'staff').length || 0;
 
-      setStats({ students, teachers, crew });
+      setStats({ students, teachers, employees });
     } catch (error) {
       console.error('Error fetching profiles:', error);
     } finally {
@@ -410,8 +410,8 @@ export function UsersPage() {
                   <UsersIcon className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white mb-1">{stats.crew}</div>
-              <div className="text-purple-50 text-sm font-medium">Crew</div>
+              <div className="text-3xl font-bold text-white mb-1">{stats.employees}</div>
+              <div className="text-purple-50 text-sm font-medium">Employees</div>
             </div>
           </div>
 

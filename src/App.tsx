@@ -16,6 +16,8 @@ import { NewApprovalsPage } from './pages/dashboards/NewApprovalsPage';
 import { ExamsPage } from './pages/dashboards/ExamsPage';
 import { ResultsPage } from './pages/dashboards/ResultsPage';
 import { EventsPage } from './pages/dashboards/EventsPage';
+import { FinancePage } from './pages/dashboards/FinancePage';
+import { SupportPage } from './pages/dashboards/SupportPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -90,6 +92,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EventsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/finance"
+              element={
+                <ProtectedRoute>
+                  <FinancePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/support"
+              element={
+                <ProtectedRoute>
+                  <SupportPage />
                 </ProtectedRoute>
               }
             />

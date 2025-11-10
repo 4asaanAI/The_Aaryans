@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
-import { RightSidebar } from '../../components/dashboard/RightSidebar';
 import { ColumnFilter } from '../../components/ColumnFilter';
 import { useTheme } from '../../contexts/ThemeContext';
 import { supabase } from '../../lib/supabase';
@@ -358,7 +357,6 @@ export function EventsPage() {
           </div>
         </div>
 
-        <RightSidebar />
       </div>
     </DashboardLayout>
   );
