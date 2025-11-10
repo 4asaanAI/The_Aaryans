@@ -2,7 +2,15 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Calendar, Search, Bell, AlertCircle, Info, Plus, X } from 'lucide-react';
+import {
+  Calendar,
+  Search,
+  Bell,
+  AlertCircle,
+  Info,
+  Plus,
+  X,
+} from 'lucide-react';
 import { Announcement } from '../../types';
 import { Notification } from '../../components/Notification';
 
@@ -17,14 +25,17 @@ export function AnnouncementsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [departments, setDepartments] = useState<any[]>([]);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     target_audience: 'all',
     department_id: '',
-    priority: 'medium'
+    priority: 'medium',
   });
 
   useEffect(() => {
@@ -37,7 +48,9 @@ export function AnnouncementsPage() {
     try {
       const { data, error } = await supabase
         .from('announcements')
-        .select('*, author:profiles!announcements_author_id_fkey(full_name, email)')
+        .select(
+          '*, author:profiles!announcements_author_id_fkey(full_name, email)'
+        )
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -68,7 +81,10 @@ export function AnnouncementsPage() {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.content.trim()) {
-      setNotification({ type: 'error', message: 'Please fill in all required fields' });
+      setNotification({
+        type: 'error',
+        message: 'Please fill in all required fields',
+      });
       return;
     }
 
@@ -79,7 +95,7 @@ export function AnnouncementsPage() {
         content: formData.content.trim(),
         target_audience: formData.target_audience,
         priority: formData.priority,
-        author_id: profile?.id
+        author_id: profile?.id,
       };
 
       if (formData.target_audience === 'department' && formData.department_id) {
@@ -92,34 +108,45 @@ export function AnnouncementsPage() {
 
       if (error) throw error;
 
-      setNotification({ type: 'success', message: 'Announcement created successfully!' });
+      setNotification({
+        type: 'success',
+        message: 'Announcement created successfully!',
+      });
       setShowCreateForm(false);
       setFormData({
         title: '',
         content: '',
         target_audience: 'all',
         department_id: '',
-        priority: 'medium'
+        priority: 'medium',
       });
       fetchAnnouncements();
     } catch (error) {
       console.error('Error creating announcement:', error);
-      setNotification({ type: 'error', message: 'Failed to create announcement. Please try again.' });
+      setNotification({
+        type: 'error',
+        message: 'Failed to create announcement. Please try again.',
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredAnnouncements = announcements.filter(announcement => {
+  const filteredAnnouncements = announcements.filter((announcement) => {
     const matchesSearch =
       announcement.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       announcement.content.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesPriority = selectedPriority === 'all' || announcement.priority === selectedPriority;
-    const matchesAudience = selectedAudience === 'all' || announcement.target_audience === selectedAudience;
+    const matchesPriority =
+      selectedPriority === 'all' || announcement.priority === selectedPriority;
+    const matchesAudience =
+      selectedAudience === 'all' ||
+      announcement.target_audience === selectedAudience;
 
-    const matchesDate = !selectedDate ||
-      new Date(announcement.created_at).toISOString().split('T')[0] === selectedDate;
+    const matchesDate =
+      !selectedDate ||
+      new Date(announcement.created_at).toISOString().split('T')[0] ===
+        selectedDate;
 
     return matchesSearch && matchesPriority && matchesAudience && matchesDate;
   });
@@ -150,15 +177,20 @@ export function AnnouncementsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Announcements</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">View and manage school announcements</p>
+      {/* Page wrapper: prevent horizontal scroll on mobile; desktop unaffected */}
+      <div className="space-y-6 w-full min-w-0 px-4 sm:px-6 md:px-8 overflow-x-hidden">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
+              Announcements
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              View and manage school announcements
+            </p>
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium self-start md:self-auto"
           >
             <Plus className="h-5 w-5" />
             Create Announcement
@@ -166,10 +198,13 @@ export function AnnouncementsPage() {
         </div>
 
         {showCreateForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Announcement</h2>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            {/* Responsive modal width with safe max; prevents overflow */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-[min(42rem,calc(100vw-2rem))] max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                  Create New Announcement
+                </h2>
                 <button
                   onClick={() => setShowCreateForm(false)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -178,7 +213,10 @@ export function AnnouncementsPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleCreateAnnouncement} className="p-6 space-y-5">
+              <form
+                onSubmit={handleCreateAnnouncement}
+                className="p-4 sm:p-6 space-y-5"
+              >
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Title <span className="text-red-500">*</span>
@@ -186,7 +224,9 @@ export function AnnouncementsPage() {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     placeholder="Enter announcement title"
                     required
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -199,7 +239,9 @@ export function AnnouncementsPage() {
                   </label>
                   <textarea
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
                     placeholder="Enter announcement content"
                     required
                     rows={6}
@@ -214,7 +256,13 @@ export function AnnouncementsPage() {
                     </label>
                     <select
                       value={formData.target_audience}
-                      onChange={(e) => setFormData({ ...formData, target_audience: e.target.value, department_id: '' })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          target_audience: e.target.value,
+                          department_id: '',
+                        })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
@@ -231,7 +279,9 @@ export function AnnouncementsPage() {
                     </label>
                     <select
                       value={formData.priority}
-                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, priority: e.target.value })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
@@ -249,19 +299,26 @@ export function AnnouncementsPage() {
                     </label>
                     <select
                       value={formData.department_id}
-                      onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          department_id: e.target.value,
+                        })
+                      }
                       required
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="">Select a department</option>
-                      {departments.map(dept => (
-                        <option key={dept.id} value={dept.id}>{dept.name}</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </option>
                       ))}
                     </select>
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
@@ -282,11 +339,11 @@ export function AnnouncementsPage() {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="lg:col-span-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 min-w-0">
+            <div className="lg:col-span-2 min-w-0">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search announcements..."
@@ -297,7 +354,7 @@ export function AnnouncementsPage() {
               </div>
             </div>
 
-            <div>
+            <div className="min-w-0">
               <select
                 value={selectedPriority}
                 onChange={(e) => setSelectedPriority(e.target.value)}
@@ -310,22 +367,21 @@ export function AnnouncementsPage() {
               </select>
             </div>
 
-            <div>
+            <div className="min-w-0">
               <select
                 value={selectedAudience}
                 onChange={(e) => setSelectedAudience(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="all">All Audiences</option>
-                <option value="all">Everyone</option>
                 <option value="students">Students</option>
                 <option value="professors">Professors</option>
                 <option value="department">Department</option>
               </select>
             </div>
 
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+            <div className="relative min-w-0">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               <input
                 type="date"
                 value={selectedDate}
@@ -335,7 +391,10 @@ export function AnnouncementsPage() {
             </div>
           </div>
 
-          {(searchQuery || selectedPriority !== 'all' || selectedAudience !== 'all' || selectedDate) && (
+          {(searchQuery ||
+            selectedPriority !== 'all' ||
+            selectedAudience !== 'all' ||
+            selectedDate) && (
             <div className="mt-4 flex items-center gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {filteredAnnouncements.length} results found
@@ -361,13 +420,16 @@ export function AnnouncementsPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           ) : filteredAnnouncements.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-              <Bell className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-10 sm:p-12 text-center">
+              <Bell className="h-14 w-14 sm:h-16 sm:w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 No announcements found
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {searchQuery || selectedPriority !== 'all' || selectedAudience !== 'all' || selectedDate
+                {searchQuery ||
+                selectedPriority !== 'all' ||
+                selectedAudience !== 'all' ||
+                selectedDate
                   ? 'Try adjusting your filters'
                   : 'There are no announcements at this time'}
               </p>
@@ -376,42 +438,50 @@ export function AnnouncementsPage() {
             filteredAnnouncements.map((announcement) => (
               <div
                 key={announcement.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-md transition-shadow overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white break-words">
                         {announcement.title}
                       </h3>
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border shrink-0 ${getPriorityColor(
                           announcement.priority
                         )}`}
                       >
                         {getPriorityIcon(announcement.priority)}
-                        {announcement.priority.charAt(0).toUpperCase() + announcement.priority.slice(1)}
+                        {announcement.priority.charAt(0).toUpperCase() +
+                          announcement.priority.slice(1)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(announcement.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        {new Date(announcement.created_at).toLocaleDateString(
+                          'en-US',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          }
+                        )}
                       </span>
                       {announcement.author && (
-                        <span>By {announcement.author.full_name}</span>
+                        <span className="truncate">
+                          By {announcement.author.full_name}
+                        </span>
                       )}
                       <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs capitalize">
-                        {announcement.target_audience === 'all' ? 'Everyone' : announcement.target_audience}
+                        {announcement.target_audience === 'all'
+                          ? 'Everyone'
+                          : announcement.target_audience}
                       </span>
                     </div>
                   </div>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words hyphens-auto">
                   {announcement.content}
                 </p>
               </div>
@@ -419,6 +489,7 @@ export function AnnouncementsPage() {
           )}
         </div>
       </div>
+
       {notification && (
         <Notification
           type={notification.type}
