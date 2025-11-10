@@ -4,6 +4,7 @@ import { RightSidebar } from '../../components/dashboard/RightSidebar';
 import { MoreVertical } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { sendQueryToN8N } from '../../lib/n8nService'; // ← added
 
 export function HeadDashboard() {
   const [stats, setStats] = useState({
@@ -12,10 +13,25 @@ export function HeadDashboard() {
     totalStaff: 0
   });
 
+  // store AI update without changing UI functionality
+  const [aiUpdate, setAiUpdate] = useState<string | null>(null); // ← added
+
   useEffect(() => {
     fetchStats();
     fetchAttendanceData();
+    fetchAIUpdate(); // ← added
   }, []);
+
+  const fetchAIUpdate = async () => {
+    try {
+      const result = await sendQueryToN8N('provide some good update for school');
+      setAiUpdate(result.response); // keep for later use if needed
+      console.log('AI update:', result.response); // no UI change, just log
+    } catch (error) {
+      console.error('Error sending message to N8N:', error);
+      // keep behavior silent to avoid UI changes
+    }
+  };
 
   const fetchStats = async () => {
     try {
