@@ -36,7 +36,7 @@ export function HeadDashboard() {
   const fetchAIUpdate = async () => {
     try {
       const result = await sendQueryToN8N(
-        'provide some good update for school, keep it short'
+        'Generate random short, positive, and fresh fact related to school life, learning, students, or education.'
       );
       setAiUpdate(result.response); // keep for later use if needed
       console.log('AI update:', result.response); // no UI change, just log
