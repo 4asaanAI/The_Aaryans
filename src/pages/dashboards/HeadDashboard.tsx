@@ -3,14 +3,25 @@ import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
 import { MoreVertical } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { sendQueryToN8N } from '../../lib/n8nService'; // ← added
 
 export function HeadDashboard() {
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
-    totalStaff: 0
+    totalStaff: 0,
   });
 
   // store AI update without changing UI functionality
@@ -24,7 +35,9 @@ export function HeadDashboard() {
 
   const fetchAIUpdate = async () => {
     try {
-      const result = await sendQueryToN8N('provide some good update for school');
+      const result = await sendQueryToN8N(
+        'provide some good update for school, keep it short'
+      );
       setAiUpdate(result.response); // keep for later use if needed
       console.log('AI update:', result.response); // no UI change, just log
     } catch (error) {
@@ -36,14 +49,21 @@ export function HeadDashboard() {
   const fetchStats = async () => {
     try {
       const [students, teachers] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'student').eq('status', 'active'),
-        supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'professor')
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact' })
+          .eq('role', 'student')
+          .eq('status', 'active'),
+        supabase
+          .from('profiles')
+          .select('id', { count: 'exact' })
+          .eq('role', 'professor'),
       ]);
 
       setStats({
         totalStudents: students.count || 0,
         totalTeachers: teachers.count || 0,
-        totalStaff: (teachers.count || 0) + 15
+        totalStaff: (teachers.count || 0) + 15,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -66,7 +86,7 @@ export function HeadDashboard() {
 
   const studentDistribution = [
     { name: 'Boys', value: 55 },
-    { name: 'Girls', value: 45 }
+    { name: 'Girls', value: 45 },
   ];
 
   const financeData = [
@@ -75,7 +95,7 @@ export function HeadDashboard() {
     { month: 'Mar', revenue: 72, profit: 34, costs: 38 },
     { month: 'Apr', revenue: 69, profit: 33, costs: 36 },
     { month: 'May', revenue: 75, profit: 35, costs: 40 },
-    { month: 'Jun', revenue: 78, profit: 36, costs: 42 }
+    { month: 'Jun', revenue: 78, profit: 36, costs: 42 },
   ];
 
   const attendanceData = [
@@ -84,7 +104,7 @@ export function HeadDashboard() {
     { month: 'Mar', rate: 90 },
     { month: 'Apr', rate: 85 },
     { month: 'May', rate: 89 },
-    { month: 'Jun', rate: 91 }
+    { month: 'Jun', rate: 91 },
   ];
 
   const COLORS = ['#3B82F6', '#EC4899'];
@@ -94,16 +114,20 @@ export function HeadDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Academic Year 2024/25</h2>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+              Academic Year 2024/25
+            </h2>
           </div>
-            <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="bg-blue-400 rounded-2xl p-5">
               <div className="flex justify-end items-start mb-4">
                 <button className="text-white opacity-70 hover:opacity-100">
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="text-3xl font-semibold mb-1 text-white">{stats.totalStudents.toLocaleString()}</div>
+              <div className="text-3xl font-semibold mb-1 text-white">
+                {stats.totalStudents.toLocaleString()}
+              </div>
               <div className="text-blue-50 text-sm font-medium">Students</div>
             </div>
 
@@ -113,7 +137,9 @@ export function HeadDashboard() {
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="text-3xl font-semibold mb-1 text-white">{stats.totalTeachers.toLocaleString()}</div>
+              <div className="text-3xl font-semibold mb-1 text-white">
+                {stats.totalTeachers.toLocaleString()}
+              </div>
               <div className="text-blue-50 text-sm font-medium">Teachers</div>
             </div>
 
@@ -123,11 +149,25 @@ export function HeadDashboard() {
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>
-              <div className="text-3xl font-semibold mb-1 text-white">{stats.totalStaff.toLocaleString()}</div>
+              <div className="text-3xl font-semibold mb-1 text-white">
+                {stats.totalStaff.toLocaleString()}
+              </div>
               <div className="text-blue-50 text-sm font-medium">Staffs</div>
             </div>
           </div>
-
+          {aiUpdate && (
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm mt-5 animate-fade-in">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                <h3 className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                  AI School Update
+                </h3>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                {aiUpdate}
+              </p>
+            </div>
+          )}
           {/* Row 1: Attendance and Students side by side */}
           <div className="grid grid-cols-2 gap-5">
             {/* Attendance Chart */}
@@ -141,17 +181,29 @@ export function HeadDashboard() {
               <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
                 <ResponsiveContainer width="100%" height="90%">
                   <LineChart data={attendanceData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#e5e7eb"
+                    />
                     <XAxis dataKey="month" stroke="#9ca3af" />
                     <YAxis stroke="#9ca3af" domain={[0, 100]} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="rate" stroke="#10B981" strokeWidth={3} dot={{ r: 5, fill: "#10B981" }} />
+                    <Line
+                      type="monotone"
+                      dataKey="rate"
+                      stroke="#10B981"
+                      strokeWidth={3}
+                      dot={{ r: 5, fill: '#10B981' }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="flex justify-center gap-2 mt-2">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-xs text-gray-600">Attendance Rate (%)</span>
+                    <span className="text-xs text-gray-600">
+                      Attendance Rate (%)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -201,13 +253,35 @@ export function HeadDashboard() {
             <div className="h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-4">
               <ResponsiveContainer width="100%" height="90%">
                 <LineChart data={financeData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#e5e7eb"
+                  />
                   <XAxis dataKey="month" stroke="#9ca3af" />
                   <YAxis stroke="#9ca3af" />
                   <Tooltip />
-                  <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="profit" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="costs" stroke="#EF4444" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="profit"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="costs"
+                    stroke="#EF4444"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
               <div className="flex justify-center gap-6 mt-2">
