@@ -14,7 +14,7 @@ import {
 import { Announcement } from '../../types';
 import { Notification } from '../../components/Notification';
 
-export function AnnouncementsPage() {
+export function AssignmentsPage() {
   const { profile } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
