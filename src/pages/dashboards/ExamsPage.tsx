@@ -208,57 +208,57 @@ export function ExamsPage() {
         <div className="lg:col-span-2 space-y-5">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Exam Management</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">Exam Management</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Manage exams, track attendance, and monitor performance
               </p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               <Plus className="h-5 w-5" />
               Add New Exam
             </button>
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-blue-500">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-blue-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Total Exams</span>
                 <Calendar className="h-5 w-5 text-blue-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalExams}</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.totalExams}</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-green-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-green-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Present</span>
                 <UserCheck className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalPresent}</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.totalPresent}</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-red-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-red-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Absent</span>
                 <UserX className="h-5 w-5 text-red-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalAbsent}</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.totalAbsent}</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-yellow-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-yellow-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Avg Attendance</span>
                 <TrendingUp className="h-5 w-5 text-yellow-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{stats.avgAttendance}%</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{stats.avgAttendance}%</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-3 sm:mb-4">
                 Attendance Overview (Last 10 Exams)
               </h3>
-              <div className="h-[300px]">
+              <div className="h-[240px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={attendanceChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
@@ -281,11 +281,11 @@ export function ExamsPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-3 sm:mb-4">
                 Overall Attendance Distribution
               </h3>
-              <div className="h-[300px]">
+              <div className="h-[240px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -315,18 +315,18 @@ export function ExamsPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Exam List</h3>
-              <div className="flex items-center gap-3">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:items-center mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Exam List</h3>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search exams..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full sm:w-72 pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <button className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
@@ -341,20 +341,16 @@ export function ExamsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b-2 border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
-                        <div className="flex items-center gap-1">
-                          Exam Code
-                        </div>
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-1">Exam Code</div>
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
-                        <div className="flex items-center gap-1">
-                          Name
-                        </div>
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-1">Name</div>
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
                         <div className="flex items-center gap-1">
                           Class
                           <ColumnFilter
@@ -366,7 +362,7 @@ export function ExamsPage() {
                           />
                         </div>
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
                         <div className="flex items-center gap-1">
                           Subject
                           <ColumnFilter
@@ -378,7 +374,7 @@ export function ExamsPage() {
                           />
                         </div>
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
                         <div className="flex items-center gap-1">
                           Type
                           <ColumnFilter
@@ -390,11 +386,11 @@ export function ExamsPage() {
                           />
                         </div>
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Date & Time</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Venue</th>
-                      <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Footfall</th>
-                      <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Attendance %</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Date & Time</th>
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Venue</th>
+                      <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Footfall</th>
+                      <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Attendance %</th>
+                      <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
                         <div className="flex items-center gap-1">
                           Status
                           <ColumnFilter
@@ -406,7 +402,7 @@ export function ExamsPage() {
                           />
                         </div>
                       </th>
-                      <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+                      <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -417,14 +413,14 @@ export function ExamsPage() {
                           key={exam.id}
                           className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
-                          <td className="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">
+                          <td className="py-3 px-3 sm:px-4 font-medium text-gray-800 dark:text-gray-200">
                             {exam.exam_code}
                           </td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{exam.name}</td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{exam.class_name}</td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{exam.subject_name}</td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400 capitalize">{exam.exam_type}</td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">{exam.name}</td>
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">{exam.class_name}</td>
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">{exam.subject_name}</td>
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400 capitalize">{exam.exam_type}</td>
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
                               {new Date(exam.exam_date).toLocaleDateString()}
@@ -436,7 +432,7 @@ export function ExamsPage() {
                               </div>
                             )}
                           </td>
-                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                          <td className="py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
                             {exam.venue && (
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
@@ -444,7 +440,7 @@ export function ExamsPage() {
                               </div>
                             )}
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-3 px-3 sm:px-4 text-center">
                             <div className="flex items-center justify-center gap-1">
                               <Users className="h-4 w-4 text-gray-400" />
                               <span className="text-gray-600 dark:text-gray-400">
@@ -452,19 +448,21 @@ export function ExamsPage() {
                               </span>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-center">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                              (footfall?.attendance_percentage || 0) >= 75
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                : (footfall?.attendance_percentage || 0) >= 50
-                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                            }`}>
+                          <td className="py-3 px-3 sm:px-4 text-center">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                (footfall?.attendance_percentage || 0) >= 75
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                  : (footfall?.attendance_percentage || 0) >= 50
+                                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              }`}
+                            >
                               {footfall?.attendance_percentage || 0}%
                             </span>
                           </td>
-                          <td className="py-3 px-4">{getStatusBadge(exam.status)}</td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-3 sm:px-4">{getStatusBadge(exam.status)}</td>
+                          <td className="py-3 px-3 sm:px-4">
                             <div className="flex items-center justify-center gap-2">
                               <button className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors">
                                 <Eye className="h-4 w-4" />
