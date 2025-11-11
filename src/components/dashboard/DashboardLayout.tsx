@@ -287,7 +287,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             mt-16 lg:mt-0
           `}
         >
-          <nav className="p-4 space-y-2">
+          <nav className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-4rem)]">
             {navigationItems.map((item) => (
               <Link
                 key={item.name}
