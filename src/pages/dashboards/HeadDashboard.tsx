@@ -3,6 +3,7 @@ import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
 import { ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   LineChart,
   Line,
@@ -23,6 +24,9 @@ interface AcademicYear {
 }
 
 export function HeadDashboard() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
@@ -119,6 +123,15 @@ export function HeadDashboard() {
 
   const COLORS = ['#3B82F6', '#EC4899'];
 
+  // Dark mode color palette for charts
+  const chartColors = {
+    text: isDark ? '#e5e7eb' : '#374151',
+    grid: isDark ? '#374151' : '#e5e7eb',
+    background: isDark ? '#1f2937' : '#f9fafb',
+    tooltipBg: isDark ? '#111827' : '#ffffff',
+    tooltipText: isDark ? '#f9fafb' : '#111827',
+  };
+
   return (
     <DashboardLayout>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -192,49 +205,57 @@ export function HeadDashboard() {
           {/* Row 1: Attendance and Students side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Attendance Chart */}
-            <div className="bg-white rounded-2xl p-4 sm:p-5">
-              <div className="flex justify-between items-center mb-4 sm:mb-5">
-                <h3 className="text-base sm:text-lg font-semibold">
-                  Attendance
-                </h3>
-              </div>
-              <div className="h-[240px] md:h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-3 sm:p-4">
-                <ResponsiveContainer width="100%" height="90%">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-4 sm:mb-5">
+                Attendance
+              </h3>
+              <div
+                className="h-[240px] md:h-[300px] rounded-xl p-3 sm:p-4"
+                style={{
+                  backgroundColor: chartColors.background,
+                }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={attendanceData}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#e5e7eb"
+                      stroke={chartColors.grid}
                     />
-                    <XAxis dataKey="month" stroke="#9ca3af" />
-                    <YAxis stroke="#9ca3af" domain={[0, 100]} />
-                    <Tooltip />
+                    <XAxis dataKey="month" stroke={chartColors.text} />
+                    <YAxis stroke={chartColors.text} domain={[0, 100]} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartColors.tooltipBg,
+                        color: chartColors.tooltipText,
+                        border: `1px solid ${chartColors.grid}`,
+                        borderRadius: '8px',
+                      }}
+                      labelStyle={{ color: chartColors.tooltipText }}
+                    />
                     <Line
                       type="monotone"
                       dataKey="rate"
-                      stroke="#10B981"
+                      stroke={isDark ? '#10B981' : '#10B981'}
                       strokeWidth={3}
                       dot={{ r: 4, fill: '#10B981' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
-                <div className="flex justify-center gap-2 mt-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="text-xs text-gray-600">
-                      Attendance Rate (%)
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
-            {/* Student Distribution Chart */}
-            <div className="bg-white rounded-2xl p-4 sm:p-5">
-              <div className="flex justify-between items-center mb-4 sm:mb-5">
-                <h3 className="text-base sm:text-lg font-semibold">Students</h3>
-              </div>
-              <div className="h-[240px] md:h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center">
+            {/* Student Distribution */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-4 sm:mb-5">
+                Students
+              </h3>
+              <div
+                className="h-[240px] md:h-[300px] rounded-xl flex flex-col items-center justify-center"
+                style={{
+                  backgroundColor: chartColors.background,
+                }}
+              >
                 <ResponsiveContainer width="100%" height="80%">
                   <PieChart>
                     <Pie
@@ -247,71 +268,70 @@ export function HeadDashboard() {
                       dataKey="value"
                     >
                       {studentDistribution.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                        <Cell key={index} fill={COLORS[index]} />
                       ))}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="text-xs mt-2 text-gray-500">
-                  <div>Boys: 55% | Girls: 45%</div>
+                <div className="text-xs mt-2 text-gray-500 dark:text-gray-400">
+                  Boys: 55% | Girls: 45%
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Row 2: Finance Chart - Full Width */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5">
-            <div className="flex justify-between items-center mb-4 sm:mb-5">
-              <h3 className="text-base sm:text-lg font-semibold">Finance</h3>
-            </div>
-            <div className="h-[240px] md:h-[300px] bg-gray-50 rounded-xl flex flex-col items-center justify-center p-3 sm:p-4">
-              <ResponsiveContainer width="100%" height="90%">
+          {/* Finance */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-4 sm:mb-5">
+              Finance
+            </h3>
+            <div
+              className="h-[240px] md:h-[300px] rounded-xl p-3 sm:p-4"
+              style={{
+                backgroundColor: chartColors.background,
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={financeData}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="#e5e7eb"
+                    stroke={chartColors.grid}
                   />
-                  <XAxis dataKey="month" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
-                  <Tooltip />
+                  <XAxis dataKey="month" stroke={chartColors.text} />
+                  <YAxis stroke={chartColors.text} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: chartColors.tooltipBg,
+                      color: chartColors.tooltipText,
+                      border: `1px solid ${chartColors.grid}`,
+                      borderRadius: '8px',
+                    }}
+                    labelStyle={{ color: chartColors.tooltipText }}
+                  />
                   <Line
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#3B82F6"
+                    stroke={isDark ? '#60A5FA' : '#3B82F6'}
                     strokeWidth={2}
                     dot={{ r: 4 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="profit"
-                    stroke="#10B981"
+                    stroke={isDark ? '#34D399' : '#10B981'}
                     strokeWidth={2}
                     dot={{ r: 4 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="costs"
-                    stroke="#EF4444"
+                    stroke={isDark ? '#F87171' : '#EF4444'}
                     strokeWidth={2}
                     dot={{ r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
-              <div className="flex justify-center gap-4 sm:gap-6 mt-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  <span className="text-xs text-gray-600">Revenue</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="text-xs text-gray-600">Profit</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <span className="text-xs text-gray-600">Costs</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
