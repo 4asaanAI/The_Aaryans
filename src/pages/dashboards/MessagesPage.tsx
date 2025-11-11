@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Search, Send, Check, CheckCheck } from 'lucide-react';
+import { Search, Send, Check, CheckCheck, ChevronLeft } from 'lucide-react';
 
 interface Contact {
   id: string;
@@ -34,7 +34,9 @@ export function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageSubscription = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const messageSubscription = useRef<ReturnType<
+    typeof supabase.channel
+  > | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -88,7 +90,11 @@ export function MessagesPage() {
 
       const withMessages = contactsList
         .filter((c) => c.hasMessages)
-        .sort((a, b) => (b.lastMessageTime?.getTime() || 0) - (a.lastMessageTime?.getTime() || 0));
+        .sort(
+          (a, b) =>
+            (b.lastMessageTime?.getTime() || 0) -
+            (a.lastMessageTime?.getTime() || 0)
+        );
 
       const withoutMessages = contactsList
         .filter((c) => !c.hasMessages)
@@ -147,10 +153,9 @@ export function MessagesPage() {
     [profile?.id, fetchContacts]
   );
 
-  // ---------- Realtime subscription (fixed) ----------
+  // ---------- Realtime subscription ----------
   const subscribeToMessages = useCallback(
     (contactId: string) => {
-      // cleanup any previous channel
       if (messageSubscription.current) {
         messageSubscription.current.unsubscribe();
         messageSubscription.current = null;
@@ -164,9 +169,9 @@ export function MessagesPage() {
           (payload) => {
             const row = (payload.new || payload.old) as Message;
 
-            // Only handle events for this conversation
             const isForThisThread =
-              (row.sender_id === profile?.id && row.receiver_id === contactId) ||
+              (row.sender_id === profile?.id &&
+                row.receiver_id === contactId) ||
               (row.sender_id === contactId && row.receiver_id === profile?.id);
 
             if (!isForThisThread) return;
@@ -174,25 +179,30 @@ export function MessagesPage() {
             if (payload.eventType === 'INSERT') {
               setMessages((prev) => {
                 const next = [...prev, payload.new as Message];
-                // keep sorted in case of clock skew
                 return next.sort(
-                  (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                  (a, b) =>
+                    new Date(a.created_at).getTime() -
+                    new Date(b.created_at).getTime()
                 );
               });
 
               if ((payload.new as Message).receiver_id === profile?.id) {
-                // auto-mark incoming as read
                 markMessagesAsRead(contactId);
               }
             } else if (payload.eventType === 'UPDATE') {
               setMessages((prev) =>
-                prev.map((m) => (m.id === (payload.new as Message).id ? (payload.new as Message) : m))
+                prev.map((m) =>
+                  m.id === (payload.new as Message).id
+                    ? (payload.new as Message)
+                    : m
+                )
               );
             } else if (payload.eventType === 'DELETE') {
-              setMessages((prev) => prev.filter((m) => m.id !== (payload.old as Message).id));
+              setMessages((prev) =>
+                prev.filter((m) => m.id !== (payload.old as Message).id)
+              );
             }
 
-            // refresh sidebar list/unread counts and last message preview
             fetchContacts();
           }
         )
@@ -223,7 +233,12 @@ export function MessagesPage() {
         messageSubscription.current = null;
       }
     };
-  }, [selectedContact?.id, fetchMessages, markMessagesAsRead, subscribeToMessages]);
+  }, [
+    selectedContact?.id,
+    fetchMessages,
+    markMessagesAsRead,
+    subscribeToMessages,
+  ]);
 
   // ---------- Actions ----------
   const sendMessage = async () => {
@@ -240,7 +255,7 @@ export function MessagesPage() {
       if (error) throw error;
 
       setNewMessage('');
-      // No manual refetch needed; realtime will add it
+      // Realtime will append the message
     } catch (err) {
       console.error('Error sending message:', err);
     }
@@ -266,7 +281,10 @@ export function MessagesPage() {
     const hours = Math.floor(diff / (1000 * 60 * 60));
 
     if (hours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     } else if (hours < 48) {
       return 'Yesterday';
     } else if (hours < 168) {
@@ -278,11 +296,18 @@ export function MessagesPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-[calc(100vh-8rem)] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-full md:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      {/* Wrapper: prevent horizontal scroll on mobile, keep desktop layout intact */}
+      <div className="flex h-[calc(100vh-8rem)] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden w-full min-w-0">
+        {/* Sidebar (Contacts) */}
+        <div
+          className={`w-full md:w-96 border-r border-gray-200 dark:border-gray-700 flex flex-col ${
+            selectedContact ? 'hidden md:flex' : ''
+          }`}
+        >
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Message</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Message
+            </h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -297,14 +322,18 @@ export function MessagesPage() {
 
           <div className="flex-1 overflow-y-auto">
             {filteredContacts.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400">No contacts found</div>
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                No contacts found
+              </div>
             ) : (
               filteredContacts.map((contact) => (
                 <div
                   key={contact.id}
                   onClick={() => setSelectedContact(contact)}
                   className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                    selectedContact?.id === contact.id ? 'bg-blue-50 dark:bg-gray-700' : ''
+                    selectedContact?.id === contact.id
+                      ? 'bg-blue-50 dark:bg-gray-700'
+                      : ''
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -317,7 +346,9 @@ export function MessagesPage() {
                       {contact.unreadCount > 0 && (
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
                           <span className="text-xs text-white font-semibold">
-                            {contact.unreadCount > 9 ? '9+' : contact.unreadCount}
+                            {contact.unreadCount > 9
+                              ? '9+'
+                              : contact.unreadCount}
                           </span>
                         </div>
                       )}
@@ -326,7 +357,9 @@ export function MessagesPage() {
                       <div className="flex items-center justify-between mb-1">
                         <h3
                           className={`font-semibold truncate ${
-                            contact.unreadCount > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
+                            contact.unreadCount > 0
+                              ? 'text-gray-900 dark:text-white'
+                              : 'text-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {contact.name}
@@ -357,34 +390,55 @@ export function MessagesPage() {
         </div>
 
         {/* Chat Pane */}
-        <div className="flex-1 flex flex-col">
+        <div
+          className={`flex-1 flex flex-col ${
+            !selectedContact ? 'hidden md:flex' : ''
+          }`}
+        >
           {!selectedContact ? (
             <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Send className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Select a conversation</h3>
-                <p className="text-gray-600 dark:text-gray-400">Choose a contact to start messaging</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Select a conversation
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Choose a contact to start messaging
+                </p>
               </div>
             </div>
           ) : (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Mobile back button */}
+                    <button
+                      onClick={() => setSelectedContact(null)}
+                      className="md:hidden mr-1 p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                      aria-label="Back to contacts"
+                    >
+                      <ChevronLeft className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                    </button>
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-semibold">
                         {selectedContact.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{selectedContact.name}</h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{selectedContact.role}</p>
+                    <div className="truncate">
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                        {selectedContact.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 capitalize truncate">
+                        {selectedContact.role}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {/* reserved for future actions */}
                   </div>
                 </div>
               </div>
@@ -404,22 +458,44 @@ export function MessagesPage() {
                     {messages.map((message) => {
                       const isSent = message.sender_id === profile?.id;
                       return (
-                        <div key={message.id} className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          key={message.id}
+                          className={`flex ${
+                            isSent ? 'justify-end' : 'justify-start'
+                          }`}
+                        >
                           <div
-                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                            className={`max-w-[80%] sm:max-w-xs lg:max-w-md px-4 py-2 rounded-2xl break-words ${
                               isSent
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
                             }`}
                           >
-                            <p className="text-sm break-words">{message.content}</p>
+                            <p className="text-sm break-words whitespace-pre-wrap">
+                              {message.content}
+                            </p>
                             <div className="flex items-center justify-end gap-1 mt-1">
-                              <p className={`text-xs ${isSent ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              <p
+                                className={`text-xs ${
+                                  isSent
+                                    ? 'text-blue-100'
+                                    : 'text-gray-500 dark:text-gray-400'
+                                }`}
+                              >
+                                {new Date(
+                                  message.created_at
+                                ).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </p>
                               {isSent && (
                                 <span className="text-blue-100">
-                                  {message.is_read ? <CheckCheck className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                                  {message.is_read ? (
+                                    <CheckCheck className="h-4 w-4" />
+                                  ) : (
+                                    <Check className="h-4 w-4" />
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -435,14 +511,26 @@ export function MessagesPage() {
               {/* Composer */}
               <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="text"
+                  <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (e.shiftKey) return; // allow manual line breaks
+                        e.preventDefault();
+                        // check for double enter
+                        if (newMessage.trim().endsWith('\n')) {
+                          sendMessage();
+                        } else {
+                          setNewMessage((prev) => prev + '\n');
+                        }
+                      }
+                    }}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    rows={1}
+                    className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
+
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim()}
