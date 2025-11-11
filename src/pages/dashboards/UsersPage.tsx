@@ -5,7 +5,6 @@ import { ColumnFilter } from '../../components/ColumnFilter';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
 import {
   Search,
   Users as UsersIcon,
@@ -242,55 +241,61 @@ export function UsersPage() {
   const handleAddProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setNotification(null);
+
     try {
-      // ⚠️ Use a separate client that never persists sessions
-      const signUpClient = createClient(
-        import.meta.env.VITE_SUPABASE_URL!,
-        import.meta.env.VITE_SUPABASE_ANON_KEY!,
-        {
-          auth: {
-            persistSession: false, // <-- prevents writing new tokens
-            autoRefreshToken: false, // optional: don’t auto-refresh
-            storageKey: 'sb-signup-helper', // isolated key if storage were used
+      // 1) Create auth user with metadata
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newProfile.email,
+        password: newProfile.password,
+        options: {
+          data: {
+            full_name: newProfile.full_name,
+            role: newProfile.role,
+            emailRedirectTo: undefined,
+            sub_role:
+              newProfile.sub_role ||
+              (newProfile.role === 'student' ? 'student' : null),
           },
-        }
-      );
-
-      // 1) Create auth user WITHOUT mutating your current session
-      const { data: authData, error: authError } =
-        await signUpClient.auth.signUp({
-          email: newProfile.email,
-          password: newProfile.password,
-          options: {
-            data: {
-              full_name: newProfile.full_name,
-              role: newProfile.role,
-              sub_role: newProfile.sub_role,
-            },
-            // Optional: keep confirmations but send users back to YOUR app
-            emailRedirectTo: `${window.location.origin}/login`,
-          },
-        });
-
+          // if you use email confirmations, consider disabling for admin-created users
+          // emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
       if (authError) throw authError;
 
-      // 2) Set profile fields on the newly created user
-      if (authData?.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            phone: newProfile.phone || null,
-            admission_no: newProfile.admission_no || null,
-            employee_id: newProfile.employee_id || null,
-            approval_status: 'approved',
-            approved_by: currentProfile?.id || null,
-            approved_at: new Date().toISOString(),
-            status: 'active',
-          })
-          .eq('id', authData.user.id);
-
-        if (profileError) throw profileError;
+      // If your project enforces email confirmation, authData.user may be null here.
+      if (!authData.user) {
+        throw new Error(
+          'User created, but email confirmation is required before profile can be added. Disable confirmations for admin-created users or create via an admin backend.'
+        );
       }
+
+      // 2) Upsert profile row (works whether it exists or not)
+      const baseProfile = {
+        id: authData.user.id, // IMPORTANT: tie to auth user
+        email: newProfile.email,
+        full_name: newProfile.full_name,
+        role: newProfile.role,
+        sub_role:
+          newProfile.sub_role ||
+          (newProfile.role === 'student' ? 'student' : null),
+        phone: newProfile.phone || null,
+        admission_no:
+          newProfile.role === 'student'
+            ? newProfile.admission_no || null
+            : null,
+        employee_id:
+          newProfile.role !== 'student' ? newProfile.employee_id || null : null,
+        status: 'active',
+        approval_status: 'approved',
+        approved_by: currentProfile?.id || null,
+        approved_at: new Date().toISOString(),
+      };
+
+      const { error: upsertErr } = await supabase
+        .from('profiles')
+        .upsert(baseProfile, { onConflict: 'id' });
+      if (upsertErr) throw upsertErr;
 
       setNotification({
         type: 'success',
