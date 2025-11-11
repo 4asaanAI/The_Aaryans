@@ -3,10 +3,11 @@ import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
 import { ColumnFilter } from '../../components/ColumnFilter';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import {
   Calendar, Clock, MapPin, Users, UserCheck, UserX,
-  TrendingUp, Search, Plus, Eye, Edit2, Trash2, Download
+  TrendingUp, Search, Plus, Eye, Edit2, Trash2, Download, X
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -39,6 +40,7 @@ interface ExamFootfall {
 
 export function ExamsPage() {
   const { theme } = useTheme();
+  const { profile } = useAuth();
   const [exams, setExams] = useState<Exam[]>([]);
   const [footfallData, setFootfallData] = useState<Map<string, ExamFootfall>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,26 @@ export function ExamsPage() {
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [classes, setClasses] = useState<Array<{id: string; name: string}>>([]);
+  const [subjects, setSubjects] = useState<Array<{id: string; name: string}>>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    exam_code: '',
+    exam_type: 'midterm',
+    class_id: '',
+    subject_id: '',
+    exam_date: '',
+    start_time: '',
+    end_time: '',
+    duration_minutes: '',
+    total_marks: '',
+    passing_marks: '',
+    venue: '',
+    instructions: '',
+    status: 'scheduled',
+  });
+  const [saving, setSaving] = useState(false);
 
   const isDark = theme === 'dark';
   const chartColors = {
@@ -58,7 +80,35 @@ export function ExamsPage() {
 
   useEffect(() => {
     fetchExams();
+    fetchClasses();
+    fetchSubjects();
   }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('id, name')
+        .order('name');
+      if (error) throw error;
+      setClasses(data || []);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subjects')
+        .select('id, name')
+        .order('name');
+      if (error) throw error;
+      setSubjects(data || []);
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+    }
+  };
 
   const fetchExams = async () => {
     setLoading(true);
@@ -187,6 +237,58 @@ export function ExamsPage() {
 
   const stats = calculateOverallStats();
 
+  const handleCreateExam = async () => {
+    if (!profile || !formData.name || !formData.exam_code || !formData.exam_date) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('exams').insert({
+        name: formData.name,
+        exam_code: formData.exam_code,
+        exam_type: formData.exam_type,
+        class_id: formData.class_id || null,
+        subject_id: formData.subject_id || null,
+        exam_date: formData.exam_date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        duration_minutes: formData.duration_minutes ? parseInt(formData.duration_minutes) : 0,
+        total_marks: formData.total_marks ? parseInt(formData.total_marks) : 0,
+        passing_marks: formData.passing_marks ? parseInt(formData.passing_marks) : 0,
+        venue: formData.venue,
+        instructions: formData.instructions,
+        status: formData.status,
+        created_by: profile.id,
+      });
+
+      if (error) throw error;
+
+      setShowCreateModal(false);
+      setFormData({
+        name: '',
+        exam_code: '',
+        exam_type: 'midterm',
+        class_id: '',
+        subject_id: '',
+        exam_date: '',
+        start_time: '',
+        end_time: '',
+        duration_minutes: '',
+        total_marks: '',
+        passing_marks: '',
+        venue: '',
+        instructions: '',
+        status: 'scheduled',
+      });
+      fetchExams();
+    } catch (error) {
+      console.error('Error creating exam:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const canCreateExam = profile?.role && profile.role !== 'student';
+
   const attendanceChartData = filteredExams.slice(0, 10).map(exam => {
     const footfall = footfallData.get(exam.id);
     return {
@@ -213,10 +315,15 @@ export function ExamsPage() {
                 Manage exams, track attendance, and monitor performance
               </p>
             </div>
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <Plus className="h-5 w-5" />
-              Add New Exam
-            </button>
+            {canCreateExam && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-5 w-5" />
+                Add New Exam
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -492,6 +599,234 @@ export function ExamsPage() {
 
         <RightSidebar />
       </div>
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Exam</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Exam Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Exam Code *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.exam_code}
+                      onChange={(e) => setFormData({ ...formData, exam_code: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Exam Type *
+                    </label>
+                    <select
+                      value={formData.exam_type}
+                      onChange={(e) => setFormData({ ...formData, exam_type: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="midterm">Midterm</option>
+                      <option value="final">Final</option>
+                      <option value="quiz">Quiz</option>
+                      <option value="practical">Practical</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Class
+                    </label>
+                    <select
+                      value={formData.class_id}
+                      onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Select Class</option>
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Subject
+                    </label>
+                    <select
+                      value={formData.subject_id}
+                      onChange={(e) => setFormData({ ...formData, subject_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map((subj) => (
+                        <option key={subj.id} value={subj.id}>{subj.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Exam Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.exam_date}
+                      onChange={(e) => setFormData({ ...formData, exam_date: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Start Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.start_time}
+                      onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      End Time *
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.end_time}
+                      onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Duration (minutes) *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.duration_minutes}
+                      onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Total Marks *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.total_marks}
+                      onChange={(e) => setFormData({ ...formData, total_marks: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Passing Marks *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.passing_marks}
+                      onChange={(e) => setFormData({ ...formData, passing_marks: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Venue
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.venue}
+                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Instructions
+                  </label>
+                  <textarea
+                    value={formData.instructions}
+                    onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="scheduled">Scheduled</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateExam}
+                  disabled={saving || !formData.name || !formData.exam_code || !formData.exam_date}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Creating...' : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

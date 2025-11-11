@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { ColumnFilter } from '../../components/ColumnFilter';
 import {
@@ -10,6 +11,8 @@ import {
   TrendingUp,
   CheckCircle,
   Clock,
+  Plus,
+  X,
 } from 'lucide-react';
 import {
   BarChart,
@@ -61,6 +64,7 @@ interface ColumnFilters {
 
 export function AssignmentsPage() {
   const { theme } = useTheme();
+  const { profile } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>('all');
@@ -73,6 +77,17 @@ export function AssignmentsPage() {
     teacher: [],
     status: [],
   });
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [subjects, setSubjects] = useState<Array<{id: string; name: string}>>([]);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    due_date: '',
+    total_marks: '',
+    class_id: '',
+    subject_id: '',
+  });
+  const [saving, setSaving] = useState(false);
 
   const isDark = theme === 'dark';
   const chartColors = {
@@ -87,6 +102,7 @@ export function AssignmentsPage() {
 
   useEffect(() => {
     fetchClasses();
+    fetchSubjects();
     fetchAssignments();
   }, []);
 
@@ -107,6 +123,20 @@ export function AssignmentsPage() {
       setClasses(data || []);
     } catch (error) {
       console.error('Error fetching classes:', error);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subjects')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      setSubjects(data || []);
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
     }
   };
 
@@ -383,6 +413,42 @@ export function AssignmentsPage() {
     setColumnFilters((prev) => ({ ...prev, [column]: values }));
   };
 
+  const handleCreateAssignment = async () => {
+    if (!profile || !formData.title || !formData.due_date || !formData.class_id) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('assignments').insert({
+        title: formData.title,
+        description: formData.description,
+        due_date: formData.due_date,
+        total_marks: formData.total_marks ? parseInt(formData.total_marks) : null,
+        class_id: formData.class_id,
+        subject_id: formData.subject_id || null,
+        teacher_id: profile.id,
+      });
+
+      if (error) throw error;
+
+      setShowCreateModal(false);
+      setFormData({
+        title: '',
+        description: '',
+        due_date: '',
+        total_marks: '',
+        class_id: '',
+        subject_id: '',
+      });
+      fetchAssignments();
+    } catch (error) {
+      console.error('Error creating assignment:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const canCreateAssignment = profile?.role && profile.role !== 'student';
+
   const stats = getOverallStats;
 
   const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
@@ -402,7 +468,16 @@ export function AssignmentsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {canCreateAssignment && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="h-5 w-5" />
+                Create Assignment
+              </button>
+            )}
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Filter by Class:
             </label>
@@ -795,6 +870,126 @@ export function AssignmentsPage() {
           )}
         </div>
       </div>
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Assignment</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Class *
+                    </label>
+                    <select
+                      value={formData.class_id}
+                      onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Select Class</option>
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Subject
+                    </label>
+                    <select
+                      value={formData.subject_id}
+                      onChange={(e) => setFormData({ ...formData, subject_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map((subj) => (
+                        <option key={subj.id} value={subj.id}>{subj.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Due Date *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.due_date}
+                      onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Total Marks
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.total_marks}
+                      onChange={(e) => setFormData({ ...formData, total_marks: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateAssignment}
+                  disabled={saving || !formData.title || !formData.due_date || !formData.class_id}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Creating...' : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
