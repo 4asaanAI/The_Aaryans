@@ -402,6 +402,46 @@ export function ResultsPage() {
 
   const termAnalysisData = examTermAnalysis();
 
+  // --- Mobile card renderer (only for <md) ---
+  const MobileResultCard = ({ r }: { r: ExamResult }) => (
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            {r.exam_code}
+          </div>
+          <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+            {r.class_name} • {r.subject_name} •{' '}
+            <span className="capitalize">{r.exam_type}</span>
+          </div>
+          {/* Show student line only in class mode */}
+          {searchMode === 'class' && (
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {r.student_name} ({r.student_admission_no})
+            </div>
+          )}
+        </div>
+        <div className="text-right">
+          <div
+            className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+              r.percentage >= 75
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                : r.percentage >= 50
+                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+            }`}
+          >
+            {r.percentage}%
+          </div>
+          <div className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+            {r.marks_obtained}/{r.total_marks}
+          </div>
+          <div className="mt-1">{getGradeBadge(r.grade)}</div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <DashboardLayout>
       {/* Page wrapper: responsive paddings + prevent horizontal scroll on mobile */}
@@ -716,7 +756,7 @@ export function ResultsPage() {
           </>
         )}
 
-        {/* Results table (responsive: hide some columns on mobile to avoid horizontal scroll) */}
+        {/* Results list/table */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">
@@ -724,7 +764,7 @@ export function ResultsPage() {
             </h3>
             <div className="flex gap-2 items-center">
               {searchMode === 'class' && (
-                <div className="relative">
+                <div className="relative hidden sm:block">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
@@ -741,173 +781,206 @@ export function ResultsPage() {
             </div>
           </div>
 
+          {/* Small-screen inline search (to avoid cramping the header) */}
+          {searchMode === 'class' && (
+            <div className="sm:hidden mb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <div className="w-full min-w-0 overflow-x-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      Exam Code
-                    </th>
+            <>
+              {/* Mobile cards (only visible on <md) */}
+              <div className="md:hidden space-y-3">
+                {filteredResults.length > 0 ? (
+                  filteredResults.map((r) => (
+                    <MobileResultCard key={r.id} r={r} />
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+                    {searchMode === 'student' && !searchQuery.trim()
+                      ? 'Search for a student to view results'
+                      : 'No results found'}
+                  </div>
+                )}
+              </div>
 
-                    {/* Student column hidden on small if not needed */}
-                    {searchMode === 'class' && (
+              {/* Desktop table (unchanged UI/behavior, hidden on mobile) */}
+              <div className="hidden md:block w-full min-w-0 overflow-x-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b-2 border-gray-200 dark:border-gray-700">
                       <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                        Student
+                        Exam Code
                       </th>
-                    )}
-
-                    {/* Hide on small to prevent overflow */}
-                    <th className="hidden md:table-cell text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      <div className="flex items-center gap-1">
-                        Class
-                        <span className="hidden lg:inline">
-                          <ColumnFilter
-                            column="Class"
-                            values={uniq(results.map((r) => r.class_name))}
-                            selectedValues={selectedClasses}
-                            onFilterChange={setSelectedClasses}
-                            isDark={isDark}
-                          />
-                        </span>
-                      </div>
-                    </th>
-
-                    <th className="hidden md:table-cell text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      <div className="flex items-center gap-1">
-                        Subject
-                        <span className="hidden lg:inline">
-                          <ColumnFilter
-                            column="Subject"
-                            values={uniq(results.map((r) => r.subject_name))}
-                            selectedValues={selectedSubjects}
-                            onFilterChange={setSelectedSubjects}
-                            isDark={isDark}
-                          />
-                        </span>
-                      </div>
-                    </th>
-
-                    <th className="hidden lg:table-cell text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      <div className="flex items-center gap-1">
-                        Type
-                        <ColumnFilter
-                          column="Type"
-                          values={uniq(results.map((r) => r.exam_type))}
-                          selectedValues={selectedTypes}
-                          onFilterChange={setSelectedTypes}
-                          isDark={isDark}
-                        />
-                      </div>
-                    </th>
-
-                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      Marks
-                    </th>
-                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      %
-                    </th>
-                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
-                      <div className="flex items-center justify-center gap-1">
-                        Grade
-                        <span className="hidden lg:inline">
-                          <ColumnFilter
-                            column="Grade"
-                            values={uniq(results.map((r) => r.grade))}
-                            selectedValues={selectedGrades}
-                            onFilterChange={setSelectedGrades}
-                            isDark={isDark}
-                          />
-                        </span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredResults.map((result) => (
-                    <tr
-                      key={result.id}
-                      className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <td className="py-3 px-3 sm:px-4 font-medium text-gray-800 dark:text-gray-200">
-                        {result.exam_code}
-                        {/* Small-screen details line to avoid extra columns */}
-                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:hidden">
-                          {result.class_name} • {result.subject_name} •{' '}
-                          <span className="capitalize">{result.exam_type}</span>
-                        </div>
-                        {searchMode === 'class' && (
-                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:hidden">
-                            {result.student_name} ({result.student_admission_no}
-                            )
-                          </div>
-                        )}
-                      </td>
 
                       {searchMode === 'class' && (
-                        <td className="hidden md:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
-                          <div>
-                            <div className="font-medium text-gray-800 dark:text-gray-200">
-                              {result.student_name}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-500">
-                              {result.student_admission_no}
-                            </div>
-                          </div>
-                        </td>
+                        <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                          Student
+                        </th>
                       )}
 
-                      <td className="hidden md:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
-                        {result.class_name}
-                      </td>
+                      <th className="hidden md:table-cell text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-1">
+                          Class
+                          <span className="hidden lg:inline">
+                            <ColumnFilter
+                              column="Class"
+                              values={uniq(results.map((r) => r.class_name))}
+                              selectedValues={selectedClasses}
+                              onFilterChange={setSelectedClasses}
+                              isDark={isDark}
+                            />
+                          </span>
+                        </div>
+                      </th>
 
-                      <td className="hidden md:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
-                        {result.subject_name}
-                      </td>
+                      <th className="hidden md:table-cell text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-1">
+                          Subject
+                          <span className="hidden lg:inline">
+                            <ColumnFilter
+                              column="Subject"
+                              values={uniq(results.map((r) => r.subject_name))}
+                              selectedValues={selectedSubjects}
+                              onFilterChange={setSelectedSubjects}
+                              isDark={isDark}
+                            />
+                          </span>
+                        </div>
+                      </th>
 
-                      <td className="hidden lg:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400 capitalize">
-                        {result.exam_type}
-                      </td>
+                      <th className="hidden lg:table-cell text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-1">
+                          Type
+                          <ColumnFilter
+                            column="Type"
+                            values={uniq(results.map((r) => r.exam_type))}
+                            selectedValues={selectedTypes}
+                            onFilterChange={setSelectedTypes}
+                            isDark={isDark}
+                          />
+                        </div>
+                      </th>
 
-                      <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-gray-400">
-                        {result.marks_obtained}/{result.total_marks}
-                      </td>
-
-                      <td className="py-3 px-3 sm:px-4 text-center">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                            result.percentage >= 75
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                              : result.percentage >= 50
-                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                          }`}
-                        >
-                          {result.percentage}%
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-3 sm:px-4 text-center">
-                        {getGradeBadge(result.grade)}
-                      </td>
+                      <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        Marks
+                      </th>
+                      <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        %
+                      </th>
+                      <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center justify-center gap-1">
+                          Grade
+                          <span className="hidden lg:inline">
+                            <ColumnFilter
+                              column="Grade"
+                              values={uniq(results.map((r) => r.grade))}
+                              selectedValues={selectedGrades}
+                              onFilterChange={setSelectedGrades}
+                              isDark={isDark}
+                            />
+                          </span>
+                        </div>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
 
-              {filteredResults.length === 0 && (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  {searchMode === 'student' && !searchQuery.trim()
-                    ? 'Search for a student to view results'
-                    : 'No results found'}
-                </div>
-              )}
-            </div>
+                  <tbody>
+                    {filteredResults.map((result) => (
+                      <tr
+                        key={result.id}
+                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <td className="py-3 px-3 sm:px-4 font-medium text-gray-800 dark:text-gray-200">
+                          {result.exam_code}
+                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:hidden">
+                            {result.class_name} • {result.subject_name} •{' '}
+                            <span className="capitalize">
+                              {result.exam_type}
+                            </span>
+                          </div>
+                          {searchMode === 'class' && (
+                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:hidden">
+                              {result.student_name} (
+                              {result.student_admission_no})
+                            </div>
+                          )}
+                        </td>
+
+                        {searchMode === 'class' && (
+                          <td className="hidden md:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
+                            <div>
+                              <div className="font-medium text-gray-800 dark:text-gray-200">
+                                {result.student_name}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-500">
+                                {result.student_admission_no}
+                              </div>
+                            </div>
+                          </td>
+                        )}
+
+                        <td className="hidden md:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
+                          {result.class_name}
+                        </td>
+
+                        <td className="hidden md:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400">
+                          {result.subject_name}
+                        </td>
+
+                        <td className="hidden lg:table-cell py-3 px-3 sm:px-4 text-gray-600 dark:text-gray-400 capitalize">
+                          {result.exam_type}
+                        </td>
+
+                        <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-gray-400">
+                          {result.marks_obtained}/{result.total_marks}
+                        </td>
+
+                        <td className="py-3 px-3 sm:px-4 text-center">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                              result.percentage >= 75
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                : result.percentage >= 50
+                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            }`}
+                          >
+                            {result.percentage}%
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-3 sm:px-4 text-center">
+                          {getGradeBadge(result.grade)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {filteredResults.length === 0 && (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    {searchMode === 'student' && !searchQuery.trim()
+                      ? 'Search for a student to view results'
+                      : 'No results found'}
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
