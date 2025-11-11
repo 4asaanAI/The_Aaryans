@@ -5,7 +5,22 @@ import { ColumnFilter } from '../../components/ColumnFilter';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users as UsersIcon, GraduationCap, Briefcase, Eye, Edit, Trash2, Plus, ChevronDown, ChevronUp, UserCheck, X, AlertCircle, FileText } from 'lucide-react';
+import {
+  Search,
+  Users as UsersIcon,
+  GraduationCap,
+  Briefcase,
+  Eye,
+  Edit,
+  Trash2,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  UserCheck,
+  X,
+  AlertCircle,
+  FileText,
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Notification } from '../../components/Notification';
 
@@ -53,23 +68,29 @@ export function UsersPage() {
     sub_role: '',
     phone: '',
     admission_no: '',
-    employee_id: ''
+    employee_id: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
     role: [],
     status: [],
-    subRole: []
+    subRole: [],
   });
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [showConfirmModal, setShowConfirmModal] = useState<{ type: 'approve' | 'delete'; profile: Profile } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState<{
+    type: 'approve' | 'delete';
+    profile: Profile;
+  } | null>(null);
 
   const isDark = theme === 'dark';
 
   const [stats, setStats] = useState({
     students: 0,
     teachers: 0,
-    employees: 0
+    employees: 0,
   });
 
   useEffect(() => {
@@ -92,9 +113,13 @@ export function UsersPage() {
 
       setProfiles(data || []);
 
-      const students = data?.filter(p => p.role === 'student').length || 0;
-      const teachers = data?.filter(p => p.role === 'professor' || p.role === 'teacher').length || 0;
-      const employees = data?.filter(p => p.role === 'admin' || p.role === 'staff').length || 0;
+      const students = data?.filter((p) => p.role === 'student').length || 0;
+      const teachers =
+        data?.filter((p) => p.role === 'professor' || p.role === 'teacher')
+          .length || 0;
+      const employees =
+        data?.filter((p) => p.role === 'admin' || p.role === 'staff').length ||
+        0;
 
       setStats({ students, teachers, employees });
     } catch (error) {
@@ -110,7 +135,7 @@ export function UsersPage() {
         .from('profiles')
         .select('*')
         .eq('approval_status', 'pending')
-        .order('created_at', { ascending: false});
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setPendingApprovals(data || []);
@@ -128,7 +153,7 @@ export function UsersPage() {
           event: '*',
           schema: 'public',
           table: 'profiles',
-          filter: 'approval_status=eq.pending'
+          filter: 'approval_status=eq.pending',
         },
         () => {
           fetchPendingApprovals();
@@ -150,25 +175,34 @@ export function UsersPage() {
           approval_status: 'approved',
           approved_at: new Date().toISOString(),
           approved_by: currentProfile?.id,
-          status: 'active'
+          status: 'active',
         })
         .eq('id', profileId);
 
       if (error) throw error;
 
-      setPendingApprovals(prev => prev.filter(p => p.id !== profileId));
+      setPendingApprovals((prev) => prev.filter((p) => p.id !== profileId));
       fetchProfiles();
-      setNotification({ type: 'success', message: 'User approved successfully!' });
+      setNotification({
+        type: 'success',
+        message: 'User approved successfully!',
+      });
     } catch (error) {
       console.error('Error approving user:', error);
-      setNotification({ type: 'error', message: 'Failed to approve user. Please try again.' });
+      setNotification({
+        type: 'error',
+        message: 'Failed to approve user. Please try again.',
+      });
     }
   };
 
   const canEditUser = (targetProfile: Profile): boolean => {
     if (!currentProfile) return false;
 
-    if (currentProfile.sub_role !== 'head' && currentProfile.sub_role !== 'principal') {
+    if (
+      currentProfile.sub_role !== 'head' &&
+      currentProfile.sub_role !== 'principal'
+    ) {
       return false;
     }
 
@@ -180,7 +214,10 @@ export function UsersPage() {
       return false;
     }
 
-    if (currentProfile.sub_role === 'head' && targetProfile.sub_role === 'principal') {
+    if (
+      currentProfile.sub_role === 'head' &&
+      targetProfile.sub_role === 'principal'
+    ) {
       return false;
     }
 
@@ -204,7 +241,10 @@ export function UsersPage() {
   const handleAddProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setNotification(null);
+
     try {
+      // 1) Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: newProfile.email,
         password: newProfile.password,
@@ -212,30 +252,55 @@ export function UsersPage() {
           data: {
             full_name: newProfile.full_name,
             role: newProfile.role,
-            sub_role: newProfile.sub_role
-          }
-        }
+            emailRedirectTo: undefined,
+            sub_role:
+              newProfile.sub_role ||
+              (newProfile.role === 'student' ? 'student' : null),
+          },
+          // if you use email confirmations, consider disabling for admin-created users
+          // emailRedirectTo: `${window.location.origin}/login`,
+        },
       });
-
       if (authError) throw authError;
 
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            phone: newProfile.phone,
-            admission_no: newProfile.admission_no,
-            employee_id: newProfile.employee_id,
-            approval_status: 'approved',
-            approved_by: currentProfile?.id,
-            approved_at: new Date().toISOString()
-          })
-          .eq('id', authData.user.id);
-
-        if (profileError) throw profileError;
+      // If your project enforces email confirmation, authData.user may be null here.
+      if (!authData.user) {
+        throw new Error(
+          'User created, but email confirmation is required before profile can be added. Disable confirmations for admin-created users or create via an admin backend.'
+        );
       }
 
-      setNotification({ type: 'success', message: 'User created successfully!' });
+      // 2) Upsert profile row (works whether it exists or not)
+      const baseProfile = {
+        id: authData.user.id, // IMPORTANT: tie to auth user
+        email: newProfile.email,
+        full_name: newProfile.full_name,
+        role: newProfile.role,
+        sub_role:
+          newProfile.sub_role ||
+          (newProfile.role === 'student' ? 'student' : null),
+        phone: newProfile.phone || null,
+        admission_no:
+          newProfile.role === 'student'
+            ? newProfile.admission_no || null
+            : null,
+        employee_id:
+          newProfile.role !== 'student' ? newProfile.employee_id || null : null,
+        status: 'active',
+        approval_status: 'approved',
+        approved_by: currentProfile?.id || null,
+        approved_at: new Date().toISOString(),
+      };
+
+      const { error: upsertErr } = await supabase
+        .from('profiles')
+        .upsert(baseProfile, { onConflict: 'id' });
+      if (upsertErr) throw upsertErr;
+
+      setNotification({
+        type: 'success',
+        message: 'User created successfully!',
+      });
       setShowAddModal(false);
       setNewProfile({
         full_name: '',
@@ -245,12 +310,15 @@ export function UsersPage() {
         sub_role: '',
         phone: '',
         admission_no: '',
-        employee_id: ''
+        employee_id: '',
       });
       fetchProfiles();
     } catch (error: any) {
       console.error('Error creating user:', error);
-      setNotification({ type: 'error', message: error.message || 'Failed to create user' });
+      setNotification({
+        type: 'error',
+        message: error.message || 'Failed to create user',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -266,19 +334,25 @@ export function UsersPage() {
         .from('profiles')
         .update({
           role: editingProfile.role,
-          sub_role: editingProfile.sub_role
+          sub_role: editingProfile.sub_role,
         })
         .eq('id', editingProfile.id);
 
       if (error) throw error;
 
-      setNotification({ type: 'success', message: 'User updated successfully!' });
+      setNotification({
+        type: 'success',
+        message: 'User updated successfully!',
+      });
       setShowEditModal(false);
       setEditingProfile(null);
       fetchProfiles();
     } catch (error) {
       console.error('Error updating user:', error);
-      setNotification({ type: 'error', message: 'Failed to update user. Please try again.' });
+      setNotification({
+        type: 'error',
+        message: 'Failed to update user. Please try again.',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -286,7 +360,10 @@ export function UsersPage() {
 
   const handleDeleteUser = async (profile: Profile) => {
     if (!canDeleteUser(profile)) {
-      setNotification({ type: 'error', message: 'You do not have permission to delete this user.' });
+      setNotification({
+        type: 'error',
+        message: 'You do not have permission to delete this user.',
+      });
       return;
     }
 
@@ -299,14 +376,24 @@ export function UsersPage() {
 
       if (error) throw error;
 
-      setNotification({ type: 'success', message: 'User deleted successfully.' });
+      setNotification({
+        type: 'success',
+        message: 'User deleted successfully.',
+      });
       fetchProfiles();
     } catch (error: any) {
       console.error('Error deleting user:', error);
       if (error.message.includes('foreign key')) {
-        setNotification({ type: 'error', message: 'Cannot delete user: This user is referenced in other records (e.g., as HOD, class teacher, or assignment teacher). Please reassign those roles first.' });
+        setNotification({
+          type: 'error',
+          message:
+            'Cannot delete user: This user is referenced in other records (e.g., as HOD, class teacher, or assignment teacher). Please reassign those roles first.',
+        });
       } else {
-        setNotification({ type: 'error', message: 'Failed to delete user. Please try again.' });
+        setNotification({
+          type: 'error',
+          message: 'Failed to delete user. Please try again.',
+        });
       }
     }
   };
@@ -315,32 +402,44 @@ export function UsersPage() {
     let filtered = [...profiles];
 
     if (searchTerm) {
-      filtered = filtered.filter(profile =>
-        profile.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.employee_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.admission_no?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (profile) =>
+          profile.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          profile.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          profile.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          profile.employee_id
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          profile.admission_no?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (columnFilters.role.length > 0) {
-      filtered = filtered.filter(profile => columnFilters.role.includes(profile.role));
+      filtered = filtered.filter((profile) =>
+        columnFilters.role.includes(profile.role)
+      );
     }
 
     if (columnFilters.status.length > 0) {
-      filtered = filtered.filter(profile => columnFilters.status.includes(profile.status));
+      filtered = filtered.filter((profile) =>
+        columnFilters.status.includes(profile.status)
+      );
     }
 
     if (columnFilters.subRole.length > 0) {
-      filtered = filtered.filter(profile => columnFilters.subRole.includes(profile.sub_role || ''));
+      filtered = filtered.filter((profile) =>
+        columnFilters.subRole.includes(profile.sub_role || '')
+      );
     }
 
     return filtered;
   }, [profiles, searchTerm, columnFilters]);
 
-  const handleColumnFilterChange = (column: keyof ColumnFilters, values: string[]) => {
-    setColumnFilters(prev => ({ ...prev, [column]: values }));
+  const handleColumnFilterChange = (
+    column: keyof ColumnFilters,
+    values: string[]
+  ) => {
+    setColumnFilters((prev) => ({ ...prev, [column]: values }));
   };
 
   const getRoleBadgeColor = (role: string) => {
@@ -374,7 +473,7 @@ export function UsersPage() {
   const availableSubRoles: Record<string, string[]> = {
     admin: ['head', 'principal', 'hod', 'other'],
     professor: ['coordinator', 'teacher'],
-    student: ['student']
+    student: ['student'],
   };
 
   return (
@@ -383,7 +482,9 @@ export function UsersPage() {
         <div className="lg:col-span-2 space-y-5">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Users Management</h2>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                Users Management
+              </h2>
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -391,73 +492,99 @@ export function UsersPage() {
                 <Plus className="h-5 w-5" />
                 <span className="hidden sm:inline">Add User</span>
               </button>
-              {currentProfile?.role === 'admin' && pendingApprovals.length > 0 && (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowPendingDropdown(!showPendingDropdown)}
-                    className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
-                    title={`${pendingApprovals.length} pending approvals`}
-                  >
-                    <Plus className="h-5 w-5" />
-                    <span className="font-semibold">{pendingApprovals.length}</span>
-                    {showPendingDropdown ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </button>
+              {currentProfile?.role === 'admin' &&
+                pendingApprovals.length > 0 && (
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setShowPendingDropdown(!showPendingDropdown)
+                      }
+                      className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                      title={`${pendingApprovals.length} pending approvals`}
+                    >
+                      <Plus className="h-5 w-5" />
+                      <span className="font-semibold">
+                        {pendingApprovals.length}
+                      </span>
+                      {showPendingDropdown ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
 
-                  {showPendingDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
-                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/20">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Pending Approvals</h3>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          {pendingApprovals.length} new registration{pendingApprovals.length !== 1 ? 's' : ''} awaiting approval
-                        </p>
-                      </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {pendingApprovals.slice(0, 5).map((pending) => (
-                          <div
-                            key={pending.id}
-                            className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {pending.full_name}
-                                </p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{pending.email}</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(pending.role)}`}>
-                                    {pending.role}
-                                  </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-500">
-                                    {new Date(pending.created_at).toLocaleDateString()}
-                                  </span>
+                    {showPendingDropdown && (
+                      <div className="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/20">
+                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                            Pending Approvals
+                          </h3>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            {pendingApprovals.length} new registration
+                            {pendingApprovals.length !== 1 ? 's' : ''} awaiting
+                            approval
+                          </p>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {pendingApprovals.slice(0, 5).map((pending) => (
+                            <div
+                              key={pending.id}
+                              className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {pending.full_name}
+                                  </p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                                    {pending.email}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                                        pending.role
+                                      )}`}
+                                    >
+                                      {pending.role}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-500">
+                                      {new Date(
+                                        pending.created_at
+                                      ).toLocaleDateString()}
+                                    </span>
+                                  </div>
                                 </div>
+                                <button
+                                  onClick={() =>
+                                    setShowConfirmModal({
+                                      type: 'approve',
+                                      profile: pending,
+                                    })
+                                  }
+                                  className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded text-xs font-medium flex items-center gap-1"
+                                >
+                                  <UserCheck className="h-3 w-3" />
+                                  Approve
+                                </button>
                               </div>
-                              <button
-                                onClick={() => setShowConfirmModal({ type: 'approve', profile: pending })}
-                                className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded text-xs font-medium flex items-center gap-1"
-                              >
-                                <UserCheck className="h-3 w-3" />
-                                Approve
-                              </button>
                             </div>
-                          </div>
-                        ))}
-                        {pendingApprovals.length > 5 && (
-                          <button
-                            onClick={() => {
-                              setShowPendingDropdown(false);
-                              navigate('/dashboard/approvals');
-                            }}
-                            className="w-full px-4 py-3 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            See more ({pendingApprovals.length - 5} remaining)
-                          </button>
-                        )}
+                          ))}
+                          {pendingApprovals.length > 5 && (
+                            <button
+                              onClick={() => {
+                                setShowPendingDropdown(false);
+                                navigate('/dashboard/approvals');
+                              }}
+                              className="w-full px-4 py-3 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              See more ({pendingApprovals.length - 5} remaining)
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -469,7 +596,9 @@ export function UsersPage() {
                   <UsersIcon className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white mb-1">{stats.students}</div>
+              <div className="text-3xl font-bold text-white mb-1">
+                {stats.students}
+              </div>
               <div className="text-blue-50 text-sm font-medium">Students</div>
             </div>
 
@@ -480,7 +609,9 @@ export function UsersPage() {
                   <UsersIcon className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white mb-1">{stats.teachers}</div>
+              <div className="text-3xl font-bold text-white mb-1">
+                {stats.teachers}
+              </div>
               <div className="text-green-50 text-sm font-medium">Teachers</div>
             </div>
 
@@ -491,8 +622,12 @@ export function UsersPage() {
                   <UsersIcon className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white mb-1">{stats.employees}</div>
-              <div className="text-purple-50 text-sm font-medium">Employees</div>
+              <div className="text-3xl font-bold text-white mb-1">
+                {stats.employees}
+              </div>
+              <div className="text-purple-50 text-sm font-medium">
+                Employees
+              </div>
             </div>
           </div>
 
@@ -514,7 +649,9 @@ export function UsersPage() {
               {loading ? (
                 <div className="text-center py-12">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">Loading users...</p>
+                  <p className="mt-2 text-gray-600 dark:text-gray-400">
+                    Loading users...
+                  </p>
                 </div>
               ) : filteredProfiles.length === 0 ? (
                 <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -535,9 +672,11 @@ export function UsersPage() {
                           Role
                           <ColumnFilter
                             column="Role"
-                            values={profiles.map(p => p.role)}
+                            values={profiles.map((p) => p.role)}
                             selectedValues={columnFilters.role}
-                            onFilterChange={(values) => handleColumnFilterChange('role', values)}
+                            onFilterChange={(values) =>
+                              handleColumnFilterChange('role', values)
+                            }
                             isDark={isDark}
                           />
                         </div>
@@ -547,9 +686,11 @@ export function UsersPage() {
                           Sub Role
                           <ColumnFilter
                             column="Sub Role"
-                            values={profiles.map(p => p.sub_role || '')}
+                            values={profiles.map((p) => p.sub_role || '')}
                             selectedValues={columnFilters.subRole}
-                            onFilterChange={(values) => handleColumnFilterChange('subRole', values)}
+                            onFilterChange={(values) =>
+                              handleColumnFilterChange('subRole', values)
+                            }
                             isDark={isDark}
                           />
                         </div>
@@ -565,9 +706,11 @@ export function UsersPage() {
                           Status
                           <ColumnFilter
                             column="Status"
-                            values={profiles.map(p => p.status)}
+                            values={profiles.map((p) => p.status)}
                             selectedValues={columnFilters.status}
-                            onFilterChange={(values) => handleColumnFilterChange('status', values)}
+                            onFilterChange={(values) =>
+                              handleColumnFilterChange('status', values)
+                            }
                             isDark={isDark}
                           />
                         </div>
@@ -579,7 +722,10 @@ export function UsersPage() {
                   </thead>
                   <tbody>
                     {filteredProfiles.map((profile) => (
-                      <tr key={profile.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <tr
+                        key={profile.id}
+                        className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      >
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -587,24 +733,38 @@ export function UsersPage() {
                                 {profile.full_name.charAt(0).toUpperCase()}
                               </span>
                             </div>
-                            <div className="font-medium text-gray-900 dark:text-white">{profile.full_name}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">
+                              {profile.full_name}
+                            </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{profile.email}</td>
+                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                          {profile.email}
+                        </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(profile.role)}`}>
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                              profile.role
+                            )}`}
+                          >
                             {profile.role}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-gray-600 dark:text-gray-400 capitalize">
                           {profile.sub_role || '-'}
                         </td>
-                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{profile.phone || '-'}</td>
+                        <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                          {profile.phone || '-'}
+                        </td>
                         <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
                           {profile.employee_id || profile.admission_no || '-'}
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(profile.status)}`}>
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                              profile.status
+                            )}`}
+                          >
                             {profile.status}
                           </span>
                         </td>
@@ -626,7 +786,12 @@ export function UsersPage() {
                             )}
                             {canDeleteUser(profile) && (
                               <button
-                                onClick={() => setShowConfirmModal({ type: 'delete', profile })}
+                                onClick={() =>
+                                  setShowConfirmModal({
+                                    type: 'delete',
+                                    profile,
+                                  })
+                                }
                                 className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -656,7 +821,9 @@ export function UsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit User Role</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Edit User Role
+              </h2>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -670,8 +837,12 @@ export function UsersPage() {
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-blue-900 dark:text-blue-300">
-                    <p className="font-semibold mb-1">Editing: {editingProfile.full_name}</p>
-                    <p className="text-blue-800 dark:text-blue-400">{editingProfile.email}</p>
+                    <p className="font-semibold mb-1">
+                      Editing: {editingProfile.full_name}
+                    </p>
+                    <p className="text-blue-800 dark:text-blue-400">
+                      {editingProfile.email}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -682,11 +853,19 @@ export function UsersPage() {
                 </label>
                 <select
                   value={editingProfile.role}
-                  onChange={(e) => setEditingProfile({ ...editingProfile, role: e.target.value, sub_role: '' })}
+                  onChange={(e) =>
+                    setEditingProfile({
+                      ...editingProfile,
+                      role: e.target.value,
+                      sub_role: '',
+                    })
+                  }
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  {availableRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
+                  {availableRoles.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -697,12 +876,19 @@ export function UsersPage() {
                 </label>
                 <select
                   value={editingProfile.sub_role || ''}
-                  onChange={(e) => setEditingProfile({ ...editingProfile, sub_role: e.target.value })}
+                  onChange={(e) =>
+                    setEditingProfile({
+                      ...editingProfile,
+                      sub_role: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Select sub role</option>
-                  {availableSubRoles[editingProfile.role]?.map(subRole => (
-                    <option key={subRole} value={subRole}>{subRole}</option>
+                  {availableSubRoles[editingProfile.role]?.map((subRole) => (
+                    <option key={subRole} value={subRole}>
+                      {subRole}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -741,7 +927,9 @@ export function UsersPage() {
               <AlertCircle className="h-6 w-6 text-orange-500 flex-shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                  {showConfirmModal.type === 'approve' ? 'Approve User' : 'Delete User'}
+                  {showConfirmModal.type === 'approve'
+                    ? 'Approve User'
+                    : 'Delete User'}
                 </h3>
                 <p className="text-gray-700 dark:text-gray-300">
                   {showConfirmModal.type === 'approve'
@@ -750,16 +938,23 @@ export function UsersPage() {
                 </p>
                 {showConfirmModal.type === 'delete' && (
                   <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p className="text-sm text-red-900 dark:text-red-300 font-semibold mb-2">This will permanently delete:</p>
+                    <p className="text-sm text-red-900 dark:text-red-300 font-semibold mb-2">
+                      This will permanently delete:
+                    </p>
                     <ul className="text-xs text-red-800 dark:text-red-400 list-disc list-inside space-y-1">
                       <li>User profile</li>
                       <li>All messages sent/received</li>
-                      <li>Student records (attendance, assignments, exam results, fees, etc.)</li>
+                      <li>
+                        Student records (attendance, assignments, exam results,
+                        fees, etc.)
+                      </li>
                       <li>Leave applications</li>
                       <li>Library transactions</li>
                       <li>Transport records</li>
                     </ul>
-                    <p className="text-sm text-red-900 dark:text-red-300 font-semibold mt-2">This action CANNOT be undone!</p>
+                    <p className="text-sm text-red-900 dark:text-red-300 font-semibold mt-2">
+                      This action CANNOT be undone!
+                    </p>
                   </div>
                 )}
               </div>
@@ -772,7 +967,11 @@ export function UsersPage() {
                 Cancel
               </button>
               <button
-                onClick={() => showConfirmModal.type === 'approve' ? handleApprove(showConfirmModal.profile.id) : handleDeleteUser(showConfirmModal.profile)}
+                onClick={() =>
+                  showConfirmModal.type === 'approve'
+                    ? handleApprove(showConfirmModal.profile.id)
+                    : handleDeleteUser(showConfirmModal.profile)
+                }
                 className={`px-4 py-2 text-white rounded-lg transition-colors ${
                   showConfirmModal.type === 'approve'
                     ? 'bg-green-500 hover:bg-green-600'
@@ -790,7 +989,9 @@ export function UsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full my-8">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Profile</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                User Profile
+              </h2>
               <button
                 onClick={() => setShowDetailModal(false)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -801,32 +1002,86 @@ export function UsersPage() {
             <div className="p-6 space-y-6">
               <div className="flex items-center gap-6">
                 {selectedProfile.photo_url ? (
-                  <img src={selectedProfile.photo_url} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+                  <img
+                    src={selectedProfile.photo_url}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
                 ) : (
                   <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-3xl font-bold">{selectedProfile.full_name.charAt(0).toUpperCase()}</span>
+                    <span className="text-white text-3xl font-bold">
+                      {selectedProfile.full_name.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                 )}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedProfile.full_name}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 capitalize">{selectedProfile.role} {selectedProfile.sub_role && `- ${selectedProfile.sub_role}`}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{selectedProfile.email}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {selectedProfile.full_name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 capitalize">
+                    {selectedProfile.role}{' '}
+                    {selectedProfile.sub_role &&
+                      `- ${selectedProfile.sub_role}`}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                    {selectedProfile.email}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Personal Information</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                    Personal Information
+                  </h4>
                   <div className="space-y-2 text-sm">
-                    <div><span className="text-gray-600 dark:text-gray-400">Phone:</span> <span className="text-gray-900 dark:text-white">{selectedProfile.phone || 'N/A'}</span></div>
-                    <div><span className="text-gray-600 dark:text-gray-400">ID:</span> <span className="text-gray-900 dark:text-white">{selectedProfile.admission_no || selectedProfile.employee_id || 'N/A'}</span></div>
-                    <div><span className="text-gray-600 dark:text-gray-400">Status:</span> <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(selectedProfile.status)}`}>{selectedProfile.status}</span></div>
-                    <div><span className="text-gray-600 dark:text-gray-400">Joined:</span> <span className="text-gray-900 dark:text-white">{new Date(selectedProfile.created_at).toLocaleDateString()}</span></div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Phone:
+                      </span>{' '}
+                      <span className="text-gray-900 dark:text-white">
+                        {selectedProfile.phone || 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        ID:
+                      </span>{' '}
+                      <span className="text-gray-900 dark:text-white">
+                        {selectedProfile.admission_no ||
+                          selectedProfile.employee_id ||
+                          'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Status:
+                      </span>{' '}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                          selectedProfile.status
+                        )}`}
+                      >
+                        {selectedProfile.status}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Joined:
+                      </span>{' '}
+                      <span className="text-gray-900 dark:text-white">
+                        {new Date(
+                          selectedProfile.created_at
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Actions</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                    Actions
+                  </h4>
                   <div className="flex flex-col gap-2">
                     {selectedProfile.role === 'student' && (
                       <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
@@ -850,7 +1105,10 @@ export function UsersPage() {
                       <button
                         onClick={() => {
                           setShowDetailModal(false);
-                          setShowConfirmModal({ type: 'delete', profile: selectedProfile });
+                          setShowConfirmModal({
+                            type: 'delete',
+                            profile: selectedProfile,
+                          });
                         }}
                         className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                       >
@@ -870,7 +1128,9 @@ export function UsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full my-8">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add New User</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Add New User
+              </h2>
               <button
                 onClick={() => setShowAddModal(false)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -881,88 +1141,138 @@ export function UsersPage() {
             <form onSubmit={handleAddProfile} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Full Name *
+                  </label>
                   <input
                     type="text"
                     required
                     value={newProfile.full_name}
-                    onChange={(e) => setNewProfile({ ...newProfile, full_name: e.target.value })}
+                    onChange={(e) =>
+                      setNewProfile({
+                        ...newProfile,
+                        full_name: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email *
+                  </label>
                   <input
                     type="email"
                     required
                     value={newProfile.email}
-                    onChange={(e) => setNewProfile({ ...newProfile, email: e.target.value })}
+                    onChange={(e) =>
+                      setNewProfile({ ...newProfile, email: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Password *
+                  </label>
                   <input
                     type="password"
                     required
                     value={newProfile.password}
-                    onChange={(e) => setNewProfile({ ...newProfile, password: e.target.value })}
+                    onChange={(e) =>
+                      setNewProfile({ ...newProfile, password: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Phone
+                  </label>
                   <input
                     type="tel"
                     value={newProfile.phone}
-                    onChange={(e) => setNewProfile({ ...newProfile, phone: e.target.value })}
+                    onChange={(e) =>
+                      setNewProfile({ ...newProfile, phone: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Role *
+                  </label>
                   <select
                     required
                     value={newProfile.role}
-                    onChange={(e) => setNewProfile({ ...newProfile, role: e.target.value, sub_role: '' })}
+                    onChange={(e) =>
+                      setNewProfile({
+                        ...newProfile,
+                        role: e.target.value,
+                        sub_role: '',
+                      })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {availableRoles.map(role => (
-                      <option key={role} value={role}>{role}</option>
+                    {availableRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sub Role</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Sub Role
+                  </label>
                   <select
                     value={newProfile.sub_role}
-                    onChange={(e) => setNewProfile({ ...newProfile, sub_role: e.target.value })}
+                    onChange={(e) =>
+                      setNewProfile({ ...newProfile, sub_role: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select sub role</option>
-                    {availableSubRoles[newProfile.role]?.map(subRole => (
-                      <option key={subRole} value={subRole}>{subRole}</option>
+                    {availableSubRoles[newProfile.role]?.map((subRole) => (
+                      <option key={subRole} value={subRole}>
+                        {subRole}
+                      </option>
                     ))}
                   </select>
                 </div>
                 {newProfile.role === 'student' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Admission No</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Admission No
+                    </label>
                     <input
                       type="text"
                       value={newProfile.admission_no}
-                      onChange={(e) => setNewProfile({ ...newProfile, admission_no: e.target.value })}
+                      onChange={(e) =>
+                        setNewProfile({
+                          ...newProfile,
+                          admission_no: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                 )}
-                {(newProfile.role === 'professor' || newProfile.role === 'admin') && (
+                {(newProfile.role === 'professor' ||
+                  newProfile.role === 'admin') && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee ID</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Employee ID
+                    </label>
                     <input
                       type="text"
                       value={newProfile.employee_id}
-                      onChange={(e) => setNewProfile({ ...newProfile, employee_id: e.target.value })}
+                      onChange={(e) =>
+                        setNewProfile({
+                          ...newProfile,
+                          employee_id: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
