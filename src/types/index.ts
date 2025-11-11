@@ -17,12 +17,14 @@ export interface Profile {
   blood_group?: string | null;
   bio?: string | null;
   photo_url?: string | null;
-  status: 'active' | 'inactive' | 'suspended' | 'pending_approval';
+  status: 'active' | 'inactive' | 'suspended' | 'pending_approval' | string;
   approval_status?: 'pending' | 'approved' | 'rejected';
   approved_at?: string | null;
   approved_by?: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  house?: 'green' | 'blue' | 'red' | 'yellow' | null;
+  duties?: string[] | null;
 }
 
 export interface Department {
@@ -332,3 +334,35 @@ export const teacherSubRoles = [
 export const studentSubRoles = [
   { value: 'student', label: 'Student', description: 'View-only access to personal data' }
 ];
+
+export interface TransferCertificate {
+  id: string;
+  student_id: string;
+  issued_by: string;
+  tc_number: string;
+  issue_date: string;
+  reason: string;
+  conduct: string;
+  character: string;
+  remarks?: string | null;
+  last_class_attended?: string | null;
+  subjects_studied?: string | null;
+  date_of_admission?: string | null;
+  date_of_leaving?: string | null;
+  created_at: string;
+  updated_at: string;
+  student?: Profile;
+  issuer?: Profile;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
+  sender?: Profile;
+  receiver?: Profile;
+}

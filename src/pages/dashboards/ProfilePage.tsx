@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Camera, Save, Loader2, Upload, Link as LinkIcon } from 'lucide-react';
+import { Camera, Save, Loader2, Upload, Link as LinkIcon, Lock, Mail, Phone } from 'lucide-react';
 
 export function ProfilePage() {
   const { profile, refreshProfile } = useAuth();
@@ -22,6 +22,13 @@ export function ProfilePage() {
   const [photoUploadMethod, setPhotoUploadMethod] = useState<'url' | 'file'>('url');
   const [photoUrl, setPhotoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [verificationMethod, setVerificationMethod] = useState<'email' | 'phone'>('email');
+  const [verificationStep, setVerificationStep] = useState<'method' | 'otp' | 'password'>('method');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -36,6 +43,21 @@ export function ProfilePage() {
       });
     }
   }, [profile]);
+
+  const getHouseBadgeColor = (house?: string | null) => {
+    switch (house) {
+      case 'green':
+        return 'bg-green-500 text-white';
+      case 'blue':
+        return 'bg-blue-500 text-white';
+      case 'red':
+        return 'bg-red-500 text-white';
+      case 'yellow':
+        return 'bg-yellow-500 text-white';
+      default:
+        return 'bg-gray-400 text-white';
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -108,6 +130,57 @@ export function ProfilePage() {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (!profile) return;
+
+    if (verificationStep === 'method') {
+      setVerifying(true);
+      try {
+        if (verificationMethod === 'email') {
+          setMessage({ type: 'success', text: 'Please check your email for OTP (simulated)' });
+        } else {
+          setMessage({ type: 'success', text: 'Please check your phone for OTP (simulated)' });
+        }
+        setVerificationStep('otp');
+      } catch (error: any) {
+        setMessage({ type: 'error', text: error.message || 'Failed to send OTP' });
+      } finally {
+        setVerifying(false);
+      }
+    } else if (verificationStep === 'otp') {
+      if (otp === '123456') {
+        setVerificationStep('password');
+        setMessage({ type: 'success', text: 'OTP verified successfully' });
+      } else {
+        setMessage({ type: 'error', text: 'Invalid OTP. For demo, use 123456' });
+      }
+    } else if (verificationStep === 'password') {
+      if (newPassword !== confirmPassword) {
+        setMessage({ type: 'error', text: 'Passwords do not match' });
+        return;
+      }
+      if (newPassword.length < 6) {
+        setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+        return;
+      }
+      setVerifying(true);
+      try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        setMessage({ type: 'success', text: 'Password changed successfully' });
+        setShowPasswordModal(false);
+        setVerificationStep('method');
+        setOtp('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } catch (error: any) {
+        setMessage({ type: 'error', text: error.message || 'Failed to change password' });
+      } finally {
+        setVerifying(false);
+      }
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
@@ -118,7 +191,7 @@ export function ProfilePage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               <div className="relative">
                 {formData.photo_url ? (
                   <img src={formData.photo_url} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
@@ -137,10 +210,26 @@ export function ProfilePage() {
                   <Camera className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                 </button>
               </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{profile?.full_name}</h2>
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{profile?.full_name}</h2>
+                  {profile?.house && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getHouseBadgeColor(profile.house)}`}>
+                      {profile.house} House
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{profile?.role}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{profile?.email}</p>
+                {profile?.duties && profile.duties.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {profile.duties.map((duty, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-medium rounded-md shadow-sm">
+                        {duty}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -239,11 +328,18 @@ export function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
+              >
+                <Lock className="h-5 w-5" />
+                Change Password
+              </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
               >
                 {saving ? (
                   <>
@@ -340,6 +436,153 @@ export function ProfilePage() {
                 >
                   Cancel
                 </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Change Password</h3>
+
+            {verificationStep === 'method' && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Select verification method:</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setVerificationMethod('email')}
+                    className={`w-full flex items-center gap-3 p-4 rounded-lg border-2 transition-colors ${
+                      verificationMethod === 'email'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                    }`}
+                  >
+                    <Mail className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900 dark:text-white">Email Verification</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">{profile?.email}</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setVerificationMethod('phone')}
+                    className={`w-full flex items-center gap-3 p-4 rounded-lg border-2 transition-colors ${
+                      verificationMethod === 'phone'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                    }`}
+                    disabled={!profile?.phone}
+                  >
+                    <Phone className="h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-medium text-gray-900 dark:text-white">Phone Verification</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">{profile?.phone || 'Not available'}</div>
+                    </div>
+                  </button>
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setVerificationStep('method');
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePasswordChange}
+                    disabled={verifying || (verificationMethod === 'phone' && !profile?.phone)}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                  >
+                    {verifying ? 'Sending...' : 'Send OTP'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {verificationStep === 'otp' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Enter OTP (Demo: use 123456)
+                  </label>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="123456"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setVerificationStep('method');
+                      setOtp('');
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handlePasswordChange}
+                    disabled={!otp}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                  >
+                    Verify OTP
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {verificationStep === 'password' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setVerificationStep('method');
+                      setNewPassword('');
+                      setConfirmPassword('');
+                      setShowPasswordModal(false);
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePasswordChange}
+                    disabled={verifying || !newPassword || !confirmPassword}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                  >
+                    {verifying ? 'Updating...' : 'Change Password'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

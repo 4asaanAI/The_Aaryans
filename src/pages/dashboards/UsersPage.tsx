@@ -21,15 +21,18 @@ import {
   X,
   AlertCircle,
   FileText,
+  Award,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Notification } from '../../components/Notification';
+import { TransferCertificateModal } from '../../components/TransferCertificateModal';
+import { EditHouseDutiesModal } from '../../components/EditHouseDutiesModal';
 
 interface Profile {
   id: string;
   full_name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'professor' | 'student';
   sub_role?: string;
   phone?: string;
   status: string;
@@ -37,8 +40,11 @@ interface Profile {
   employee_id?: string;
   admission_no?: string;
   created_at: string;
-  approval_status?: string;
+  updated_at?: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
   photo_url?: string;
+  house?: 'green' | 'blue' | 'red' | 'yellow' | null;
+  duties?: string[] | null;
 }
 
 interface ColumnFilters {
@@ -85,6 +91,8 @@ export function UsersPage() {
     type: 'approve' | 'delete';
     profile: Profile;
   } | null>(null);
+  const [showTCModal, setShowTCModal] = useState<Profile | null>(null);
+  const [showHouseDutiesModal, setShowHouseDutiesModal] = useState<Profile | null>(null);
 
   const isDark = theme === 'dark';
 
@@ -448,6 +456,21 @@ export function UsersPage() {
         return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
       default:
         return 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+    }
+  };
+
+  const getHouseBadgeColor = (house?: string | null) => {
+    switch (house) {
+      case 'green':
+        return 'bg-green-500 text-white';
+      case 'blue':
+        return 'bg-blue-500 text-white';
+      case 'red':
+        return 'bg-red-500 text-white';
+      case 'yellow':
+        return 'bg-yellow-500 text-white';
+      default:
+        return 'bg-gray-400 text-white';
     }
   };
 
@@ -851,7 +874,7 @@ export function UsersPage() {
                   onChange={(e) =>
                     setEditingProfile({
                       ...editingProfile,
-                      role: e.target.value,
+                      role: e.target.value as 'admin' | 'professor' | 'student',
                       sub_role: '',
                     })
                   }
@@ -1009,10 +1032,17 @@ export function UsersPage() {
                     </span>
                   </div>
                 )}
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {selectedProfile.full_name}
-                  </h3>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {selectedProfile.full_name}
+                    </h3>
+                    {selectedProfile.house && (
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getHouseBadgeColor(selectedProfile.house)}`}>
+                        {selectedProfile.house} House
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-600 dark:text-gray-400 capitalize">
                     {selectedProfile.role}{' '}
                     {selectedProfile.sub_role &&
@@ -1021,6 +1051,15 @@ export function UsersPage() {
                   <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
                     {selectedProfile.email}
                   </p>
+                  {selectedProfile.duties && selectedProfile.duties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {selectedProfile.duties.map((duty, idx) => (
+                        <span key={idx} className="px-3 py-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-medium rounded-md shadow-sm">
+                          {duty}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1078,10 +1117,28 @@ export function UsersPage() {
                     Actions
                   </h4>
                   <div className="flex flex-col gap-2">
-                    {selectedProfile.role === 'student' && (
-                      <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    {selectedProfile.role === 'student' && (currentProfile?.sub_role === 'head' || currentProfile?.sub_role === 'principal') && (
+                      <button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          setShowTCModal(selectedProfile);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      >
                         <FileText className="h-4 w-4" />
                         Generate Transfer Certificate
+                      </button>
+                    )}
+                    {(currentProfile?.sub_role === 'head' || currentProfile?.sub_role === 'principal') && (
+                      <button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          setShowHouseDutiesModal(selectedProfile);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                      >
+                        <Award className="h-4 w-4" />
+                        Edit House & Duties
                       </button>
                     )}
                     {canEditUser(selectedProfile) && (
@@ -1292,6 +1349,34 @@ export function UsersPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {showTCModal && currentProfile && (
+        <TransferCertificateModal
+          student={showTCModal}
+          issuerId={currentProfile.id}
+          onClose={() => setShowTCModal(null)}
+          onSuccess={() => {
+            setNotification({
+              type: 'success',
+              message: 'Transfer Certificate created successfully!'
+            });
+          }}
+        />
+      )}
+
+      {showHouseDutiesModal && (
+        <EditHouseDutiesModal
+          profile={showHouseDutiesModal}
+          onClose={() => setShowHouseDutiesModal(null)}
+          onSuccess={() => {
+            setNotification({
+              type: 'success',
+              message: 'House and Duties updated successfully!'
+            });
+            fetchProfiles();
+          }}
+        />
       )}
     </DashboardLayout>
   );
