@@ -205,15 +205,15 @@ export function ClassesPage() {
         <div className="lg:col-span-2 space-y-5">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Class Performance Analytics</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">Class Performance Analytics</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Comprehensive performance metrics and insights</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[180px]"
               >
                 {classes.map(classItem => (
                   <option key={classItem.id} value={classItem.id}>
@@ -248,14 +248,14 @@ export function ClassesPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 rounded-2xl p-6 text-white">
-            <h3 className="text-xl font-bold mb-3">{getSelectedClassName()} Performance Overview (2024-25)</h3>
-            <div className="flex flex-wrap items-center gap-4">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 rounded-2xl p-4 sm:p-6 text-white">
+            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{getSelectedClassName()} Performance Overview (2024-25)</h3>
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-blue-100 dark:text-blue-200 text-sm font-medium">Class Teacher:</span>
                 <p className="text-white text-sm">Ms. Sarah Johnson</p>
               </div>
-              <span className="text-blue-200 dark:text-blue-300">•</span>
+              <span className="hidden sm:inline text-blue-200 dark:text-blue-300">•</span>
               <div className="flex items-center gap-2">
                 <span className="text-blue-100 dark:text-blue-200 text-sm font-medium">Class Monitor:</span>
                 <p className="text-white text-sm">John Doe</p>
@@ -264,13 +264,13 @@ export function ClassesPage() {
           </div>
 
           {canEditRemarks() && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Class Remarks</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row justify-between gap-3 sm:items-center mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Class Remarks</h3>
                 {!editingRemarks ? (
                   <button
                     onClick={() => setEditingRemarks(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
                   >
                     <Edit2 className="h-4 w-4" />
                     Edit Remarks
@@ -321,47 +321,47 @@ export function ClassesPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-blue-500">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-blue-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Avg. Marks</span>
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgMarks.toFixed(1)}%</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgMarks.toFixed(1)}%</div>
               <div className="text-xs text-green-600 dark:text-green-400 mt-1">+3.2% from last term</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-green-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-green-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Attendance</span>
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgAttendance.toFixed(1)}%</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgAttendance.toFixed(1)}%</div>
               <div className="text-xs text-green-600 dark:text-green-400 mt-1">+1.5% from last term</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-orange-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-orange-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Assignments</span>
                 <TrendingDown className="h-5 w-5 text-red-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgAssignment.toFixed(1)}%</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgAssignment.toFixed(1)}%</div>
               <div className="text-xs text-red-600 dark:text-red-400 mt-1">-0.8% from last term</div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-l-4 border-yellow-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-5 border-l-4 border-yellow-500">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Participation</span>
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
-              <div className="text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgParticipation.toFixed(1)}%</div>
+              <div className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{metrics.avgParticipation.toFixed(1)}%</div>
               <div className="text-xs text-green-600 dark:text-green-400 mt-1">+2.1% from last term</div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Subject-wise Performance Metrics</h3>
-            <div className="h-[400px]">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-3 sm:mb-4">Subject-wise Performance Metrics</h3>
+            <div className="h-[320px] sm:h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={performanceData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
@@ -385,10 +385,10 @@ export function ClassesPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Performance Radar Analysis</h3>
-              <div className="h-[300px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-3 sm:mb-4">Performance Radar Analysis</h3>
+              <div className="h-[260px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
                     <PolarGrid stroke={chartColors.grid} />
@@ -402,9 +402,9 @@ export function ClassesPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Performance Trend - Last 3 Exams</h3>
-              <div className="h-[300px]">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-3 sm:mb-4">Performance Trend - Last 3 Exams</h3>
+              <div className="h-[260px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={trendData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
@@ -427,33 +427,33 @@ export function ClassesPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Detailed Performance Table</h3>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:items-center mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Detailed Performance Table</h3>
+              <button className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
                 Download Table
               </button>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b-2 border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Subject</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Avg Marks</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Attendance %</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Assignment Rate</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Participation</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Top</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Mid</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Low</th>
+                    <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Subject</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Avg Marks</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Attendance %</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Assignment Rate</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Participation</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Top</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Mid</th>
+                    <th className="text-center py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">Low</th>
                   </tr>
                 </thead>
                 <tbody>
                   {performanceData.map((item, index) => (
                     <tr key={index} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <td className="py-3 px-4 font-medium text-gray-800 dark:text-gray-200">{item.subject}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-3 sm:px-4 font-medium text-gray-800 dark:text-gray-200">{item.subject}</td>
+                      <td className="py-3 px-3 sm:px-4 text-center">
                         <span className={`px-2.5 py-1 rounded-full text-sm font-medium ${
                           item.avgMarks >= 80 ? 'bg-green-100 text-green-700' :
                           item.avgMarks >= 70 ? 'bg-blue-100 text-blue-700' :
@@ -462,20 +462,20 @@ export function ClassesPage() {
                           {item.avgMarks}%
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">{item.attendance}%</td>
-                      <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">{item.assignmentRate}%</td>
-                      <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">{item.participation}%</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-gray-400">{item.attendance}%</td>
+                      <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-gray-400">{item.assignmentRate}%</td>
+                      <td className="py-3 px-3 sm:px-4 text-center text-gray-600 dark:text-gray-400">{item.participation}%</td>
+                      <td className="py-3 px-3 sm:px-4 text-center">
                         <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                           {item.topStudents}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-3 sm:px-4 text-center">
                         <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                           {item.midStudents}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-3 sm:px-4 text-center">
                         <span className="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
                           {item.lowStudents}
                         </span>
@@ -487,10 +487,10 @@ export function ClassesPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5">
+            <div className="flex justify-between items-start sm:items-center mb-3 sm:mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Subject Teachers</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Subject Teachers</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Teachers assigned to {getSelectedClassName()}</p>
               </div>
             </div>
@@ -504,7 +504,7 @@ export function ClassesPage() {
                 <p>No teachers assigned to this class yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {classTeachers.map((teacher) => (
                   <div
                     key={teacher.id}
