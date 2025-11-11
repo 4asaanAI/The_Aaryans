@@ -1068,45 +1068,27 @@ export function UsersPage() {
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
                     Personal Information
                   </h4>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm max-h-96 overflow-y-auto">
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Phone:
-                      </span>{' '}
+                      <span className="text-gray-600 dark:text-gray-400">Phone:</span>{' '}
+                      <span className="text-gray-900 dark:text-white">{selectedProfile.phone || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">ID:</span>{' '}
                       <span className="text-gray-900 dark:text-white">
-                        {selectedProfile.phone || 'N/A'}
+                        {selectedProfile.admission_no || selectedProfile.employee_id || 'N/A'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">
-                        ID:
-                      </span>{' '}
-                      <span className="text-gray-900 dark:text-white">
-                        {selectedProfile.admission_no ||
-                          selectedProfile.employee_id ||
-                          'N/A'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Status:
-                      </span>{' '}
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
-                          selectedProfile.status
-                        )}`}
-                      >
+                      <span className="text-gray-600 dark:text-gray-400">Status:</span>{' '}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(selectedProfile.status)}`}>
                         {selectedProfile.status}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Joined:
-                      </span>{' '}
+                      <span className="text-gray-600 dark:text-gray-400">Joined:</span>{' '}
                       <span className="text-gray-900 dark:text-white">
-                        {new Date(
-                          selectedProfile.created_at
-                        ).toLocaleDateString()}
+                        {new Date(selectedProfile.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   </div>

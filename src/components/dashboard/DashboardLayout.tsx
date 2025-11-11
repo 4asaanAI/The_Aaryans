@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
   LogOut, Calendar, Library, UserCircle, BarChart3,
-  ClipboardList, Award, UserCheck, MailOpen, DollarSign, HelpCircle
+  ClipboardList, Award, UserCheck, MailOpen, DollarSign, HelpCircle, Plane, Bus
 } from 'lucide-react';
 import { DashboardChatbot } from './DashboardChatbot';
 
@@ -159,6 +159,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
         { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
         { name: 'Finance', href: '/dashboard/finance', icon: DollarSign },
+        { name: 'Leaves', href: '/dashboard/leaves', icon: Plane },
+        { name: 'Transport', href: '/dashboard/transport', icon: Bus },
         { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
         { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
       ];
