@@ -49,7 +49,7 @@ export function EventsPage() {
         .from('events')
         .select(`
           *,
-          profiles(full_name, email)
+          coordinator:profiles!events_coordinator_id_fkey(full_name, email)
         `)
         .order('event_date', { ascending: false });
 
@@ -69,8 +69,8 @@ export function EventsPage() {
         max_participants: event.max_participants || 0,
         current_volunteers: event.current_volunteers || 0,
         budget: event.budget || 0,
-        coordinator_name: event.profiles?.full_name || 'N/A',
-        coordinator_email: event.profiles?.email || 'N/A'
+        coordinator_name: event.coordinator?.full_name || 'N/A',
+        coordinator_email: event.coordinator?.email || 'N/A'
       }));
 
       setEvents(formattedEvents);
