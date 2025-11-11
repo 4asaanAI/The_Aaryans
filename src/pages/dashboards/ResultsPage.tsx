@@ -722,23 +722,9 @@ export function ResultsPage() {
             <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">
               {searchMode === 'class' ? 'All Results' : 'Student Results'}
             </h3>
-            <div className="flex gap-2 items-center">
-              {searchMode === 'class' && (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              )}
-              <button className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
-                <Download className="h-5 w-5" />
-              </button>
-            </div>
+            <button className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
+              <Download className="h-5 w-5" />
+            </button>
           </div>
 
           {loading ? (
