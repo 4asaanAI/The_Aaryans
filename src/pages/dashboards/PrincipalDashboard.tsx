@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
-import { BirthdayCard } from '../../components/dashboard/BirthdayCard';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -430,8 +429,6 @@ export function PrincipalDashboard() {
           </div>
 
         </div>
-
-        <BirthdayCard />
       </div>
       </div>
     </DashboardLayout>
