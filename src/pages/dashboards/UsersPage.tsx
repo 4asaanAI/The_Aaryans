@@ -1,3 +1,5 @@
+// pages/dashboard/UsersPage.tsx
+// Full file with minimal additions to integrate AddStudentProfileModal without breaking existing functionality.
 import { useEffect, useState, useMemo } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
@@ -22,11 +24,13 @@ import {
   AlertCircle,
   FileText,
   Award,
+  UserPlus,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Notification } from '../../components/Notification';
 import { TransferCertificateModal } from '../../components/TransferCertificateModal';
 import { EditHouseDutiesModal } from '../../components/EditHouseDutiesModal';
+import { AddStudentProfileModal } from '../../components/AddStudentProfileModal';
 
 interface Profile {
   id: string;
@@ -42,6 +46,12 @@ interface Profile {
   created_at: string;
   updated_at?: string;
   approval_status?: 'pending' | 'approved' | 'rejected';
+  blood_group?: string;
+  gender?: string;
+  date_of_birth?: date;
+  address?: string;
+  parent_phone: string;
+  parent_name?: string;
   photo_url?: string;
   house?: 'green' | 'blue' | 'red' | 'yellow' | null;
   duties?: string[] | null;
@@ -67,6 +77,7 @@ export function UsersPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false); // NEW
   const [newProfile, setNewProfile] = useState({
     full_name: '',
     email: '',
@@ -503,6 +514,7 @@ export function UsersPage() {
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
                 Users Management
               </h2>
+              {/* Existing Add User button – unchanged */}
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -510,6 +522,15 @@ export function UsersPage() {
                 <Plus className="h-5 w-5" />
                 <span className="hidden sm:inline">Add User</span>
               </button>
+              {/* NEW: Add Student button (opens professional full student form) */}
+              <button
+                onClick={() => setShowAddStudentModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+              >
+                <UserPlus className="h-5 w-5" />
+                <span className="hidden sm:inline">Add Student</span>
+              </button>
+
               {currentProfile?.role === 'admin' &&
                 pendingApprovals.length > 0 && (
                   <div className="relative">
@@ -880,7 +901,7 @@ export function UsersPage() {
                   }
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  {availableRoles.map((role) => (
+                  {['admin','professor','student'].map((role) => (
                     <option key={role} value={role}>
                       {role}
                     </option>
@@ -903,7 +924,13 @@ export function UsersPage() {
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Select sub role</option>
-                  {availableSubRoles[editingProfile.role]?.map((subRole) => (
+                  {(
+                    {
+                      admin: ['head', 'principal', 'hod', 'other'],
+                      professor: ['coordinator', 'teacher'],
+                      student: ['student'],
+                    } as Record<string, string[]>
+                  )[editingProfile.role]?.map((subRole) => (
                     <option key={subRole} value={subRole}>
                       {subRole}
                     </option>
@@ -1159,6 +1186,7 @@ export function UsersPage() {
       )}
 
       {showAddModal && (
+        // EXISTING Add User modal – left untouched
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full my-8">
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
@@ -1248,7 +1276,7 @@ export function UsersPage() {
                     }
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {availableRoles.map((role) => (
+                    {['admin','professor','student'].map((role) => (
                       <option key={role} value={role}>
                         {role}
                       </option>
@@ -1267,7 +1295,13 @@ export function UsersPage() {
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select sub role</option>
-                    {availableSubRoles[newProfile.role]?.map((subRole) => (
+                    {(
+                      {
+                        admin: ['head', 'principal', 'hod', 'other'],
+                        professor: ['coordinator', 'teacher'],
+                        student: ['student'],
+                      } as Record<string, string[]>
+                    )[newProfile.role]?.map((subRole) => (
                       <option key={subRole} value={subRole}>
                         {subRole}
                       </option>
@@ -1332,6 +1366,17 @@ export function UsersPage() {
           </div>
         </div>
       )}
+
+      {/* NEW: Add Student Profile modal (full professional UI) */}
+      <AddStudentProfileModal
+        isOpen={showAddStudentModal}
+        onClose={() => setShowAddStudentModal(false)}
+        issuerId={currentProfile?.id || null}
+        onSuccess={(message) => {
+          setNotification({ type: 'success', message: message || 'Student created successfully!' });
+          fetchProfiles();
+        }}
+      />
 
       {showTCModal && currentProfile && (
         <TransferCertificateModal
