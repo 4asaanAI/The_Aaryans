@@ -42,12 +42,6 @@ interface Profile {
   created_at: string;
   updated_at?: string;
   approval_status?: 'pending' | 'approved' | 'rejected';
-  blood_group?: string;
-  gender?: string;
-  date_of_birth?: date;
-  address?: string;
-  parent_phone: string;
-  parent_name?: string
   photo_url?: string;
   house?: 'green' | 'blue' | 'red' | 'yellow' | null;
   duties?: string[] | null;
@@ -1009,259 +1003,178 @@ export function UsersPage() {
         </div>
       )}
 
-     {/* ⬇️ REPLACE your entire `{showDetailModal && selectedProfile && ( ... )}` block with this */}
-{showDetailModal && selectedProfile && (
-  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-    <div className="w-full max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl ring-1 ring-black/5 my-8">
-      {/* Header */}
-      <div className="relative">
-        <div className="h-24 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-t-2xl" />
-        <button
-          onClick={() => setShowDetailModal(false)}
-          className="absolute right-4 top-4 p-2 rounded-lg bg-white/80 dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-900 transition-colors shadow"
-          aria-label="Close"
-        >
-          <X className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-        </button>
-
-        <div className="px-6 -mt-10">
-          <div className="flex items-center gap-5">
-            {selectedProfile.photo_url ? (
-              <img
-                src={selectedProfile.photo_url}
-                alt="Profile"
-                className="w-20 h-20 rounded-full object-cover ring-4 ring-white dark:ring-gray-800 shadow-lg"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-white dark:bg-gray-900 ring-4 ring-white dark:ring-gray-800 shadow-lg grid place-items-center">
-                <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedProfile.full_name?.charAt(0)?.toUpperCase() || '?'}
-                </span>
-              </div>
-            )}
-
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedProfile.full_name}
-                </h2>
-
-                {/* Role */}
-                <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    selectedProfile.role === 'student'
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                      : selectedProfile.role === 'professor' || selectedProfile.role === 'teacher'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                      : selectedProfile.role === 'admin'
-                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                      : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {selectedProfile.role}
-                </span>
-
-                {/* Sub Role */}
-                {selectedProfile.sub_role && (
-                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 capitalize">
-                    {selectedProfile.sub_role}
-                  </span>
+      {showDetailModal && selectedProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                User Profile
+              </h2>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex items-center gap-6">
+                {selectedProfile.photo_url ? (
+                  <img
+                    src={selectedProfile.photo_url}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-3xl font-bold">
+                      {selectedProfile.full_name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
                 )}
-
-                {/* Status */}
-                <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
-                    selectedProfile.status
-                  )}`}
-                >
-                  {selectedProfile.status}
-                </span>
-
-                {/* Approval */}
-                {selectedProfile.approval_status && (
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      selectedProfile.approval_status === 'approved'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                        : selectedProfile.approval_status === 'pending'
-                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                        : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                    }`}
-                  >
-                    {selectedProfile.approval_status}
-                  </span>
-                )}
-
-                {/* House */}
-                {selectedProfile.house && (
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wide uppercase ${getHouseBadgeColor(
-                      selectedProfile.house
-                    )}`}
-                  >
-                    {selectedProfile.house} House
-                  </span>
-                )}
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {selectedProfile.full_name}
+                    </h3>
+                    {selectedProfile.house && (
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getHouseBadgeColor(selectedProfile.house)}`}>
+                        {selectedProfile.house} House
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400 capitalize">
+                    {selectedProfile.role}{' '}
+                    {selectedProfile.sub_role &&
+                      `- ${selectedProfile.sub_role}`}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                    {selectedProfile.email}
+                  </p>
+                  {selectedProfile.duties && selectedProfile.duties.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {selectedProfile.duties.map((duty, idx) => (
+                        <span key={idx} className="px-3 py-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-medium rounded-md shadow-sm">
+                          {duty}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                {selectedProfile.email}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                    Personal Information
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Phone:
+                      </span>{' '}
+                      <span className="text-gray-900 dark:text-white">
+                        {selectedProfile.phone || 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        ID:
+                      </span>{' '}
+                      <span className="text-gray-900 dark:text-white">
+                        {selectedProfile.admission_no ||
+                          selectedProfile.employee_id ||
+                          'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Status:
+                      </span>{' '}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                          selectedProfile.status
+                        )}`}
+                      >
+                        {selectedProfile.status}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Joined:
+                      </span>{' '}
+                      <span className="text-gray-900 dark:text-white">
+                        {new Date(
+                          selectedProfile.created_at
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                    Actions
+                  </h4>
+                  <div className="flex flex-col gap-2">
+                    {selectedProfile.role === 'student' && (currentProfile?.sub_role === 'head' || currentProfile?.sub_role === 'principal') && (
+                      <button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          setShowTCModal(selectedProfile);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Generate Transfer Certificate
+                      </button>
+                    )}
+                    {(currentProfile?.sub_role === 'head' || currentProfile?.sub_role === 'principal') && (
+                      <button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          setShowHouseDutiesModal(selectedProfile);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                      >
+                        <Award className="h-4 w-4" />
+                        Edit House & Duties
+                      </button>
+                    )}
+                    {canEditUser(selectedProfile) && (
+                      <button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          handleEditClick(selectedProfile);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit User
+                      </button>
+                    )}
+                    {canDeleteUser(selectedProfile) && (
+                      <button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          setShowConfirmModal({
+                            type: 'delete',
+                            profile: selectedProfile,
+                          });
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete User
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Body */}
-      <div className="p-6 space-y-6">
-        {/* Quick Cards: IDs & Keys */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <QuickCard label="Admission No." value={selectedProfile.admission_no} />
-          <QuickCard label="Employee ID" value={selectedProfile.employee_id} />
-          <QuickCard label="Department ID" value={selectedProfile.department_id} />
-          <QuickCard label="Profile ID" value={selectedProfile.id} mono />
-        </div>
-
-        {/* Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Personal Information */}
-          <Section title="Personal Information">
-            <Grid>
-              <Field label="Phone" value={selectedProfile.phone} />
-              <Field
-                label="Date of Birth"
-                value={
-                  selectedProfile.date_of_birth
-                    ? new Date(String(selectedProfile.date_of_birth)).toLocaleDateString()
-                    : undefined
-                }
-              />
-              <Field label="Gender" value={selectedProfile.gender} />
-              <Field label="Blood Group" value={selectedProfile.blood_group} />
-              <Field label="Email" value={selectedProfile.email} />
-              <Field className="sm:col-span-2" label="Address" value={selectedProfile.address} wrap />
-              <Field label="House" value={selectedProfile.house || undefined} />
-            </Grid>
-          </Section>
-
-          {/* Guardian / Family */}
-          <Section title="Guardian Details">
-            <Grid>
-              <Field label="Parent / Guardian" value={selectedProfile.parent_name} />
-              <Field label="Parent Phone" value={selectedProfile.parent_phone} />
-              <Field className="sm:col-span-2" label="Photo URL" value={selectedProfile.photo_url} wrap />
-              <div className="sm:col-span-2">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">Duties</div>
-                {selectedProfile.duties && selectedProfile.duties.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProfile.duties.map((duty, idx) => (
-                      <span
-                        key={`${duty}-${idx}`}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow"
-                      >
-                        {duty}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">—</div>
-                )}
-              </div>
-            </Grid>
-          </Section>
-
-          {/* Account & Meta */}
-          <Section title="Account & Meta">
-            <Grid>
-              <Field label="Role" value={selectedProfile.role} />
-              <Field label="Sub Role" value={selectedProfile.sub_role} />
-              <Field label="Status" value={selectedProfile.status} />
-              <Field label="Approval" value={selectedProfile.approval_status} />
-            </Grid>
-          </Section>
-
-          {/* Timestamps */}
-          <Section title="Timestamps">
-            <Grid>
-              <Field
-                label="Created At"
-                value={
-                  selectedProfile.created_at
-                    ? new Date(selectedProfile.created_at).toLocaleString()
-                    : undefined
-                }
-              />
-              <Field
-                label="Updated At"
-                value={
-                  selectedProfile.updated_at
-                    ? new Date(String(selectedProfile.updated_at)).toLocaleString()
-                    : undefined
-                }
-              />
-            </Grid>
-          </Section>
-        </div>
-
-        {/* Actions (unchanged behaviors) */}
-        <div className="flex flex-wrap justify-end gap-3 pt-2">
-          {selectedProfile.role === 'student' &&
-            (currentProfile?.sub_role === 'head' || currentProfile?.sub_role === 'principal') && (
-              <button
-                onClick={() => {
-                  setShowDetailModal(false);
-                  setShowTCModal(selectedProfile);
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
-              >
-                <FileText className="h-4 w-4" />
-                Generate Transfer Certificate
-              </button>
-            )}
-          {(currentProfile?.sub_role === 'head' || currentProfile?.sub_role === 'principal') && (
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                setShowHouseDutiesModal(selectedProfile);
-              }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white transition"
-            >
-              <Award className="h-4 w-4" />
-              Edit House & Duties
-            </button>
-          )}
-          {canEditUser(selectedProfile) && (
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                handleEditClick(selectedProfile);
-              }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition"
-            >
-              <Edit className="h-4 w-4" />
-              Edit User
-            </button>
-          )}
-          {canDeleteUser(selectedProfile) && (
-            <button
-              onClick={() => {
-                setShowDetailModal(false);
-                setShowConfirmModal({ type: 'delete', profile: selectedProfile });
-              }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete User
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
-
-
+      )}
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -1466,64 +1379,5 @@ export function UsersPage() {
         />
       )}
     </DashboardLayout>
-  );
-}
-
-/* ---------- tiny helpers (inline) ---------- */
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{title}</h4>
-      {children}
-    </div>
-  );
-}
-
-function Grid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">{children}</div>;
-}
-
-function QuickCard({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value?: string | null;
-  mono?: boolean;
-}) {
-  const display = value && String(value).trim() ? String(value) : '—';
-  return (
-    <div className="rounded-xl p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
-      <div className={`text-sm text-gray-900 dark:text-white ${mono ? 'font-mono text-[13px] break-all' : ''}`}>
-        {display}
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  wrap = false,
-  className = '',
-}: {
-  label: string;
-  value?: string | null;
-  wrap?: boolean;
-  className?: string;
-}) {
-  const display = value && String(value).trim() ? String(value) : '—';
-  return (
-    <div className={className}>
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
-      <div
-        className={`text-sm text-gray-900 dark:text-white ${wrap ? 'break-all' : 'truncate'}`}
-        title={display}
-      >
-        {display}
-      </div>
-    </div>
   );
 }
