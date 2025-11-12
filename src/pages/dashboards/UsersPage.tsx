@@ -1260,64 +1260,7 @@ export function UsersPage() {
   </div>
 )}
 
-/* ---------- tiny helpers (inline) ---------- */
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{title}</h4>
-      {children}
-    </div>
-  );
-}
 
-function Grid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">{children}</div>;
-}
-
-function QuickCard({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value?: string | null;
-  mono?: boolean;
-}) {
-  const display = value && String(value).trim() ? String(value) : '—';
-  return (
-    <div className="rounded-xl p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
-      <div className={`text-sm text-gray-900 dark:text-white ${mono ? 'font-mono text-[13px] break-all' : ''}`}>
-        {display}
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  wrap = false,
-  className = '',
-}: {
-  label: string;
-  value?: string | null;
-  wrap?: boolean;
-  className?: string;
-}) {
-  const display = value && String(value).trim() ? String(value) : '—';
-  return (
-    <div className={className}>
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
-      <div
-        className={`text-sm text-gray-900 dark:text-white ${wrap ? 'break-all' : 'truncate'}`}
-        title={display}
-      >
-        {display}
-      </div>
-    </div>
-  );
-}
 
 
       {showAddModal && (
@@ -1523,5 +1466,64 @@ function Field({
         />
       )}
     </DashboardLayout>
+  );
+}
+
+/* ---------- tiny helpers (inline) ---------- */
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{title}</h4>
+      {children}
+    </div>
+  );
+}
+
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">{children}</div>;
+}
+
+function QuickCard({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value?: string | null;
+  mono?: boolean;
+}) {
+  const display = value && String(value).trim() ? String(value) : '—';
+  return (
+    <div className="rounded-xl p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
+      <div className={`text-sm text-gray-900 dark:text-white ${mono ? 'font-mono text-[13px] break-all' : ''}`}>
+        {display}
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  wrap = false,
+  className = '',
+}: {
+  label: string;
+  value?: string | null;
+  wrap?: boolean;
+  className?: string;
+}) {
+  const display = value && String(value).trim() ? String(value) : '—';
+  return (
+    <div className={className}>
+      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
+      <div
+        className={`text-sm text-gray-900 dark:text-white ${wrap ? 'break-all' : 'truncate'}`}
+        title={display}
+      >
+        {display}
+      </div>
+    </div>
   );
 }
