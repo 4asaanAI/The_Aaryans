@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, MessageSquare, Clock, CheckCircle, Upload, X } from 'lucide-react';
+import { Plus, Search, MessageSquare, Clock, CheckCircle } from 'lucide-react';
 
 interface SupportTicket {
   id: string;
@@ -13,7 +13,6 @@ interface SupportTicket {
   status: string;
   created_at: string;
   user_id: string;
-  image_url?: string;
 }
 
 export function SupportPage() {
@@ -23,9 +22,6 @@ export function SupportPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [uploading, setUploading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -57,64 +53,23 @@ export function SupportPage() {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
 
-    setUploading(true);
     try {
-      let imageUrl = null;
-
-      if (selectedImage) {
-        const fileExt = selectedImage.name.split('.').pop();
-        const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('support-images')
-          .upload(fileName, selectedImage);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('support-images')
-          .getPublicUrl(fileName);
-
-        imageUrl = publicUrl;
-      }
-
       const { error } = await supabase.from('support_tickets').insert({
         user_id: profile.id,
-        ...formData,
-        image_url: imageUrl
+        ...formData
       });
 
       if (error) throw error;
 
       setShowCreateModal(false);
       setFormData({ title: '', description: '', category: 'technical', priority: 'medium' });
-      setSelectedImage(null);
-      setImagePreview(null);
       fetchTickets();
     } catch (error) {
       console.error('Error creating ticket:', error);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -154,7 +109,7 @@ export function SupportPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Support Tickets</h1>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -226,15 +181,10 @@ export function SupportPage() {
             ) : (
               filteredTickets.map((ticket) => (
                 <div key={ticket.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                  <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{ticket.title}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{ticket.description}</p>
-                      {ticket.image_url && (
-                        <div className="mb-3">
-                          <img src={ticket.image_url} alt="Ticket attachment" className="max-w-xs h-auto rounded-lg border border-gray-200 dark:border-gray-600" />
-                        </div>
-                      )}
                       <div className="flex flex-wrap gap-2">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
                           {ticket.priority}
@@ -247,7 +197,7 @@ export function SupportPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 lg:ml-4">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 ml-4">
                       {new Date(ticket.created_at).toLocaleDateString()}
                     </div>
                   </div>
@@ -260,7 +210,7 @@ export function SupportPage() {
 
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full p-6">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Create Support Ticket</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -287,7 +237,7 @@ export function SupportPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
                   <select
@@ -318,48 +268,19 @@ export function SupportPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Attach Image (Optional)</label>
-                {imagePreview ? (
-                  <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Click to upload image</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                    </div>
-                    <input type="file" className="hidden" accept="image/*" onChange={handleImageSelect} />
-                  </label>
-                )}
-              </div>
-
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    removeImage();
-                  }}
+                  onClick={() => setShowCreateModal(false)}
                   className="flex-1 px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={uploading}
-                  className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors font-medium"
+                  className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
                 >
-                  {uploading ? 'Creating...' : 'Create Ticket'}
+                  Create Ticket
                 </button>
               </div>
             </form>
