@@ -22,6 +22,7 @@ import {
   AlertCircle,
   FileText,
   Award,
+  Mail, Phone, Calendar, MapPin, BadgeCheck, Droplets, IdCard, Clock, Home
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Notification } from '../../components/Notification';
