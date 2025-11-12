@@ -18,6 +18,8 @@ import { ResultsPage } from './pages/dashboards/ResultsPage';
 import { EventsPage } from './pages/dashboards/EventsPage';
 import { FinancePage } from './pages/dashboards/FinancePage';
 import { SupportPage } from './pages/dashboards/SupportPage';
+import { LeavesPage } from './pages/dashboards/LeavesPage';
+import { TransportPage } from './pages/dashboards/TransportPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -132,6 +134,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ResultsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/leaves"
+              element={
+                <ProtectedRoute>
+                  <LeavesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/transport"
+              element={
+                <ProtectedRoute>
+                  <TransportPage />
                 </ProtectedRoute>
               }
             />
