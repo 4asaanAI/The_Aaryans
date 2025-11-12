@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { RightSidebar } from '../../components/dashboard/RightSidebar';
-import { BirthdayCard } from '../../components/dashboard/BirthdayCard';
 import { ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -335,8 +334,6 @@ export function HeadDashboard() {
               </ResponsiveContainer>
             </div>
           </div>
-
-          <BirthdayCard />
         </div>
 
         <RightSidebar />

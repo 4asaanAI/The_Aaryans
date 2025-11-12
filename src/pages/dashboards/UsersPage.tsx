@@ -22,14 +22,7 @@ import {
   AlertCircle,
   FileText,
   Award,
-  Mail,
-  Phone,
-  Calendar,
-  MapPin,
-  BadgeCheck,
-  Droplets,
-  Clock,
-  Home,
+  Mail, Phone, Calendar, MapPin, BadgeCheck, Droplets, IdCard, Clock, Home
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Notification } from '../../components/Notification';
@@ -106,8 +99,7 @@ export function UsersPage() {
     profile: Profile;
   } | null>(null);
   const [showTCModal, setShowTCModal] = useState<Profile | null>(null);
-  const [showHouseDutiesModal, setShowHouseDutiesModal] =
-    useState<Profile | null>(null);
+  const [showHouseDutiesModal, setShowHouseDutiesModal] = useState<Profile | null>(null);
 
   const isDark = theme === 'dark';
 
@@ -1018,433 +1010,355 @@ export function UsersPage() {
         </div>
       )}
 
-      {showDetailModal && selectedProfile && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto h-screen">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-6xl my-8 ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
-            {/* Header with gradient cover (taller so avatar/name aren't cut) */}
-            <div className="relative h-44 md:h-48 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 overflow-hidden">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnptMCAxMmMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')] opacity-30" />
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-all duration-200 hover:scale-110"
-                aria-label="Close"
+     {showDetailModal && selectedProfile && (
+  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-5xl my-10 ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
+      {/* Header / Cover */}
+      <div className="relative h-36 md:h-40 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,white,transparent_60%)]" />
+        <button
+          onClick={() => setShowDetailModal(false)}
+          className="absolute top-3 right-3 p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Top identity row */}
+      <div className="px-6 md:px-8 -mt-12 md:-mt-14">
+        <div className="flex flex-col md:flex-row md:items-end gap-5">
+          {/* Avatar */}
+          <div className="shrink-0">
+            {selectedProfile.photo_url ? (
+              <img
+                src={selectedProfile.photo_url}
+                alt="Profile"
+                className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-cover ring-4 ring-white dark:ring-gray-900 shadow-xl"
+              />
+            ) : (
+              <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 ring-4 ring-white dark:ring-gray-900 shadow-xl flex items-center justify-center">
+                <span className="text-white text-4xl md:text-5xl font-bold">
+                  {selectedProfile.full_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Name + badges */}
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                {selectedProfile.full_name}
+              </h2>
+
+              {/* Role badge */}
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${getRoleBadgeColor(
+                  selectedProfile.role
+                )}`}
               >
-                <X className="h-5 w-5" />
-              </button>
+                {selectedProfile.role}
+                {selectedProfile.sub_role ? ` • ${selectedProfile.sub_role}` : ''}
+              </span>
+
+              {/* Status badge */}
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
+                  selectedProfile.status
+                )}`}
+              >
+                {selectedProfile.status}
+              </span>
+
+              {/* House badge, if any */}
+              {selectedProfile.house && (
+                <span
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getHouseBadgeColor(
+                    selectedProfile.house
+                  )}`}
+                >
+                  <Home className="h-3.5 w-3.5" />
+                  {selectedProfile.house} House
+                </span>
+              )}
             </div>
 
-            {/* Profile header section (no negative margins; avatar pulled up) */}
-            <div className="px-6 md:px-8 mb-6">
-              <div className="flex flex-col md:flex-row md:items-end gap-6">
-                {/* Avatar */}
-                <div className="shrink-0 -translate-y-16 md:-translate-y-20 relative z-10">
-                  {selectedProfile.photo_url ? (
-                    <img
-                      src={selectedProfile.photo_url}
-                      alt={selectedProfile.full_name}
-                      className="w-32 h-32 md:w-36 md:h-36 rounded-2xl object-cover ring-4 ring-white dark:ring-gray-900 shadow-xl"
-                    />
-                  ) : (
-                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 ring-4 ring-white dark:ring-gray-900 shadow-xl flex items-center justify-center">
-                      <span className="text-white text-5xl font-bold">
-                        {selectedProfile.full_name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+            {/* Email quick glance */}
+            <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm break-all">
+              {selectedProfile.email}
+            </p>
+
+            {/* Duties chips */}
+            {Array.isArray(selectedProfile.duties) &&
+              selectedProfile.duties.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  {selectedProfile.duties.map((duty, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 rounded-md text-xs font-medium bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-sm"
+                    >
+                      {duty}
+                    </span>
+                  ))}
                 </div>
+              )}
+          </div>
+        </div>
+      </div>
 
-                {/* Name and badges */}
-                <div className="flex-1 pb-2 -mt-10 md:-mt-12">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">
-                    {selectedProfile.full_name}
-                  </h2>
-
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider ${getRoleBadgeColor(
-                        selectedProfile.role
-                      )}`}
-                    >
-                      {selectedProfile.role}
-                      {selectedProfile.sub_role &&
-                        ` • ${selectedProfile.sub_role}`}
+      {/* Info grid */}
+      <div className="p-6 md:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column: contact + identifiers */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <BadgeCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                Contact
+              </h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-3">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 dark:text-gray-300 break-all">
+                    {selectedProfile.email || 'N/A'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {selectedProfile.phone || 'N/A'}
+                  </span>
+                </div>
+                {selectedProfile.address && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {selectedProfile.address}
                     </span>
-
-                    <span
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase ${getStatusBadgeColor(
-                        selectedProfile.status
-                      )}`}
-                    >
-                      {selectedProfile.status}
-                    </span>
-
-                    {selectedProfile.house && (
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${getHouseBadgeColor(
-                          selectedProfile.house
-                        )}`}
-                      >
-                        <Home className="h-3.5 w-3.5" />
-                        {selectedProfile.house} House
-                      </span>
-                    )}
                   </div>
-
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    {selectedProfile.email}
-                  </p>
-
-                  {/* Duties */}
-                  {Array.isArray(selectedProfile.duties) &&
-                    selectedProfile.duties.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedProfile.duties.map((duty, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-sm"
-                          >
-                            {duty}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Main content grid */}
-            <div className="px-6 md:px-8 pb-6">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left column - Contact & IDs */}
-                <div className="lg:col-span-4 space-y-6">
-                  {/* Contact Information */}
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-5 border border-gray-200/50 dark:border-gray-700/50">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-base">
-                      <div className="p-2 bg-blue-500/10 rounded-lg">
-                        <BadgeCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      Contact Information
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Mail className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Email Address
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words">
-                            {selectedProfile.email || 'Not provided'}
-                          </div>
-                        </div>
-                      </div>
+            <div className="bg-gray-50 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <IdCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                Identifiers
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Admission No</span>
+                  <span className="text-gray-900 dark:text-white">
+                    {selectedProfile.admission_no || '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Employee ID</span>
+                  <span className="text-gray-900 dark:text-white">
+                    {selectedProfile.employee_id || '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">User ID</span>
+                  <span className="text-gray-900 dark:text-white break-all">
+                    {selectedProfile.id}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                      <div className="flex items-start gap-3">
-                        <Phone className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Phone Number
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words">
-                            {selectedProfile.phone || 'Not provided'}
-                          </div>
-                        </div>
-                      </div>
-
-                      {selectedProfile.address && (
-                        <div className="flex items-start gap-3">
-                          <MapPin className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                              Address
-                            </div>
-                            <div className="text-sm text-gray-900 dark:text-white break-words">
-                              {selectedProfile.address}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Identifiers */}
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-5 border border-gray-200/50 dark:border-gray-700/50">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-base">
-                      <div className="p-2 bg-purple-500/10 rounded-lg">
-                        <BadgeCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      Identifiers
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Admission No
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {selectedProfile.admission_no || '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Employee ID
-                        </span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {selectedProfile.employee_id || '—'}
-                        </span>
-                      </div>
-                      {/* User ID removed per requirement */}
-                    </div>
+          {/* Middle column: personal info */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Personal Information
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">DOB</div>
+                  <div className="ml-auto text-gray-900 dark:text-white">
+                    {selectedProfile.date_of_birth
+                      ? new Date(selectedProfile.date_of_birth).toLocaleDateString()
+                      : 'N/A'}
                   </div>
                 </div>
 
-                {/* Middle column - Personal Info */}
-                <div className="lg:col-span-4 space-y-6">
-                  {/* Personal Information */}
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-5 border border-gray-200/50 dark:border-gray-700/50">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-base">
-                      Personal Details
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-start gap-3">
-                        <Calendar className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Date of Birth
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words">
-                            {selectedProfile.date_of_birth
-                              ? new Date(
-                                  selectedProfile.date_of_birth
-                                ).toLocaleDateString()
-                              : 'Not provided'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <Droplets className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Blood Group
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words">
-                            {selectedProfile.blood_group || 'Not provided'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <UsersIcon className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Gender
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words capitalize">
-                            {selectedProfile.gender || 'Not provided'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <BadgeCheck className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Approval Status
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words capitalize">
-                            {selectedProfile.approval_status || 'Pending'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 col-span-full">
-                        <Clock className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                            Joined Date
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-white break-words">
-                            {selectedProfile.created_at
-                              ? new Date(
-                                  selectedProfile.created_at
-                                ).toLocaleDateString()
-                              : 'Unknown'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <Droplets className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">Blood Group</div>
+                  <div className="ml-auto text-gray-900 dark:text-white">
+                    {selectedProfile.blood_group || 'N/A'}
                   </div>
-
-                  {/* Parent/Guardian Info (render ONLY if parent_phone exists) */}
-                  {selectedProfile.parent_phone && (
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-5 border border-gray-200/50 dark:border-gray-700/50">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-base">
-                        <div className="p-2 bg-green-500/10 rounded-lg">
-                          <UsersIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        </div>
-                        Parent / Guardian
-                      </h3>
-                      <div className="grid grid-cols-1 gap-4">
-                        <div className="flex items-start gap-3">
-                          <UsersIcon className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                              Full Name
-                            </div>
-                            <div className="text-sm text-gray-900 dark:text-white break-words">
-                              {selectedProfile.parent_name || 'Not provided'}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                          <Phone className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
-                              Contact Number
-                            </div>
-                            <div className="text-sm text-gray-900 dark:text-white break-words">
-                              {selectedProfile.parent_phone}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* Right column - Actions & Audit */}
-                <div className="lg:col-span-4 space-y-6">
-                  {/* Actions */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 rounded-xl p-5 border border-blue-200/50 dark:border-blue-700/50">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-base">
-                      Quick Actions
-                    </h3>
-                    <div className="space-y-2">
-                      {selectedProfile.role === 'student' &&
-                        (currentProfile?.sub_role === 'head' ||
-                          currentProfile?.sub_role === 'principal') && (
-                          <button
-                            onClick={() => {
-                              setShowDetailModal(false);
-                              setShowTCModal(selectedProfile);
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                          >
-                            <FileText className="h-4 w-4" />
-                            <span className="text-sm font-medium">
-                              Generate Transfer Certificate
-                            </span>
-                          </button>
-                        )}
-
-                      {(currentProfile?.sub_role === 'head' ||
-                        currentProfile?.sub_role === 'principal') && (
-                        <button
-                          onClick={() => {
-                            setShowDetailModal(false);
-                            setShowHouseDutiesModal(selectedProfile);
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          <Award className="h-4 w-4" />
-                          <span className="text-sm font-medium">
-                            Edit House & Duties
-                          </span>
-                        </button>
-                      )}
-
-                      {canEditUser(selectedProfile) && (
-                        <button
-                          onClick={() => {
-                            setShowDetailModal(false);
-                            handleEditClick(selectedProfile);
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span className="text-sm font-medium">
-                            Edit User Profile
-                          </span>
-                        </button>
-                      )}
-
-                      {canDeleteUser(selectedProfile) && (
-                        <button
-                          onClick={() => {
-                            setShowDetailModal(false);
-                            setShowConfirmModal({
-                              type: 'delete',
-                              profile: selectedProfile,
-                            });
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="text-sm font-medium">
-                            Delete User
-                          </span>
-                        </button>
-                      )}
-                    </div>
+                <div className="flex items-center gap-2">
+                  <UsersIcon className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">Gender</div>
+                  <div className="ml-auto text-gray-900 dark:text-white capitalize">
+                    {selectedProfile.gender || 'N/A'}
                   </div>
+                </div>
 
-                  {/* Audit Trail */}
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-5 border border-gray-200/50 dark:border-gray-700/50">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-base">
-                      Audit Trail
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start py-2 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Approved At
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
-                          {selectedProfile.approved_at
-                            ? new Date(
-                                selectedProfile.approved_at
-                              ).toLocaleString()
-                            : '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-start py-2 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Approved By
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white text-right break-all">
-                          {selectedProfile.approved_by || '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-start py-2">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                          Last Updated
-                        </span>
-                        <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
-                          {selectedProfile.updated_at
-                            ? new Date(
-                                selectedProfile.updated_at
-                              ).toLocaleString()
-                            : '—'}
-                        </span>
-                      </div>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <BadgeCheck className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">Approval</div>
+                  <div className="ml-auto text-gray-900 dark:text-white capitalize">
+                    {selectedProfile.approval_status || 'N/A'}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 col-span-1 sm:col-span-2">
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">Joined</div>
+                  <div className="ml-auto text-gray-900 dark:text-white">
+                    {selectedProfile.created_at
+                      ? new Date(selectedProfile.created_at).toLocaleDateString()
+                      : 'N/A'}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-6 md:px-8 pb-6 flex justify-end gap-3 border-t border-gray-200 dark:border-gray-800 pt-6">
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="px-6 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 font-medium"
-              >
-                Close
-              </button>
+            <div className="bg-gray-50 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Parent / Guardian
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <UsersIcon className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">Name</div>
+                  <div className="ml-auto text-gray-900 dark:text-white">
+                    {selectedProfile.parent_name || 'N/A'}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                  <div className="text-gray-600 dark:text-gray-400">Phone</div>
+                  <div className="ml-auto text-gray-900 dark:text-white">
+                    {selectedProfile.parent_phone || 'N/A'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right column: actions (kept your existing logic) */}
+          <div className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Actions
+              </h4>
+              <div className="flex flex-col gap-2">
+                {selectedProfile.role === 'student' &&
+                  (currentProfile?.sub_role === 'head' ||
+                    currentProfile?.sub_role === 'principal') && (
+                    <button
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        setShowTCModal(selectedProfile);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Generate Transfer Certificate
+                    </button>
+                  )}
+
+                {(currentProfile?.sub_role === 'head' ||
+                  currentProfile?.sub_role === 'principal') && (
+                  <button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      setShowHouseDutiesModal(selectedProfile);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                  >
+                    <Award className="h-4 w-4" />
+                    Edit House & Duties
+                  </button>
+                )}
+
+                {canEditUser(selectedProfile) && (
+                  <button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      handleEditClick(selectedProfile);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  >
+                    <Edit className="h-4 w-4" />
+                    Edit User
+                  </button>
+                )}
+
+                {canDeleteUser(selectedProfile) && (
+                  <button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      setShowConfirmModal({
+                        type: 'delete',
+                        profile: selectedProfile,
+                      });
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete User
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Audit card */}
+            <div className="bg-gray-50 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-700 text-sm">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Audit
+              </h4>
+              <div className="space-y-2 text-gray-700 dark:text-gray-300">
+                <div className="flex items-center justify-between">
+                  <span>Approved At</span>
+                  <span className="text-gray-900 dark:text-white">
+                    {selectedProfile.approved_at
+                      ? new Date(selectedProfile.approved_at).toLocaleString()
+                      : '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Approved By</span>
+                  <span className="text-gray-900 dark:text-white break-all">
+                    {selectedProfile.approved_by || '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Last Updated</span>
+                  <span className="text-gray-900 dark:text-white">
+                    {selectedProfile.updated_at
+                      ? new Date(selectedProfile.updated_at).toLocaleString()
+                      : '—'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Footer */}
+        <div className="pt-2 pb-6 px-6 md:px-8 flex justify-end">
+          <button
+            onClick={() => setShowDetailModal(false)}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -1629,7 +1543,7 @@ export function UsersPage() {
           onSuccess={() => {
             setNotification({
               type: 'success',
-              message: 'Transfer Certificate created successfully!',
+              message: 'Transfer Certificate created successfully!'
             });
           }}
         />
@@ -1642,7 +1556,7 @@ export function UsersPage() {
           onSuccess={() => {
             setNotification({
               type: 'success',
-              message: 'House and Duties updated successfully!',
+              message: 'House and Duties updated successfully!'
             });
             fetchProfiles();
           }}
