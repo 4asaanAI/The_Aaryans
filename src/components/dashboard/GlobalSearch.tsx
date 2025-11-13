@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { searchDatabase, DatabaseSearchResult } from '../../lib/searchService';
 
 interface SearchResult {
   id: string;
   title: string;
+  subtitle?: string;
   path: string;
   category: string;
-  keywords: string[];
+  keywords?: string[];
+  table?: string;
 }
 
 export function GlobalSearch() {
@@ -16,11 +19,13 @@ export function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   const getSearchableItems = (): SearchResult[] => {
     if (!profile) return [];
@@ -253,20 +258,57 @@ export function GlobalSearch() {
     if (!query.trim()) {
       setResults([]);
       setSelectedIndex(0);
+      setLoading(false);
       return;
     }
 
-    const filtered = searchableItems.filter(item => {
-      return (
-        fuzzyMatch(item.title, query) ||
-        fuzzyMatch(item.category, query) ||
-        item.keywords.some(keyword => fuzzyMatch(keyword, query))
-      );
-    });
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-    setResults(filtered);
-    setSelectedIndex(0);
-  }, [query]);
+    setLoading(true);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      const pageResults = searchableItems.filter(item => {
+        return (
+          fuzzyMatch(item.title, query) ||
+          fuzzyMatch(item.category, query) ||
+          (item.keywords && item.keywords.some(keyword => fuzzyMatch(keyword, query)))
+        );
+      });
+
+      let dbResults: DatabaseSearchResult[] = [];
+      if (profile?.id && profile.role) {
+        try {
+          dbResults = await searchDatabase(query, profile.role, profile.id);
+        } catch (error) {
+          console.error('Database search error:', error);
+        }
+      }
+
+      const combined = [
+        ...pageResults,
+        ...dbResults.map(r => ({
+          id: `db-${r.table}-${r.id}`,
+          title: r.title,
+          subtitle: r.subtitle,
+          path: r.path,
+          category: r.category,
+          table: r.table,
+        }))
+      ];
+
+      setResults(combined);
+      setSelectedIndex(0);
+      setLoading(false);
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [query, profile]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -353,7 +395,7 @@ export function GlobalSearch() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search pages, modules, and features..."
+                  placeholder="Search pages, users, classes, and more..."
                   className="w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   autoFocus
                 />
@@ -369,7 +411,12 @@ export function GlobalSearch() {
             </div>
 
             <div className="overflow-y-auto max-h-96 p-2">
-              {query && results.length === 0 ? (
+              {loading ? (
+                <div className="px-4 py-8 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  Searching...
+                </div>
+              ) : query && results.length === 0 ? (
                 <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                   No results found for "{query}"
                 </div>
@@ -379,30 +426,42 @@ export function GlobalSearch() {
                     <button
                       key={result.id}
                       onClick={() => handleNavigate(result.path)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                      className={`w-full flex flex-col px-4 py-3 rounded-lg text-left transition-colors ${
                         index === selectedIndex
                           ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent'
                       }`}
                       onMouseEnter={() => setSelectedIndex(index)}
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {highlightMatch(result.title, query)}
+                      <div className="flex items-start justify-between w-full">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {highlightMatch(result.title, query)}
+                          </div>
+                          {result.subtitle && (
+                            <div className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 truncate">
+                              {result.subtitle}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                              {result.category}
+                            </span>
+                            {result.table && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                                from {result.table}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          {result.category}
-                        </div>
-                      </div>
-                      <div className="ml-4 text-xs text-gray-400 dark:text-gray-500">
-                        {result.path}
                       </div>
                     </button>
                   ))}
                 </div>
               ) : !query ? (
                 <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                  Type to search pages and modules
+                  <p className="mb-2">Search across all pages and database records</p>
+                  <p className="text-xs">Users, Classes, Exams, Events, and more...</p>
                 </div>
               ) : null}
             </div>
