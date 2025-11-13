@@ -52,7 +52,7 @@ interface Profile {
   approval_status?: 'pending' | 'approved' | 'rejected';
   blood_group?: string;
   gender?: string;
-  date_of_birth?: Date;
+  date_of_birth?: string;
   address?: string;
   parent_phone: string;
   parent_name?: string;

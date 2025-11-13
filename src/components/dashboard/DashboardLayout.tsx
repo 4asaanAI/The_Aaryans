@@ -9,6 +9,7 @@ import {
   ClipboardList, Award, UserCheck, MailOpen, DollarSign, HelpCircle, Plane, Bus
 } from 'lucide-react';
 import { DashboardChatbot } from './DashboardChatbot';
+import { GlobalSearch } from './GlobalSearch';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -194,17 +195,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="fixed top-0 left-0 right-0 h-16 bg-blue-600 dark:bg-gray-800 text-white z-30 flex items-center justify-between px-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-shrink-0">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700"
           >
             {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
-          <h1 className="text-xl font-bold">The Aaryans</h1>
+          <h1 className="text-xl font-bold hidden sm:block">The Aaryans</h1>
+          <h1 className="text-lg font-bold sm:hidden">Aaryans</h1>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <GlobalSearch />
+
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
           <button
             onClick={toggleTheme}
             className="p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors"

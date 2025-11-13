@@ -261,12 +261,6 @@ export function MessagesPage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
 
   const filteredContacts = contacts.filter(
     (contact) =>
