@@ -20,6 +20,7 @@ import { FinancePage } from './pages/dashboards/FinancePage';
 import { SupportPage } from './pages/dashboards/SupportPage';
 import { LeavesPage } from './pages/dashboards/LeavesPage';
 import { TransportPage } from './pages/dashboards/TransportPage';
+import { InventoryPage } from './pages/dashboards/InventoryPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -150,6 +151,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TransportPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/inventory"
+              element={
+                <ProtectedRoute>
+                  <InventoryPage />
                 </ProtectedRoute>
               }
             />
