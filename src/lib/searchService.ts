@@ -32,6 +32,7 @@ export async function searchDatabase(query: string, userRole: string, userId: st
       searchSupportTickets(searchTerm, userRole, userId),
       searchLibraryBooks(searchTerm, userRole),
       searchFeeRecords(searchTerm, userRole, userId),
+      searchInventoryItems(searchTerm, userRole),
     ]);
 
     searches.forEach((result) => {
@@ -353,5 +354,25 @@ async function searchFeeRecords(searchTerm: string, userRole: string, userId: st
     category: 'Finance',
     table: 'fee_records',
     metadata: { feeId: fee.id }
+  }));
+}
+
+async function searchInventoryItems(searchTerm: string, _userRole: string): Promise<DatabaseSearchResult[]> {
+  const { data } = await supabase
+    .from('inventory_items')
+    .select('id, item_name, item_code, quantity, unit, status, location, inventory_categories(name)')
+    .or(`item_name.ilike.${searchTerm},item_code.ilike.${searchTerm},location.ilike.${searchTerm}`)
+    .limit(10);
+
+  if (!data) return [];
+
+  return data.map(item => ({
+    id: item.id,
+    title: item.item_name,
+    subtitle: `Code: ${item.item_code} • ${item.quantity} ${item.unit} • ${item.status}`,
+    path: '/dashboard/inventory',
+    category: 'Inventory',
+    table: 'inventory_items',
+    metadata: { itemId: item.id }
   }));
 }
