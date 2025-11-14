@@ -2,7 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Search, Send, Check, CheckCheck, ChevronLeft } from 'lucide-react';
+import {
+  Search,
+  Send,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  Wand2,
+  X,
+} from 'lucide-react';
 
 interface Contact {
   id: string;
@@ -37,6 +45,14 @@ export function MessagesPage() {
   const messageSubscription = useRef<ReturnType<
     typeof supabase.channel
   > | null>(null);
+
+  // --- Beautify chat state ---
+  const [beautifying, setBeautifying] = useState(false);
+  const [showBeautifyConfirm, setShowBeautifyConfirm] = useState(false);
+  const [beautifiedChat, setBeautifiedChat] = useState<{
+    original: string;
+    improved: string;
+  } | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -261,6 +277,79 @@ export function MessagesPage() {
     }
   };
 
+  // ---------- Beautify chat handlers ----------
+  // ---------- Beautify chat handlers (fetch -> supabase function, like AnnouncementsPage) ----------
+  const handleBeautifyChat = async () => {
+    if (!newMessage.trim()) return;
+    setBeautifying(true);
+
+    try {
+      const apiUrl = `${
+        import.meta.env.VITE_SUPABASE_URL
+      }/functions/v1/beautify-announcement`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: '',
+          content: newMessage,
+          tone: 'friendly',
+        }),
+      });
+
+      // parse body (attempt to parse JSON even on error for clearer messages)
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        // non-json body
+        data = null;
+      }
+
+      if (!response.ok) {
+        // server provided an error structure
+        const serverMessage =
+          data?.error ||
+          data?.message ||
+          `Beautify failed (${response.status})`;
+        throw new Error(serverMessage);
+      }
+
+      // Expect { beautifiedTitle, beautifiedContent }
+      const improved = (data?.beautifiedContent as string) || newMessage;
+      setBeautifiedChat({ original: newMessage, improved });
+      setShowBeautifyConfirm(true);
+    } catch (err) {
+      console.error('Error beautifying chat message:', err);
+      // Minimal user feedback - replace with Notification if you add it
+      try {
+        // eslint-disable-next-line no-alert
+        alert(
+          err instanceof Error
+            ? err.message
+            : 'Failed to beautify message. Please try again.'
+        );
+      } catch {}
+    } finally {
+      setBeautifying(false);
+    }
+  };
+
+  const handleAcceptBeautifiedChat = () => {
+    if (!beautifiedChat) return;
+    setNewMessage(beautifiedChat.improved);
+    setShowBeautifyConfirm(false);
+    setBeautifiedChat(null);
+  };
+
+  const handleRejectBeautifiedChat = () => {
+    setShowBeautifyConfirm(false);
+    setBeautifiedChat(null);
+  };
 
   const filteredContacts = contacts.filter(
     (contact) =>
@@ -525,6 +614,18 @@ export function MessagesPage() {
                     className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
 
+                  {/* Beautify button */}
+                  <button
+                    onClick={handleBeautifyChat}
+                    disabled={!newMessage.trim() || beautifying}
+                    className="p-2.5 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-full transition-colors flex items-center justify-center"
+                    title="Improve message with AI"
+                  >
+                    <Wand2
+                      className={`h-5 w-5 ${beautifying ? 'animate-spin' : ''}`}
+                    />
+                  </button>
+
                   <button
                     onClick={sendMessage}
                     disabled={!newMessage.trim()}
@@ -538,6 +639,60 @@ export function MessagesPage() {
           )}
         </div>
       </div>
+
+      {/* Beautify confirm modal */}
+      {showBeautifyConfirm && beautifiedChat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-[34rem] bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Review Improved Message
+              </h3>
+              <button
+                onClick={handleRejectBeautifiedChat}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Original
+                </label>
+                <div className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
+                  {beautifiedChat.original}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Improved
+                </label>
+                <div className="w-full px-4 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
+                  {beautifiedChat.improved}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={handleRejectBeautifiedChat}
+                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Keep Original
+                </button>
+                <button
+                  onClick={handleAcceptBeautifiedChat}
+                  className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  Use Improved
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
