@@ -18,7 +18,7 @@ import {
   Trash2,
   Award,
   X,
-  Wand2,
+  Wand2, // <-- added
 } from 'lucide-react';
 
 interface Event {
@@ -67,12 +67,16 @@ export function EventsPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  // --- Beautify states ---
+  // ---- Beautifier related state (new) ----
   const [beautifying, setBeautifying] = useState(false);
   const [showBeautifyConfirm, setShowBeautifyConfirm] = useState(false);
   const [beautifiedData, setBeautifiedData] = useState<{
     title: string;
-    description: string;
+    content: string;
+  } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
   } | null>(null);
 
   const isDark = theme === 'dark';
@@ -121,6 +125,10 @@ export function EventsPage() {
       fetchEvents();
     } catch (error) {
       console.error('Error creating event:', error);
+      setNotification({
+        type: 'error',
+        message: 'Failed to create event. Please try again.',
+      });
     } finally {
       setSaving(false);
     }
@@ -171,6 +179,83 @@ export function EventsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ---- Beautifier functions (new) ----
+  const handleBeautify = async () => {
+    if (!formData.name.trim() && !formData.description.trim()) {
+      setNotification({
+        type: 'error',
+        message: 'Please enter event name or description to beautify',
+      });
+      return;
+    }
+
+    setBeautifying(true);
+    try {
+      const apiUrl = `${
+        import.meta.env.VITE_SUPABASE_URL
+      }/functions/v1/beautify-announcement`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formData.name,
+          content: formData.description,
+          tone: 'friendly',
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMsg = 'Failed to beautify text';
+        try {
+          const errData = await response.json();
+          errorMsg = errData.error || errData.message || errorMsg;
+        } catch {
+          // ignore parse error
+        }
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+      setBeautifiedData({
+        title: data.beautifiedTitle || formData.name,
+        content: data.beautifiedContent || formData.description,
+      });
+      setShowBeautifyConfirm(true);
+    } catch (error) {
+      console.error('Error beautifying text:', error);
+      setNotification({
+        type: 'error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to beautify text. Please try again.',
+      });
+    } finally {
+      setBeautifying(false);
+    }
+  };
+
+  const handleAcceptBeautified = () => {
+    if (beautifiedData) {
+      setFormData({
+        ...formData,
+        name: beautifiedData.title,
+        description: beautifiedData.content,
+      });
+    }
+    setShowBeautifyConfirm(false);
+    setBeautifiedData(null);
+  };
+
+  const handleRejectBeautified = () => {
+    setShowBeautifyConfirm(false);
+    setBeautifiedData(null);
   };
 
   const filteredEvents = events.filter((event) => {
@@ -276,88 +361,6 @@ export function EventsPage() {
   };
 
   const stats = calculateStats();
-
-  // ---------- Beautify handlers (fetch -> supabase function) ----------
-  const handleBeautifyEvent = async () => {
-    // send current title & description to backend
-    if (!formData.name.trim() && !formData.description.trim()) {
-      try {
-        // eslint-disable-next-line no-alert
-        alert('Please enter title or description to beautify.');
-      } catch {}
-      return;
-    }
-
-    setBeautifying(true);
-    try {
-      const apiUrl = `${
-        import.meta.env.VITE_SUPABASE_URL
-      }/functions/v1/beautify-announcement`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: formData.name,
-          content: formData.description,
-          tone: 'friendly',
-        }),
-      });
-
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch {
-        data = null;
-      }
-
-      if (!response.ok) {
-        const serverMessage =
-          data?.error ||
-          data?.message ||
-          `Beautify failed (${response.status})`;
-        throw new Error(serverMessage);
-      }
-
-      const newTitle = (data?.beautifiedTitle as string) || formData.name;
-      const newDescription =
-        (data?.beautifiedContent as string) || formData.description;
-
-      setBeautifiedData({ title: newTitle, description: newDescription });
-      setShowBeautifyConfirm(true);
-    } catch (err) {
-      console.error('Error beautifying event:', err);
-      try {
-        // eslint-disable-next-line no-alert
-        alert(
-          err instanceof Error
-            ? err.message
-            : 'Failed to beautify. Please try again.'
-        );
-      } catch {}
-    } finally {
-      setBeautifying(false);
-    }
-  };
-
-  const handleAcceptBeautifiedEvent = () => {
-    if (!beautifiedData) return;
-    setFormData({
-      ...formData,
-      name: beautifiedData.title,
-      description: beautifiedData.description,
-    });
-    setShowBeautifyConfirm(false);
-    setBeautifiedData(null);
-  };
-
-  const handleRejectBeautifiedEvent = () => {
-    setShowBeautifyConfirm(false);
-    setBeautifiedData(null);
-  };
 
   // --- Mobile card renderer (visible on <md) ---
   const MobileEventCard = ({ e }: { e: Event }) => (
@@ -712,6 +715,7 @@ export function EventsPage() {
         </div>
       </div>
 
+      {/* Create Event Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -789,35 +793,32 @@ export function EventsPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description
                   </label>
-                  <div className="relative">
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleBeautifyEvent}
-                      disabled={
-                        beautifying ||
-                        (!formData.name.trim() && !formData.description.trim())
-                      }
-                      title="Beautify Title & Description with AI"
-                      className="absolute right-2 top-2 p-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      <Wand2
-                        className={`h-4 w-4 ${
-                          beautifying ? 'animate-spin' : ''
-                        }`}
-                      />
-                    </button>
-                  </div>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                {/* Beautify button row */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleBeautify}
+                    disabled={
+                      beautifying ||
+                      (!formData.name.trim() && !formData.description.trim())
+                    }
+                    className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-lg transition-all font-medium shadow-sm hover:shadow-md ${
+                      beautifying ? 'opacity-80 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    {beautifying ? 'Beautifying...' : 'Beautify with AI'}
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -949,73 +950,98 @@ export function EventsPage() {
         </div>
       )}
 
-      {/* Beautify confirm modal */}
+      {/* Beautify Review Modal */}
       {showBeautifyConfirm && beautifiedData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-[40rem] bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Review Improved Event
-              </h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-[min(42rem,calc(100vw-2rem))] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                Review Beautified Content
+              </h2>
               <button
-                onClick={handleRejectBeautifiedEvent}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                onClick={handleRejectBeautified}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                <X className="h-6 w-6 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
-            <div className="p-4 space-y-4">
+            <div className="p-4 sm:p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Original Title
                 </label>
-                <div className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white whitespace-pre-wrap">
+                <div className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
                   {formData.name}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Improved Title
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Beautified Title
                 </label>
-                <div className="w-full px-4 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white whitespace-pre-wrap">
+                <div className="w-full px-4 py-2.5 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white">
                   {beautifiedData.title}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Original Description
                 </label>
-                <div className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
+                <div className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white whitespace-pre-wrap max-h-32 overflow-y-auto">
                   {formData.description}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Improved Description
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Beautified Description
                 </label>
-                <div className="w-full px-4 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
-                  {beautifiedData.description}
+                <div className="w-full px-4 py-2.5 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white whitespace-pre-wrap max-h-32 overflow-y-auto">
+                  {beautifiedData.content}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
-                  onClick={handleRejectBeautifiedEvent}
-                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  type="button"
+                  onClick={handleRejectBeautified}
+                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                 >
                   Keep Original
                 </button>
                 <button
-                  onClick={handleAcceptBeautifiedEvent}
-                  className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  type="button"
+                  onClick={handleAcceptBeautified}
+                  className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
                 >
-                  Use Improved
+                  Use Beautified
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simple inline notification (floating toast) */}
+      {notification && (
+        <div className="fixed right-4 bottom-6 z-60">
+          <div
+            className={`px-4 py-3 rounded-lg shadow-md max-w-sm ${
+              notification.type === 'success'
+                ? 'bg-green-600 text-white'
+                : 'bg-red-600 text-white'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm">{notification.message}</div>
+              <button
+                onClick={() => setNotification(null)}
+                className="opacity-90 hover:opacity-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
