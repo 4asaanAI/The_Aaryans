@@ -46,12 +46,16 @@ export function MessagesPage() {
     typeof supabase.channel
   > | null>(null);
 
-  // --- Beautify chat state ---
+  // Beautifier states
   const [beautifying, setBeautifying] = useState(false);
   const [showBeautifyConfirm, setShowBeautifyConfirm] = useState(false);
-  const [beautifiedChat, setBeautifiedChat] = useState<{
-    original: string;
-    improved: string;
+  const [beautifiedData, setBeautifiedData] = useState<{
+    title?: string;
+    content: string;
+  } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
   } | null>(null);
 
   // Scroll to bottom when messages change
@@ -274,15 +278,24 @@ export function MessagesPage() {
       // Realtime will append the message
     } catch (err) {
       console.error('Error sending message:', err);
+      setNotification({
+        type: 'error',
+        message: 'Failed to send message. Try again.',
+      });
     }
   };
 
-  // ---------- Beautify chat handlers ----------
-  // ---------- Beautify chat handlers (fetch -> supabase function, like AnnouncementsPage) ----------
-  const handleBeautifyChat = async () => {
-    if (!newMessage.trim()) return;
-    setBeautifying(true);
+  // ---------- Beautifier functions ----------
+  const handleBeautifyMessage = async () => {
+    if (!newMessage.trim()) {
+      setNotification({
+        type: 'error',
+        message: 'Please enter a message to beautify',
+      });
+      return;
+    }
 
+    setBeautifying(true);
     try {
       const apiUrl = `${
         import.meta.env.VITE_SUPABASE_URL
@@ -301,54 +314,48 @@ export function MessagesPage() {
         }),
       });
 
-      // parse body (attempt to parse JSON even on error for clearer messages)
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch (parseErr) {
-        // non-json body
-        data = null;
-      }
-
       if (!response.ok) {
-        // server provided an error structure
-        const serverMessage =
-          data?.error ||
-          data?.message ||
-          `Beautify failed (${response.status})`;
-        throw new Error(serverMessage);
+        let errorMsg = 'Failed to beautify message';
+        try {
+          const errData = await response.json();
+          errorMsg = errData.error || errData.message || errorMsg;
+        } catch {
+          // ignore parse error
+        }
+        throw new Error(errorMsg);
       }
 
-      // Expect { beautifiedTitle, beautifiedContent }
-      const improved = (data?.beautifiedContent as string) || newMessage;
-      setBeautifiedChat({ original: newMessage, improved });
+      const data = await response.json();
+      setBeautifiedData({
+        title: data.beautifiedTitle || '',
+        content: data.beautifiedContent || data.beautifiedText || newMessage,
+      });
       setShowBeautifyConfirm(true);
     } catch (err) {
-      console.error('Error beautifying chat message:', err);
-      // Minimal user feedback - replace with Notification if you add it
-      try {
-        // eslint-disable-next-line no-alert
-        alert(
+      console.error('Error beautifying message:', err);
+      setNotification({
+        type: 'error',
+        message:
           err instanceof Error
             ? err.message
-            : 'Failed to beautify message. Please try again.'
-        );
-      } catch {}
+            : 'Failed to beautify message. Please try again.',
+      });
     } finally {
       setBeautifying(false);
     }
   };
 
-  const handleAcceptBeautifiedChat = () => {
-    if (!beautifiedChat) return;
-    setNewMessage(beautifiedChat.improved);
+  const handleAcceptBeautified = () => {
+    if (beautifiedData) {
+      setNewMessage(beautifiedData.content);
+    }
     setShowBeautifyConfirm(false);
-    setBeautifiedChat(null);
+    setBeautifiedData(null);
   };
 
-  const handleRejectBeautifiedChat = () => {
+  const handleRejectBeautified = () => {
     setShowBeautifyConfirm(false);
-    setBeautifiedChat(null);
+    setBeautifiedData(null);
   };
 
   const filteredContacts = contacts.filter(
@@ -601,12 +608,8 @@ export function MessagesPage() {
                       if (e.key === 'Enter') {
                         if (e.shiftKey) return; // allow manual line breaks
                         e.preventDefault();
-                        // check for double enter
-                        if (newMessage.trim().endsWith('\n')) {
-                          sendMessage();
-                        } else {
-                          setNewMessage((prev) => prev + '\n');
-                        }
+                        // send on Enter
+                        sendMessage();
                       }
                     }}
                     placeholder="Type a message..."
@@ -614,16 +617,18 @@ export function MessagesPage() {
                     className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-2xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
 
-                  {/* Beautify button */}
                   <button
-                    onClick={handleBeautifyChat}
+                    type="button"
+                    onClick={handleBeautifyMessage}
                     disabled={!newMessage.trim() || beautifying}
-                    className="p-2.5 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-full transition-colors flex items-center justify-center"
-                    title="Improve message with AI"
+                    className={`p-2.5 mr-1 rounded-full transition-colors ${
+                      beautifying
+                        ? 'opacity-70 cursor-not-allowed bg-gray-200 dark:bg-gray-700 text-gray-400'
+                        : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white'
+                    }`}
+                    title="Beautify message with AI"
                   >
-                    <Wand2
-                      className={`h-5 w-5 ${beautifying ? 'animate-spin' : ''}`}
-                    />
+                    <Wand2 className="h-5 w-5" />
                   </button>
 
                   <button
@@ -640,55 +645,80 @@ export function MessagesPage() {
         </div>
       </div>
 
-      {/* Beautify confirm modal */}
-      {showBeautifyConfirm && beautifiedChat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-[34rem] bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Review Improved Message
-              </h3>
+      {/* Beautify Review Modal */}
+      {showBeautifyConfirm && beautifiedData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-[min(42rem,calc(100vw-2rem))] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                Review Beautified Message
+              </h2>
               <button
-                onClick={handleRejectBeautifiedChat}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                onClick={handleRejectBeautified}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <X className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                <X className="h-6 w-6 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
-            <div className="p-4 space-y-4">
+            <div className="p-4 sm:p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Original
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Original Message
                 </label>
-                <div className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
-                  {beautifiedChat.original}
+                <div className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
+                  {newMessage}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Improved
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Beautified Message
                 </label>
-                <div className="w-full px-4 py-2 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
-                  {beautifiedChat.improved}
+                <div className="w-full px-4 py-2.5 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white whitespace-pre-wrap max-h-40 overflow-y-auto">
+                  {beautifiedData.content}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
-                  onClick={handleRejectBeautifiedChat}
-                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  type="button"
+                  onClick={handleRejectBeautified}
+                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                 >
                   Keep Original
                 </button>
                 <button
-                  onClick={handleAcceptBeautifiedChat}
-                  className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  type="button"
+                  onClick={handleAcceptBeautified}
+                  className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
                 >
-                  Use Improved
+                  Use Beautified
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simple inline notification (floating toast) */}
+      {notification && (
+        <div className="fixed right-4 bottom-6 z-60">
+          <div
+            className={`px-4 py-3 rounded-lg shadow-md max-w-sm ${
+              notification.type === 'success'
+                ? 'bg-green-600 text-white'
+                : 'bg-red-600 text-white'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm">{notification.message}</div>
+              <button
+                onClick={() => setNotification(null)}
+                className="opacity-90 hover:opacity-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
