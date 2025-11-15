@@ -4,35 +4,69 @@ export interface N8NResponse {
   error?: string;
 }
 
-export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
+/**
+ * Sends a query to the Supabase edge function which proxies to N8N.
+ * If `file` is provided, uses multipart/form-data (FormData) and appends the file under 'file'.
+ * Otherwise sends JSON { query } as before.
+ *
+ * Note: When sending FormData, do NOT set Content-Type; the browser will set the correct boundary.
+ */
+export async function sendQueryToN8N(
+  userQuery: string,
+  file?: File
+): Promise<N8NResponse> {
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     console.error('Supabase configuration not found');
     return {
-      response: 'Service configuration error. Please contact the administrator.',
+      response:
+        'Service configuration error. Please contact the administrator.',
       success: false,
-      error: 'Missing Supabase configuration'
+      error: 'Missing Supabase configuration',
     };
   }
 
   const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/n8n-proxy`;
 
   try {
-    const response = await fetch(edgeFunctionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({
-        query: userQuery
-      })
-    });
+    let response: Response;
+
+    if (file) {
+      // Use FormData when a file is present. Edge function must accept multipart/form-data.
+      const form = new FormData();
+      form.append('query', userQuery);
+      form.append('file', file, file.name);
+
+      response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          // Do not set 'Content-Type' — the browser will set the multipart boundary for FormData
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: form,
+      });
+    } else {
+      // Existing JSON flow for text-only requests
+      response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          query: userQuery,
+        }),
+      });
+    }
 
     if (!response.ok) {
-      console.error('Edge function error:', response.status, response.statusText);
+      console.error(
+        'Edge function error:',
+        response.status,
+        response.statusText
+      );
 
       if (response.status === 404) {
         throw new Error('Service endpoint not found');
@@ -47,7 +81,7 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
 
     const responseText = await response.text();
 
-    let data;
+    let data: any;
     try {
       data = JSON.parse(responseText);
     } catch {
@@ -58,24 +92,26 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
       return {
         response: data.error,
         success: false,
-        error: data.message || data.error
+        error: data.message || data.error,
       };
     }
 
-    const responseContent = data.response || data.answer || data.result || responseText;
+    const responseContent =
+      data.response || data.answer || data.result || responseText;
 
     return {
       response: responseContent,
-      success: true
+      success: true,
     };
-
   } catch (error) {
     console.error('Error querying N8N via edge function:', error);
 
     let errorMessage = 'Unable to process your query. Please try again.';
 
+    // Keep the previous network/error heuristics
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      errorMessage = 'Network error. Please check your connection and try again.';
+      errorMessage =
+        'Network error. Please check your connection and try again.';
     } else if (error instanceof Error) {
       errorMessage = error.message;
     }
@@ -83,8 +119,7 @@ export async function sendQueryToN8N(userQuery: string): Promise<N8NResponse> {
     return {
       response: errorMessage,
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
-
