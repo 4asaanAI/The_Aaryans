@@ -66,79 +66,45 @@ function buildContext(schoolData: any[]): string {
 }
 
 async function queryOpenAI(userMessage: string, context: string): Promise<string> {
-  const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-
-  if (!OPENAI_API_KEY) {
-    console.log('No OpenAI API key found, using fallback response');
-    return getFallbackResponse(userMessage);
-  }
-
-  const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-
-  const systemPrompt = `You are a helpful assistant for THE AARYANS - an institution of the Vedic Educational Trust, also known as "Chariot of Knowledge". Your role is to answer questions about the school based on the following information:
-
-${context}
-
-Instructions:
-- Answer questions clearly and concisely based only on the information provided above
-- If asked about something not covered in the information, politely say you don't have that specific information and suggest contacting the school directly at 8126965555, 8126968888 or theaaryansjoya@gmail.com
-- Be friendly, helpful, and professional
-- Keep responses focused and not too long (2-4 sentences is ideal)
-- If asked about admissions, encourage them to book a tour or contact the school
-- Use a warm, welcoming tone appropriate for parents and families
-- Remember: THE AARYANS is a CBSE affiliated co-educational institution founded on April 13, 2015, located in Prem Nagar, Joya, Amroha (U.P.)`;
-
   try {
-    const response = await fetch(OPENAI_API_URL, {
+    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`;
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: userMessage
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 250,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0
-      })
+        userMessage,
+        context,
+      }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('OpenAI API error:', response.status, errorData);
+      console.error('Chat AI API error:', response.status, errorData);
 
       if (response.status === 429) {
         throw new Error('Rate limit exceeded. Please try again in a moment.');
       } else if (response.status === 401) {
-        throw new Error('Invalid API key. Please check your OpenAI API key.');
+        throw new Error('Authentication error. Please try again.');
       } else if (response.status === 500) {
-        throw new Error('OpenAI service is temporarily unavailable.');
+        throw new Error('Service is temporarily unavailable.');
       }
 
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-      return data.choices[0].message.content.trim();
+    if (data.response) {
+      return data.response;
     }
 
-    throw new Error('Invalid response format from OpenAI');
+    throw new Error('Invalid response format from API');
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('Chat AI API error:', error);
     throw error;
   }
 }
