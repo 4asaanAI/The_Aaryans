@@ -266,20 +266,18 @@ export function UsersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // ⚠️ Use a separate client that never persists sessions
       const signUpClient = createClient(
         import.meta.env.VITE_SUPABASE_URL!,
         import.meta.env.VITE_SUPABASE_ANON_KEY!,
         {
           auth: {
-            persistSession: false, // <-- prevents writing new tokens
-            autoRefreshToken: false, // optional: don’t auto-refresh
-            storageKey: 'sb-signup-helper', // isolated key if storage were used
+            persistSession: false,
+            autoRefreshToken: false,
+            storageKey: 'sb-signup-helper',
           },
         }
       );
 
-      // 1) Create auth user WITHOUT mutating your current session
       const { data: authData, error: authError } =
         await signUpClient.auth.signUp({
           email: newProfile.email,
@@ -290,30 +288,69 @@ export function UsersPage() {
               role: newProfile.role,
               sub_role: newProfile.sub_role,
             },
-            // Optional: keep confirmations but send users back to YOUR app
             emailRedirectTo: `${window.location.origin}/login`,
           },
         });
 
+      console.log('signUp response', { authData, authError });
+
       if (authError) throw authError;
 
-      // 2) Set profile fields on the newly created user
-      if (authData?.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            phone: newProfile.phone || null,
-            admission_no: newProfile.admission_no || null,
-            employee_id: newProfile.employee_id || null,
-            approval_status: 'approved',
-            approved_by: currentProfile?.id || null,
-            approved_at: new Date().toISOString(),
-            status: 'active',
-          })
-          .eq('id', authData.user.id);
-
-        if (profileError) throw profileError;
+      // user id might be in authData.user?.id
+      const userId = authData?.user?.id;
+      if (!userId) {
+        // Some flows (email confirm required) may not return a user object immediately.
+        // Log and show a friendly message.
+        console.warn(
+          'No user object returned from signUp. authData:',
+          authData
+        );
+        setNotification({
+          type: 'success',
+          message:
+            'Signup sent. The user may need to confirm their email before the profile is created.',
+        });
+        setShowAddModal(false);
+        setNewProfile({
+          full_name: '',
+          email: '',
+          password: '',
+          role: 'student',
+          sub_role: '',
+          phone: '',
+          admission_no: '',
+          employee_id: '',
+        });
+        return;
       }
+
+      // Prepare profile payload
+      const profilePayload: Partial<
+        Profile & { id: string; created_at?: string }
+      > = {
+        id: userId,
+        full_name: newProfile.full_name,
+        email: newProfile.email,
+        role: newProfile.role as Profile['role'],
+        sub_role: newProfile.sub_role || null,
+        phone: newProfile.phone || null,
+        admission_no: newProfile.admission_no || null,
+        employee_id: newProfile.employee_id || null,
+        approval_status: 'approved' as const,
+        approved_by: currentProfile?.id || null,
+        approved_at: new Date().toISOString(),
+        status: 'active',
+        created_at: new Date().toISOString(),
+      };
+
+      // Use upsert to insert if missing, or update if it exists.
+      const { data: profileResult, error: profileError } = await supabase
+        .from('profiles')
+        .upsert(profilePayload, { returning: 'representation' });
+
+      console.log('profiles upsert', { profileResult, profileError });
+
+      if (profileError) throw profileError;
 
       setNotification({
         type: 'success',
