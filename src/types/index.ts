@@ -25,6 +25,7 @@ export interface Profile {
   updated_at?: string;
   house?: 'green' | 'blue' | 'red' | 'yellow' | null;
   duties?: string[] | null;
+  message_limit?: number;
 }
 
 export interface Department {

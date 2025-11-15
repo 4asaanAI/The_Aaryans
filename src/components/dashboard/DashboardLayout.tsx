@@ -210,6 +210,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <GlobalSearch />
 
         <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-700 dark:bg-gray-700 rounded-lg">
+            <span className="text-xs sm:text-sm font-medium text-white">
+              {profile?.message_limit !== undefined ? profile.message_limit : 100} msgs left
+            </span>
+          </div>
+
           <button
             onClick={toggleTheme}
             className="p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors"

@@ -295,6 +295,15 @@ export function MessagesPage() {
       return;
     }
 
+    const currentLimit = profile?.message_limit !== undefined ? profile.message_limit : 100;
+    if (currentLimit <= 0) {
+      setNotification({
+        type: 'error',
+        message: 'You have reached your message limit. Please contact an administrator.',
+      });
+      return;
+    }
+
     setBeautifying(true);
     try {
       const apiUrl = `${
@@ -331,6 +340,17 @@ export function MessagesPage() {
         content: data.beautifiedContent || data.beautifiedText || newMessage,
       });
       setShowBeautifyConfirm(true);
+
+      if (profile?.id) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ message_limit: currentLimit - 1 })
+          .eq('id', profile.id);
+
+        if (error) {
+          console.error('Error updating message limit:', error);
+        }
+      }
     } catch (err) {
       console.error('Error beautifying message:', err);
       setNotification({
