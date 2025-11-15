@@ -117,15 +117,13 @@ export function DashboardChatbot() {
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      if (profile?.id) {
-        const { error } = await supabase
+      if (profile?.id && currentLimit > 0) {
+        await supabase
           .from('profiles')
           .update({ message_limit: currentLimit - 1 })
           .eq('id', profile.id);
 
-        if (!error) {
-          await refreshProfile();
-        }
+        await refreshProfile();
       }
     } catch (error) {
       console.error('Error sending message to N8N:', error);

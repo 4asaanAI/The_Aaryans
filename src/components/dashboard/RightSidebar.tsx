@@ -36,10 +36,10 @@ export function RightSidebar() {
       const { data, error } = await supabase
         .from('events')
         .select('id, name, event_date, start_time, end_time, description')
-        .eq('status', 'active')
+        .in('status', ['upcoming', 'ongoing'])
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
-        .limit(50);
+        .limit(20);
 
       if (error) throw error;
       setAllEvents(data || []);
@@ -56,7 +56,7 @@ export function RightSidebar() {
         .from('announcements')
         .select('id, title, content, created_at')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(20);
 
       if (error) throw error;
       setAllAnnouncements(data || []);

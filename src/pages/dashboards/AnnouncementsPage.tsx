@@ -131,15 +131,11 @@ export function AnnouncementsPage() {
       });
       setShowBeautifyConfirm(true);
 
-      if (profile?.id) {
-        const { error } = await supabase
+      if (profile?.id && currentLimit > 0) {
+        await supabase
           .from('profiles')
           .update({ message_limit: currentLimit - 1 })
           .eq('id', profile.id);
-
-        if (error) {
-          console.error('Error updating message limit:', error);
-        }
       }
     } catch (error) {
       console.error('Error beautifying text:', error);
