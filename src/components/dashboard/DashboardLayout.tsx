@@ -1,12 +1,32 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
-  Menu, X, Home, Users, BookOpen, Bell, Moon, Sun, FileText,
-  LogOut, Calendar, Library, UserCircle, BarChart3,
-  ClipboardList, Award, UserCheck, MailOpen, DollarSign, HelpCircle, Plane, Bus, Package
+  Menu,
+  X,
+  Home,
+  Users,
+  BookOpen,
+  Bell,
+  Moon,
+  Sun,
+  FileText,
+  LogOut,
+  Calendar,
+  Library,
+  UserCircle,
+  BarChart3,
+  ClipboardList,
+  Award,
+  UserCheck,
+  MailOpen,
+  DollarSign,
+  HelpCircle,
+  Plane,
+  Bus,
+  Package,
 } from 'lucide-react';
 import { DashboardChatbot } from './DashboardChatbot';
 import { GlobalSearch } from './GlobalSearch';
@@ -30,7 +50,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [, setPendingApprovalsCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const sidebarNavRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (profile?.role === 'admin') {
@@ -63,7 +85,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             id: profile.created_at,
             title: 'New User Registration',
             message: `${profile.full_name} has requested ${profile.role} account approval`,
-            created_at: profile.created_at
+            created_at: profile.created_at,
           }));
           setNotifications(notifs);
         }
@@ -84,7 +106,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           event: 'INSERT',
           schema: 'public',
           table: 'profiles',
-          filter: 'approval_status=eq.pending'
+          filter: 'approval_status=eq.pending',
         },
         () => {
           fetchPendingApprovals();
@@ -95,7 +117,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'profiles'
+          table: 'profiles',
         },
         () => {
           fetchPendingApprovals();
@@ -106,7 +128,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {
           event: 'DELETE',
           schema: 'public',
-          table: 'profiles'
+          table: 'profiles',
         },
         () => {
           fetchPendingApprovals();
@@ -121,7 +143,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target as Node)
+      ) {
         setNotificationsOpen(false);
       }
     }
@@ -135,6 +160,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     };
   }, [notificationsOpen]);
 
+  // Preserve sidebar scroll position so it doesn't jump to top on navigation
+  useEffect(() => {
+    const navEl = sidebarNavRef.current;
+    if (!navEl) return;
+
+    const savedScroll = sessionStorage.getItem('dashboardSidebarScroll');
+    if (savedScroll) {
+      navEl.scrollTop = Number(savedScroll);
+    }
+
+    const handleScroll = () => {
+      sessionStorage.setItem(
+        'dashboardSidebarScroll',
+        navEl.scrollTop.toString()
+      );
+    };
+
+    navEl.addEventListener('scroll', handleScroll);
+    return () => {
+      navEl.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -144,11 +191,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const getNavigationItems = () => {
     if (!profile) return [];
 
-    const commonItems = [
-      { name: 'Home', href: '/dashboard', icon: Home }
-    ];
+    const commonItems = [{ name: 'Home', href: '/dashboard', icon: Home }];
 
-    if (profile.role === 'admin' || (profile.sub_role && (profile.sub_role === 'principal' || profile.sub_role === 'head'))) {
+    if (
+      profile.role === 'admin' ||
+      (profile.sub_role &&
+        (profile.sub_role === 'principal' || profile.sub_role === 'head'))
+    ) {
       return [
         ...commonItems,
         { name: 'Users', href: '/dashboard/users', icon: Users },
@@ -164,7 +213,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Leaves', href: '/dashboard/leaves', icon: Plane },
         { name: 'Transport', href: '/dashboard/transport', icon: Bus },
         { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
-        { name: 'New Approvals', href: '/dashboard/approvals', icon: UserCheck }
+        {
+          name: 'New Approvals',
+          href: '/dashboard/approvals',
+          icon: UserCheck,
+        },
       ];
     }
 
@@ -174,7 +227,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'My Courses', href: '/dashboard/courses', icon: BookOpen },
         { name: 'Students', href: '/dashboard/students', icon: Users },
         { name: 'Attendance', href: '/dashboard/attendance', icon: Calendar },
-        { name: 'Grades', href: '/dashboard/grades', icon: FileText }
+        { name: 'Grades', href: '/dashboard/grades', icon: FileText },
       ];
     }
 
@@ -184,7 +237,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'My Courses', href: '/dashboard/courses', icon: BookOpen },
         { name: 'Enrollments', href: '/dashboard/enrollments', icon: FileText },
         { name: 'Library', href: '/dashboard/library', icon: Library },
-        { name: 'Grades', href: '/dashboard/grades', icon: BarChart3 }
+        { name: 'Grades', href: '/dashboard/grades', icon: BarChart3 },
       ];
     }
 
@@ -192,6 +245,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const navigationItems = getNavigationItems();
+
+  const isNavItemActive = (href: string) => {
+    if (href === '/dashboard') {
+      return location.pathname === '/dashboard';
+    }
+    return (
+      location.pathname === href || location.pathname.startsWith(href + '/')
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -201,7 +263,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700"
           >
-            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {sidebarOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
           <h1 className="text-xl font-bold hidden sm:block">The Aaryans</h1>
           <h1 className="text-lg font-bold sm:hidden">Aaryans</h1>
@@ -212,16 +278,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-700 dark:bg-gray-700 rounded-lg">
             <span className="text-xs sm:text-sm font-medium text-white">
-              {profile?.message_limit !== undefined ? profile.message_limit : 100} msgs left
+              {profile?.message_limit !== undefined
+                ? profile.message_limit
+                : 100}{' '}
+              msgs left
             </span>
           </div>
 
           <button
             onClick={toggleTheme}
             className="p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors"
-            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            title={
+              theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
+            }
           >
-            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            {theme === 'light' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
           </button>
 
           <div className="relative" ref={notificationsRef}>
@@ -238,7 +313,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {notificationsOpen && (
               <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Notifications
+                  </h3>
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.length === 0 ? (
@@ -254,8 +331,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           onClick={() => setNotificationsOpen(false)}
                           className="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700"
                         >
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{notif.title}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{notif.message}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {notif.title}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {notif.message}
+                          </p>
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                             {new Date(notif.created_at).toLocaleString()}
                           </p>
@@ -285,7 +366,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <div className="hidden md:block">
               <p className="text-sm font-medium">{profile?.full_name}</p>
-              <p className="text-xs text-blue-100 dark:text-gray-400 capitalize">{profile?.role}</p>
+              <p className="text-xs text-blue-100 dark:text-gray-400 capitalize">
+                {profile?.role}
+              </p>
             </div>
           </div>
         </div>
@@ -296,29 +379,53 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           className={`
             fixed lg:static inset-y-0 left-0 z-20 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
             transform transition-transform duration-300 ease-in-out lg:transform-none
-            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            ${
+              sidebarOpen
+                ? 'translate-x-0'
+                : '-translate-x-full lg:translate-x-0'
+            }
             mt-16 lg:mt-0
           `}
         >
-          <nav className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-4rem)]">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="flex items-center justify-between px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <div className="flex items-center space-x-3">
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
-                </div>
-              </Link>
-            ))}
+          <nav
+            ref={sidebarNavRef}
+            className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-4rem)]"
+          >
+            {navigationItems.map((item) => {
+              const active = isNavItemActive(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`
+                    flex items-center justify-between px-4 py-3 rounded-lg transition-colors
+                    ${
+                      active
+                        ? 'bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400'
+                    }
+                  `}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <item.icon className="h-5 w-5" />
+                    <span className="font-medium">{item.name}</span>
+                  </div>
+                </Link>
+              );
+            })}
 
             <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
               <Link
                 to="/dashboard/profile"
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className={`
+                  flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
+                  ${
+                    isNavItemActive('/dashboard/profile')
+                      ? 'bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400'
+                  }
+                `}
                 onClick={() => setSidebarOpen(false)}
               >
                 <UserCircle className="h-5 w-5" />
@@ -336,9 +443,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 p-6 lg:p-8">{children}</main>
       </div>
 
       {sidebarOpen && (
