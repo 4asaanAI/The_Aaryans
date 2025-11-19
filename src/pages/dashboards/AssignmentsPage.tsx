@@ -13,6 +13,8 @@ import {
   Clock,
   Plus,
   X,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import {
   BarChart,
@@ -37,6 +39,8 @@ interface Assignment {
   due_date: string;
   total_marks: number;
   class_id: string;
+  subject_id?: string;
+  teacher_id?: string;
   created_at: string;
   class?: { id: string; name: string };
   subject?: { name: string; code: string };
@@ -92,6 +96,22 @@ export function AssignmentsPage() {
     subject_id: '',
   });
   const [saving, setSaving] = useState(false);
+
+  // NEW: edit / delete / success state
+  const [editAssignment, setEditAssignment] = useState<Assignment | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    due_date: '',
+    total_marks: '',
+    class_id: '',
+    subject_id: '',
+  });
+  const [editSaving, setEditSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [assignmentToDelete, setAssignmentToDelete] =
+    useState<Assignment | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const isDark = theme === 'dark';
   const chartColors = {
@@ -450,6 +470,7 @@ export function AssignmentsPage() {
         subject_id: '',
       });
       fetchAssignments();
+      setSuccessMessage('Assignment created successfully.');
     } catch (error) {
       console.error('Error creating assignment:', error);
     } finally {
@@ -457,7 +478,93 @@ export function AssignmentsPage() {
     }
   };
 
+  // NEW: edit & delete handlers
+
+  const handleOpenEditAssignment = (assignment: Assignment) => {
+    setEditAssignment(assignment);
+
+    // convert stored date to datetime-local compatible string
+    let dueDate = '';
+    if (assignment.due_date) {
+      const d = new Date(assignment.due_date);
+      dueDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+    }
+
+    setEditFormData({
+      title: assignment.title || '',
+      description: assignment.description || '',
+      due_date: dueDate,
+      total_marks: assignment.total_marks
+        ? assignment.total_marks.toString()
+        : '',
+      class_id: assignment.class_id || '',
+      subject_id: assignment.subject_id || '',
+    });
+  };
+
+  const handleUpdateAssignment = async () => {
+    if (!editAssignment) return;
+    if (!editFormData.title || !editFormData.due_date || !editFormData.class_id)
+      return;
+
+    setEditSaving(true);
+    try {
+      const { error } = await supabase
+        .from('assignments')
+        .update({
+          title: editFormData.title,
+          description: editFormData.description,
+          due_date: editFormData.due_date,
+          total_marks: editFormData.total_marks
+            ? parseInt(editFormData.total_marks)
+            : null,
+          class_id: editFormData.class_id,
+          subject_id: editFormData.subject_id || null,
+        })
+        .eq('id', editAssignment.id);
+
+      if (error) throw error;
+
+      setEditAssignment(null);
+      await fetchAssignments();
+      setSuccessMessage('Assignment updated successfully.');
+    } catch (error) {
+      console.error('Error updating assignment:', error);
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleRequestDeleteAssignment = (assignment: Assignment) => {
+    setAssignmentToDelete(assignment);
+  };
+
+  const handleConfirmDeleteAssignment = async () => {
+    if (!assignmentToDelete) return;
+
+    setDeletingId(assignmentToDelete.id);
+    try {
+      const { error } = await supabase
+        .from('assignments')
+        .delete()
+        .eq('id', assignmentToDelete.id);
+
+      if (error) throw error;
+
+      setAssignmentToDelete(null);
+      await fetchAssignments();
+      setSuccessMessage('Assignment deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting assignment:', error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const canCreateAssignment = profile?.role && profile.role !== 'student';
+  const canManageAssignment = profile?.role && profile.role !== 'student';
 
   const stats = getOverallStats;
 
@@ -966,6 +1073,9 @@ export function AssignmentsPage() {
                             />
                           </div>
                         </th>
+                        <th className="text-left py-3 px-3 sm:px-4 font-semibold text-gray-700 dark:text-gray-300">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1047,6 +1157,33 @@ export function AssignmentsPage() {
                                 </span>
                               )}
                             </td>
+                            <td className="py-3 px-3 sm:px-4">
+                              {canManageAssignment && (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      handleOpenEditAssignment(assignment)
+                                    }
+                                    className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleRequestDeleteAssignment(assignment)
+                                    }
+                                    disabled={deletingId === assignment.id}
+                                    className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {deletingId === assignment.id ? (
+                                      <span className="text-xs">...</span>
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
@@ -1059,6 +1196,7 @@ export function AssignmentsPage() {
         </div>
       </div>
 
+      {/* CREATE MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -1198,6 +1336,262 @@ export function AssignmentsPage() {
                   className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {saving ? 'Creating...' : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT ASSIGNMENT MODAL */}
+      {editAssignment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                  Edit Assignment
+                </h2>
+                <button
+                  onClick={() => setEditAssignment(null)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-3 sm:space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.title}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        title: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Class *
+                    </label>
+                    <select
+                      value={editFormData.class_id}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          class_id: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                    >
+                      <option value="">Select Class</option>
+                      {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Subject
+                    </label>
+                    <select
+                      value={editFormData.subject_id}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          subject_id: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map((subj) => (
+                        <option key={subj.id} value={subj.id}>
+                          {subj.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Due Date *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={editFormData.due_date}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          due_date: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Total Marks
+                    </label>
+                    <input
+                      type="number"
+                      value={editFormData.total_marks}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          total_marks: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 mt-4 sm:mt-6">
+                <button
+                  onClick={() => setEditAssignment(null)}
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateAssignment}
+                  disabled={
+                    editSaving ||
+                    !editFormData.title ||
+                    !editFormData.due_date ||
+                    !editFormData.class_id
+                  }
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  {editSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {assignmentToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-xl max-w-md w-full">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleConfirmDeleteAssignment();
+              }}
+              className="p-4 sm:p-6"
+            >
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                  Delete Assignment
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setAssignmentToDelete(null)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 sm:mb-4">
+                Are you sure you want to delete this assignment? This action
+                cannot be undone.
+              </p>
+
+              <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-3 mb-4 text-sm">
+                <p className="text-gray-800 dark:text-gray-100 font-medium">
+                  {assignmentToDelete.title}
+                </p>
+                <p className="text-gray-500 dark:text-gray-400">
+                  {assignmentToDelete.class?.name || 'N/A'} •{' '}
+                  {assignmentToDelete.subject?.name || 'N/A'}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAssignmentToDelete(null)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={deletingId === assignmentToDelete.id}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  {deletingId === assignmentToDelete.id
+                    ? 'Deleting...'
+                    : 'Delete'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SUCCESS POPUP */}
+      {successMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-xl max-w-sm w-full">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                  Success
+                </h2>
+                <button
+                  onClick={() => setSuccessMessage(null)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-200">
+                {successMessage}
+              </p>
+              <div className="flex justify-end mt-4 sm:mt-6">
+                <button
+                  onClick={() => setSuccessMessage(null)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base"
+                >
+                  OK
                 </button>
               </div>
             </div>
