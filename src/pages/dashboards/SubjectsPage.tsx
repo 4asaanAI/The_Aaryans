@@ -52,7 +52,7 @@ export function SubjectsPage() {
   const [assignData, setAssignData] = useState({
     subject_id: '',
     class_id: '',
-    teacher_id: '',
+    teacher_ids: [] as string[], // multiple teachers
   });
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
@@ -191,25 +191,39 @@ export function SubjectsPage() {
   };
 
   const handleAssignTeacher = async () => {
-    if (
-      !assignData.subject_id ||
-      !assignData.class_id ||
-      !assignData.teacher_id
-    )
-      return;
+    if (!assignData.subject_id || !assignData.teacher_ids.length) return;
     try {
-      const { error } = await supabase.from('class_subjects').insert({
-        class_id: assignData.class_id,
+      // Build array of entries to insert.
+      // If class_id is provided, use it; otherwise set class_id = null.
+      const entries = assignData.teacher_ids.map((tid) => ({
+        class_id: assignData.class_id || null,
         subject_id: assignData.subject_id,
-        teacher_id: assignData.teacher_id,
-      });
-      if (error) throw error;
-      setNotification({
-        type: 'success',
-        message: 'Teacher assigned successfully',
-      });
+        teacher_id: tid,
+      }));
+
+      // Insert multiple rows at once. If duplicates exist, this will error;
+      // to avoid duplicate errors you may want to handle deduplication on client.
+      // Here we attempt insert and ignore duplicates by catching errors.
+      const { error } = await supabase.from('class_subjects').insert(entries);
+      if (error) {
+        // If the error is duplicate constraint, still proceed to refresh data.
+        console.warn('Error inserting class_subjects:', error.message);
+        // show user-friendly message
+        setNotification({
+          type: 'error',
+          message:
+            error.message ||
+            'Some assignments may already exist or an error occurred.',
+        });
+      } else {
+        setNotification({
+          type: 'success',
+          message: 'Teacher(s) assigned successfully',
+        });
+      }
+
       setShowAssignModal(false);
-      setAssignData({ subject_id: '', class_id: '', teacher_id: '' });
+      setAssignData({ subject_id: '', class_id: '', teacher_ids: [] });
       fetchClassSubjects();
     } catch (error: any) {
       setNotification({ type: 'error', message: error.message });
@@ -346,6 +360,12 @@ export function SubjectsPage() {
                       <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                         Code
                       </th>
+
+                      {/* NEW Teachers column */}
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
+                        Teachers
+                      </th>
+
                       <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
                         Description
                       </th>
@@ -356,6 +376,7 @@ export function SubjectsPage() {
                   </thead>
                   <tbody>
                     {filteredSubjects.map((subject) => {
+                      const teacherNames = getTeachersForSubject(subject.id);
                       return (
                         <tr
                           key={subject.id}
@@ -367,6 +388,14 @@ export function SubjectsPage() {
                           <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
                             {subject.code}
                           </td>
+
+                          {/* Teachers cell */}
+                          <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                            {teacherNames.length > 0
+                              ? teacherNames.join(', ')
+                              : 'Unassigned'}
+                          </td>
+
                           <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
                             {subject.description}
                           </td>
@@ -532,13 +561,13 @@ export function SubjectsPage() {
         </div>
       )}
 
-      {/* Assign Teacher Modal */}
+      {/* Assign Teacher Modal (supports multiple teacher selection) */}
       {showAssignModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Assign Teacher
+                Assign Teacher(s)
               </h2>
               <button
                 onClick={() => setShowAssignModal(false)}
@@ -567,9 +596,10 @@ export function SubjectsPage() {
                   ))}
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Class *
+                  Class (optional)
                 </label>
                 <select
                   value={assignData.class_id}
@@ -578,36 +608,59 @@ export function SubjectsPage() {
                   }
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="">Select class</option>
+                  <option value="">(No specific class)</option>
                   {classes.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave blank to assign teacher(s) at subject level (not tied to
+                  a specific class).
+                </p>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Teacher *
+                  Teacher(s) *
                 </label>
+
+                {/* multiple select for teachers */}
                 <select
-                  value={assignData.teacher_id}
-                  onChange={(e) =>
-                    setAssignData({ ...assignData, teacher_id: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  multiple
+                  value={assignData.teacher_ids}
+                  onChange={(e) => {
+                    const selected: string[] = Array.from(
+                      e.target.selectedOptions
+                    ).map((opt) => opt.value);
+                    setAssignData({ ...assignData, teacher_ids: selected });
+                  }}
+                  className="w-full h-36 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="">Select teacher</option>
                   {teachers.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.full_name}
+                      {t.full_name} {t.email ? `— ${t.email}` : ''}
                     </option>
                   ))}
                 </select>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Hold Ctrl (Cmd on Mac) / Shift to select multiple or use
+                  checkboxes in supported UIs.
+                </p>
               </div>
+
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setShowAssignModal(false)}
+                  onClick={() => {
+                    setShowAssignModal(false);
+                    setAssignData({
+                      subject_id: '',
+                      class_id: '',
+                      teacher_ids: [],
+                    });
+                  }}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                 >
                   Cancel
