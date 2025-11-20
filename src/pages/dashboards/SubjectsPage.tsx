@@ -96,7 +96,7 @@ export function SubjectsPage() {
         .from('profiles')
         .select('id, full_name, email')
         .eq('department_id', profile.department_id)
-        .eq('role', 'professor')
+        .in('role', ['professor', 'coordinator'])
         .eq('approval_status', 'approved')
         .order('full_name');
       if (error) throw error;
