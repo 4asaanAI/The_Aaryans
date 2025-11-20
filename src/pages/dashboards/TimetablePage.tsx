@@ -25,7 +25,7 @@ export function TimetablePage() {
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
-  const [teachers, setTeachers] = useState<any[]>([]);
+  const [availableTeachers, setAvailableTeachers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,9 +44,17 @@ export function TimetablePage() {
       fetchTimetable();
       fetchSubjects();
       fetchClasses();
-      fetchTeachers();
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (formData.subject_id && formData.class_id) {
+      fetchAvailableTeachers();
+    } else {
+      setAvailableTeachers([]);
+      setFormData(prev => ({ ...prev, teacher_id: '' }));
+    }
+  }, [formData.subject_id, formData.class_id]);
 
   const fetchTimetable = async () => {
     if (!profile?.department_id) return;
@@ -100,20 +108,32 @@ export function TimetablePage() {
     }
   };
 
-  const fetchTeachers = async () => {
-    if (!profile?.department_id) return;
+  const fetchAvailableTeachers = async () => {
+    if (!formData.subject_id || !formData.class_id) return;
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .eq('department_id', profile.department_id)
-        .eq('role', 'professor')
-        .eq('approval_status', 'approved')
-        .order('full_name');
+        .from('class_subjects')
+        .select(`
+          teacher_id,
+          teacher:profiles!class_subjects_teacher_id_fkey(id, full_name)
+        `)
+        .eq('class_id', formData.class_id)
+        .eq('subject_id', formData.subject_id)
+        .not('teacher_id', 'is', null);
+
       if (error) throw error;
-      setTeachers(data || []);
+
+      const uniqueTeachers = data?.reduce((acc: any[], item: any) => {
+        if (item.teacher && !acc.find(t => t.id === item.teacher.id)) {
+          acc.push(item.teacher);
+        }
+        return acc;
+      }, []) || [];
+
+      setAvailableTeachers(uniqueTeachers);
     } catch (error) {
-      console.error('Error fetching teachers:', error);
+      console.error('Error fetching available teachers:', error);
+      setAvailableTeachers([]);
     }
   };
 
@@ -245,17 +265,25 @@ export function TimetablePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject *</label>
-                <select value={formData.subject_id} onChange={(e) => setFormData({...formData, subject_id: e.target.value})} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <select value={formData.subject_id} onChange={(e) => setFormData({...formData, subject_id: e.target.value, teacher_id: ''})} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                   <option value="">Select subject</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teacher</label>
-                <select value={formData.teacher_id} onChange={(e) => setFormData({...formData, teacher_id: e.target.value})} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                  <option value="">Select teacher</option>
-                  {teachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                <select
+                  value={formData.teacher_id}
+                  onChange={(e) => setFormData({...formData, teacher_id: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  disabled={!formData.subject_id || !formData.class_id || availableTeachers.length === 0}
+                >
+                  <option value="">{!formData.subject_id || !formData.class_id ? 'Select class and subject first' : availableTeachers.length === 0 ? 'No teachers assigned to this subject' : 'Select teacher'}</option>
+                  {availableTeachers.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
                 </select>
+                {formData.subject_id && formData.class_id && availableTeachers.length === 0 && (
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">No teachers assigned to this subject. Assign teachers in the Subjects tab first.</p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
