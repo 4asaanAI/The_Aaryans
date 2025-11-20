@@ -21,6 +21,8 @@ import { SupportPage } from './pages/dashboards/SupportPage';
 import { LeavesPage } from './pages/dashboards/LeavesPage';
 import { TransportPage } from './pages/dashboards/TransportPage';
 import { InventoryPage } from './pages/dashboards/InventoryPage';
+import { SubjectsPage } from './pages/dashboards/SubjectsPage';
+import { TimetablePage } from './pages/dashboards/TimetablePage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -159,6 +161,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <InventoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/subjects"
+              element={
+                <ProtectedRoute>
+                  <SubjectsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/timetable"
+              element={
+                <ProtectedRoute>
+                  <TimetablePage />
                 </ProtectedRoute>
               }
             />

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { ColumnFilter } from '../../components/ColumnFilter';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import {
   TrendingUp,
@@ -71,6 +72,7 @@ interface ClassStats {
 
 export function ResultsPage() {
   const { theme } = useTheme();
+  const { profile } = useAuth();
   const [searchMode, setSearchMode] = useState<'class' | 'student'>('class');
   const [results, setResults] = useState<ExamResult[]>([]);
   const [classStats, setClassStats] = useState<ClassStats[]>([]);
@@ -96,21 +98,27 @@ export function ResultsPage() {
     if (searchMode === 'class') {
       fetchClassResults();
     }
-  }, [searchMode]);
+  }, [searchMode, profile]);
 
   const fetchClassResults = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('exam_results')
         .select(
           `
           *,
-          exams(name, exam_code, exam_type, exam_date, total_marks, classes(name), subjects(name)),
+          exams(name, exam_code, exam_type, exam_date, total_marks, classes(name), subjects!inner(name, department_id)),
           profiles(full_name, admission_no)
         `
         )
         .order('created_at', { ascending: false });
+
+      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+        query = query.eq('exams.subjects.department_id', profile.department_id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 

@@ -140,7 +140,7 @@ export function ExamsPage() {
     fetchExams();
     fetchClasses();
     fetchSubjects();
-  }, []);
+  }, [profile]);
 
   const fetchClasses = async () => {
     try {
@@ -157,10 +157,13 @@ export function ExamsPage() {
 
   const fetchSubjects = async () => {
     try {
-      const { data, error } = await supabase
-        .from('subjects')
-        .select('id, name')
-        .order('name');
+      let query = supabase.from('subjects').select('id, name').order('name');
+
+      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+        query = query.eq('department_id', profile.department_id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setSubjects(data || []);
     } catch (error) {
@@ -171,17 +174,22 @@ export function ExamsPage() {
   const fetchExams = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('exams')
         .select(
           `
           *,
           classes(name),
-          subjects(name)
+          subjects!inner(name, code, department_id)
         `
         )
         .order('exam_date', { ascending: false });
 
+      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+        query = query.eq('subjects.department_id', profile.department_id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       const formattedExams: Exam[] = (data || []).map((exam: any) => ({

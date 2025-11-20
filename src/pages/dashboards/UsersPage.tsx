@@ -325,17 +325,15 @@ export function UsersPage() {
       }
 
       // Prepare profile payload
-      const profilePayload: Partial<
-        Profile & { id: string; created_at?: string }
-      > = {
+      const profilePayload: any = {
         id: userId,
         full_name: newProfile.full_name,
         email: newProfile.email,
         role: newProfile.role as Profile['role'],
-        sub_role: newProfile.sub_role || null,
-        phone: newProfile.phone || null,
-        admission_no: newProfile.admission_no || null,
-        employee_id: newProfile.employee_id || null,
+        sub_role: newProfile.sub_role || undefined,
+        phone: newProfile.phone || undefined,
+        admission_no: newProfile.admission_no || undefined,
+        employee_id: newProfile.employee_id || undefined,
         approval_status: 'approved' as const,
         approved_by: currentProfile?.id || null,
         approved_at: new Date().toISOString(),
@@ -346,7 +344,7 @@ export function UsersPage() {
       // Use upsert to insert if missing, or update if it exists.
       const { data: profileResult, error: profileError } = await supabase
         .from('profiles')
-        .upsert(profilePayload, { returning: 'representation' });
+        .upsert(profilePayload);
 
       console.log('profiles upsert', { profileResult, profileError });
 

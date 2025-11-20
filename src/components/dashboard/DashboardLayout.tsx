@@ -169,6 +169,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       { name: 'Home', href: '/dashboard', icon: Home }
     ];
 
+    if (profile.role === 'admin' && profile.sub_role === 'hod') {
+      return [
+        ...commonItems,
+        { name: 'Subjects', href: '/dashboard/subjects', icon: BookOpen },
+        { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar },
+        { name: 'Classes', href: '/dashboard/classes', icon: BookOpen },
+        { name: 'Exams', href: '/dashboard/exams', icon: ClipboardList },
+        { name: 'Assignments', href: '/dashboard/assignments', icon: Award },
+        { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
+        { name: 'Events', href: '/dashboard/events', icon: Calendar },
+        { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
+        { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
+        { name: 'Leaves', href: '/dashboard/leaves', icon: Plane },
+        { name: 'Support', href: '/dashboard/support', icon: HelpCircle }
+      ];
+    }
+
     if (profile.role === 'admin' || (profile.sub_role && (profile.sub_role === 'principal' || profile.sub_role === 'head'))) {
       return [
         ...commonItems,
