@@ -285,7 +285,7 @@ export function Register() {
                 />
               </div>
 
-              {formData.sub_role === 'hod' && (
+              {(formData.sub_role === 'hod' || formData.sub_role === 'teacher') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Department *
@@ -304,7 +304,7 @@ export function Register() {
                     ))}
                   </select>
                   <p className="mt-1 text-xs text-gray-500">
-                    Select the department you will manage as HOD
+                    {formData.sub_role === 'hod' ? 'Select the department you will manage as HOD' : 'Select your teaching department'}
                   </p>
                 </div>
               )}

@@ -981,7 +981,7 @@ export function UsersPage() {
                 </select>
               </div>
 
-              {editingProfile.sub_role === 'hod' && (
+              {(editingProfile.sub_role === 'hod' || editingProfile.sub_role === 'teacher') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Department *
@@ -1005,7 +1005,7 @@ export function UsersPage() {
                     ))}
                   </select>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Select the department this HOD will manage
+                    {editingProfile.sub_role === 'hod' ? 'Select the department this HOD will manage' : 'Select the teaching department'}
                   </p>
                 </div>
               )}
@@ -1660,7 +1660,7 @@ export function UsersPage() {
                     />
                   </div>
                 )}
-                {newProfile.sub_role === 'hod' && (
+                {(newProfile.sub_role === 'hod' || newProfile.sub_role === 'teacher') && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Department *
@@ -1684,7 +1684,7 @@ export function UsersPage() {
                       ))}
                     </select>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Select the department this HOD will manage
+                      {newProfile.sub_role === 'hod' ? 'Select the department this HOD will manage' : 'Select the teaching department'}
                     </p>
                   </div>
                 )}
