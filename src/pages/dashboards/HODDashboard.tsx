@@ -95,6 +95,72 @@ export function HODDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Recent Activity / Notes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-base font-semibold text-gray-900 mb-3">
+            Recent Exams
+          </h3>
+          <ul className="space-y-3">
+            <li className="flex items-start justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Calculus Midterm</p>
+                <p className="text-xs text-gray-500">
+                  Nov 29, 2025 — Class 12A
+                </p>
+              </div>
+              <div className="text-sm text-gray-600">Completed</div>
+            </li>
+
+            <li className="flex items-start justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Physics Quiz</p>
+                <p className="text-xs text-gray-500">
+                  Nov 25, 2025 — Class 11B
+                </p>
+              </div>
+              <div className="text-sm text-gray-600">Scheduled</div>
+            </li>
+          </ul>
+          <div className="mt-4">
+            <Link
+              to="/dashboard/exams"
+              className="text-sm text-blue-600 font-medium"
+            >
+              View all exams →
+            </Link>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-base font-semibold text-gray-900 mb-3">
+            Recent Announcements
+          </h3>
+          <ul className="space-y-3">
+            <li>
+              <p className="font-medium text-gray-900">
+                Semester break schedule
+              </p>
+              <p className="text-xs text-gray-500">Published Nov 11, 2025</p>
+            </li>
+            <li>
+              <p className="font-medium text-gray-900">
+                Exam centre allocation
+              </p>
+              <p className="text-xs text-gray-500">Published Nov 9, 2025</p>
+            </li>
+          </ul>
+          <div className="mt-4">
+            <Link
+              to="/dashboard/announcements"
+              className="text-sm text-blue-600 font-medium"
+            >
+              Manage announcements →
+            </Link>
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }
