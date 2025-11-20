@@ -78,6 +78,7 @@ export function UsersPage() {
   const [showPendingDropdown, setShowPendingDropdown] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -90,6 +91,7 @@ export function UsersPage() {
     phone: '',
     admission_no: '',
     employee_id: '',
+    department_id: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFilters>({
@@ -119,11 +121,25 @@ export function UsersPage() {
 
   useEffect(() => {
     fetchProfiles();
+    fetchDepartments();
     if (currentProfile?.role === 'admin') {
       fetchPendingApprovals();
       subscribeToPendingApprovals();
     }
   }, [currentProfile]);
+
+  const fetchDepartments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      setDepartments(data || []);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+    }
+  };
 
   const fetchProfiles = async () => {
     try {
@@ -320,6 +336,7 @@ export function UsersPage() {
           phone: '',
           admission_no: '',
           employee_id: '',
+          department_id: '',
         });
         return;
       }
@@ -334,6 +351,7 @@ export function UsersPage() {
         phone: newProfile.phone || undefined,
         admission_no: newProfile.admission_no || undefined,
         employee_id: newProfile.employee_id || undefined,
+        department_id: newProfile.department_id || undefined,
         approval_status: 'approved' as const,
         approved_by: currentProfile?.id || null,
         approved_at: new Date().toISOString(),
@@ -364,6 +382,7 @@ export function UsersPage() {
         phone: '',
         admission_no: '',
         employee_id: '',
+        department_id: '',
       });
       fetchProfiles();
     } catch (error: any) {
@@ -388,6 +407,7 @@ export function UsersPage() {
         .update({
           role: editingProfile.role,
           sub_role: editingProfile.sub_role,
+          department_id: editingProfile.department_id || null,
         })
         .eq('id', editingProfile.id);
 
@@ -960,6 +980,35 @@ export function UsersPage() {
                   ))}
                 </select>
               </div>
+
+              {editingProfile.sub_role === 'hod' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Department *
+                  </label>
+                  <select
+                    required
+                    value={editingProfile.department_id || ''}
+                    onChange={(e) =>
+                      setEditingProfile({
+                        ...editingProfile,
+                        department_id: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select department</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Select the department this HOD will manage
+                  </p>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 pt-4">
                 <button
@@ -1609,6 +1658,34 @@ export function UsersPage() {
                       }
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
+                  </div>
+                )}
+                {newProfile.sub_role === 'hod' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Department *
+                    </label>
+                    <select
+                      required
+                      value={newProfile.department_id}
+                      onChange={(e) =>
+                        setNewProfile({
+                          ...newProfile,
+                          department_id: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Select department</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Select the department this HOD will manage
+                    </p>
                   </div>
                 )}
               </div>

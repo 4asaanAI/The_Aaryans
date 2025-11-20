@@ -22,7 +22,7 @@ export function Register() {
     parent_phone: '',
     class_id: ''
   });
-  const [, setDepartments] = useState<Department[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [, setClasses] = useState<Class[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -284,6 +284,30 @@ export function Register() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              {formData.sub_role === 'hod' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Department *
+                  </label>
+                  <select
+                    required
+                    value={formData.department_id}
+                    onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select department</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Select the department you will manage as HOD
+                  </p>
+                </div>
+              )}
             </>
           )}
 
