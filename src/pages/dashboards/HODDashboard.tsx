@@ -83,10 +83,11 @@ export function HODDashboard() {
             >
               Assign Coordinators
             </Link>
-
-            <button className="px-4 py-3 text-left text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100">
-              Department Timetable
-            </button>
+            <Link to="/dashboard/timetable">
+              <button className="px-4 py-3 text-left text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100">
+                Department Timetable
+              </button>
+            </Link>
 
             <button className="px-4 py-3 text-left text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100">
               Performance Reports
