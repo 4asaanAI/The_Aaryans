@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { Resend } from 'npm:resend@3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,31 +49,48 @@ Deno.serve(async (req: Request) => {
     if (dbError) throw dbError;
 
     if (method === 'email') {
-      const { error: emailError } = await supabase.auth.admin.resetPasswordForEmail(contact, {
-        redirectTo: `${req.headers.get('origin')}/reset-password`,
-      });
-      
-      if (emailError) {
+      try {
+        const resendApiKey = Deno.env.get('RESEND_API_KEY');
+        if (resendApiKey) {
+          const resend = new Resend(resendApiKey);
+          await resend.emails.send({
+            from: 'noreply@yourdomain.com',
+            to: contact,
+            subject: 'Password Reset OTP',
+            html: `<p>Your password reset OTP is: <strong>${token}</strong></p><p>This OTP is valid for 10 minutes.</p>`,
+          });
+        } else {
+          console.log('RESEND_API_KEY not configured. OTP:', token);
+        }
+      } catch (emailError) {
         console.error('Email error:', emailError);
       }
     } else if (method === 'phone') {
       try {
-        const response = await fetch('https://api.twilio.com/2010-04-01/Accounts/' + Deno.env.get('TWILIO_ACCOUNT_SID') + '/Messages.json', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + btoa(Deno.env.get('TWILIO_ACCOUNT_SID') + ':' + Deno.env.get('TWILIO_AUTH_TOKEN')),
-          },
-          body: new URLSearchParams({
-            To: contact,
-            From: Deno.env.get('TWILIO_PHONE_NUMBER') || '',
-            Body: `Your password reset OTP is: ${token}. Valid for 10 minutes.`,
-          }),
-        });
+        const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+        const twilioToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+        const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+        
+        if (twilioSid && twilioToken && twilioPhone) {
+          const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': 'Basic ' + btoa(`${twilioSid}:${twilioToken}`),
+            },
+            body: new URLSearchParams({
+              To: contact,
+              From: twilioPhone,
+              Body: `Your password reset OTP is: ${token}. Valid for 10 minutes.`,
+            }),
+          });
 
-        if (!response.ok) {
-          const errorData = await response.text();
-          console.error('Twilio error:', errorData);
+          if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Twilio error:', errorData);
+          }
+        } else {
+          console.log('Twilio not configured. OTP:', token);
         }
       } catch (error) {
         console.error('SMS sending error:', error);
