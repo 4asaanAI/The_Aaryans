@@ -99,45 +99,101 @@ export function ClassesPage() {
   }, [selectedClass, classes, profile]); // include profile in deps because HOD-based teacher filtering depends on it
 
   const fetchClasses = async () => {
+    console.log('fetchClasses: starting');
     try {
-      // if no profile loaded yet, fetch nothing (or you can fallback to all)
       if (!profile) {
-        console.log('no');
+        console.log(
+          'fetchClasses: profile not ready yet -> aborting and clearing classes'
+        );
         setClasses([]);
+        setSelectedClass('');
         return;
       }
 
-      // Detect if user is HOD: either explicit sub_role 'hod' (admin) OR departments.hod_id = profile.id
+      console.log('fetchClasses: profile:', profile);
+
       const isSubRoleHod =
         profile.sub_role && profile.sub_role.toString().toLowerCase() === 'hod';
-      console.log(isSubRoleHod);
-      let isDeptHod = false;
+      console.log(
+        'fetchClasses: isSubRoleHod (from profile.sub_role):',
+        isSubRoleHod
+      );
 
-      // Check departments table to confirm if this profile is hod for any department
-      const { data: deptCheck, error: deptCheckErr } = await supabase
-        .from('departments')
-        .select('id')
-        .eq('hod_id', profile.id);
-      console.log(deptCheck);
-      if (deptCheckErr) {
-        throw deptCheckErr;
+      // --- defensive deptCheck but DO NOT query non-existent hod_email column ---
+      let deptCheck: any[] = [];
+      try {
+        console.log(
+          'fetchClasses: attempting deptCheck by hod_id ===',
+          profile.id
+        );
+        const res1 = await supabase
+          .from('departments')
+          .select('id')
+          .eq('hod_id', profile.id);
+
+        if (res1.error) throw res1.error;
+        deptCheck = res1.data || [];
+        console.log('fetchClasses: deptCheck (by hod_id):', deptCheck);
+
+        // optional: if your profile has alternate id field (user_id), try that too
+        if (
+          (!deptCheck || deptCheck.length === 0) &&
+          (profile as any).user_id &&
+          (profile as any).user_id !== profile.id
+        ) {
+          console.log(
+            'fetchClasses: attempting deptCheck by hod_id ===',
+            (profile as any).user_id
+          );
+          const res2 = await supabase
+            .from('departments')
+            .select('id')
+            .eq('hod_id', (profile as any).user_id);
+
+          if (res2.error) throw res2.error;
+          deptCheck = res2.data || [];
+          console.log('fetchClasses: deptCheck (by user_id):', deptCheck);
+        }
+
+        // NOTE: we are NOT attempting hod_email because that column does not exist (caused 42703).
+        if (!Array.isArray(deptCheck) || deptCheck.length === 0) {
+          console.warn(
+            'fetchClasses: deptCheck empty after checking hod_id (and user_id). Possible reasons: departments table uses a different column for HOD, or there are no departments assigned.'
+          );
+        }
+      } catch (err) {
+        console.error(
+          'fetchClasses: error while checking departments for HOD:',
+          err
+        );
+        deptCheck = [];
       }
 
-      isDeptHod = Array.isArray(deptCheck) && deptCheck.length > 0;
+      const isDeptHod = Array.isArray(deptCheck) && deptCheck.length > 0;
       const isHod = isSubRoleHod || isDeptHod;
+      console.log('fetchClasses: isDeptHod:', isDeptHod, ' => isHod:', isHod);
 
+      // If not HOD (neither sub_role nor dept mapping), fetch all active classes (original behavior)
       if (!isHod) {
-        // Non-HOD: original behavior -> fetch all active classes
+        console.log(
+          'fetchClasses: non-HOD path -> fetching all active classes'
+        );
         const { data, error } = await supabase
           .from('classes')
           .select('*')
           .eq('status', 'active')
           .order('grade_level', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          console.error(
+            'fetchClasses: error fetching classes for non-HOD:',
+            error
+          );
+          throw error;
+        }
 
+        console.log('fetchClasses: classes fetched (non-HOD):', data);
         setClasses(data || []);
-        // choose first class if none selected
         if (
           (!selectedClass || selectedClass === '') &&
           data &&
@@ -148,61 +204,110 @@ export function ClassesPage() {
         return;
       }
 
-      // HOD path: show only classes where at least one subject belongs to HOD's department(s) in timetable
-
-      // 1) get departments for which user is hod (if deptCheck had data, use it)
+      // HOD path: if we have departmentIds from deptCheck, filter by them; otherwise fallback
       const departmentIds = Array.isArray(deptCheck)
         ? deptCheck.map((d) => d.id)
         : [];
+      console.log('fetchClasses: departmentIds for HOD:', departmentIds);
 
       if (!departmentIds.length) {
-        // HOD but no departments found -> show empty list
-        setClasses([]);
-        setSelectedClass('');
+        console.warn(
+          'fetchClasses: HOD role present but no departments found for this profile.'
+        );
+
+        // ---------- FALLBACK CHOICES ----------
+        // Option 1 (safe): treat HOD as non-filtered — fetch all active classes
+        // Uncomment this block if you want HOD with no department mappings to still see all classes:
+        console.log(
+          'fetchClasses: fallback -> fetching all active classes for HOD (no dept mapping)'
+        );
+        const { data: fallbackData, error: fallbackErr } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('status', 'active')
+          .order('grade_level', { ascending: true });
+        if (fallbackErr) {
+          console.error('fetchClasses: fallback fetch error:', fallbackErr);
+          setClasses([]);
+          setSelectedClass('');
+          return;
+        }
+        setClasses(fallbackData || []);
+        if (
+          (!selectedClass || selectedClass === '') &&
+          fallbackData &&
+          fallbackData.length > 0
+        ) {
+          setSelectedClass(fallbackData[0].id);
+        }
         return;
+
+        // Option 2 (strict): return empty as before (uncomment if you prefer)
+        // setClasses([]);
+        // setSelectedClass('');
+        // return;
       }
 
-      // 2) fetch subject ids that belong to these departments
+      // If we do have departmentIds, proceed with original HOD filtering
+      console.log(
+        'fetchClasses: fetching subjects for department ids:',
+        departmentIds
+      );
       const { data: subjects, error: subjErr } = await supabase
         .from('subjects')
         .select('id')
         .in('department_id', departmentIds);
 
-      if (subjErr) throw subjErr;
-
+      if (subjErr) {
+        console.error(
+          'fetchClasses: error fetching subjects for HOD departments:',
+          subjErr
+        );
+        throw subjErr;
+      }
       const subjectIds = Array.isArray(subjects)
         ? subjects.map((s) => s.id)
         : [];
+      console.log('fetchClasses: subjectIds for HOD departments:', subjectIds);
 
       if (!subjectIds.length) {
-        // no subjects for HOD departments -> no classes to show
+        console.log(
+          'fetchClasses: no subjects found for HOD departments -> clearing classes'
+        );
         setClasses([]);
         setSelectedClass('');
         return;
       }
 
-      // 3) fetch timetables rows that reference those subject ids to get class ids
+      console.log('fetchClasses: fetching timetables referencing subjectIds');
       const { data: timetableEntries, error: ttErr } = await supabase
         .from('timetables')
         .select('class_id')
         .in('subject_id', subjectIds);
 
-      if (ttErr) throw ttErr;
-
+      if (ttErr) {
+        console.error('fetchClasses: error fetching timetables:', ttErr);
+        throw ttErr;
+      }
       const classIds = Array.isArray(timetableEntries)
         ? Array.from(
-            new Set(timetableEntries.map((r: any) => r.class_id).filter(Boolean))
+            new Set(
+              timetableEntries.map((r: any) => r.class_id).filter(Boolean)
+            )
           )
         : [];
+      console.log('fetchClasses: derived classIds from timetable:', classIds);
 
       if (!classIds.length) {
-        // no classes assigned with HOD's subjects
+        console.log(
+          'fetchClasses: no classIds found in timetables for HOD subjects -> clearing classes'
+        );
         setClasses([]);
         setSelectedClass('');
         return;
       }
 
-      // 4) finally fetch classes with those ids and active status
+      console.log('fetchClasses: fetching classes with ids:', classIds);
       const { data: classesData, error: classesErr } = await supabase
         .from('classes')
         .select('*')
@@ -210,18 +315,23 @@ export function ClassesPage() {
         .eq('status', 'active')
         .order('grade_level', { ascending: true });
 
-      if (classesErr) throw classesErr;
+      if (classesErr) {
+        console.error(
+          'fetchClasses: error fetching final classes for HOD:',
+          classesErr
+        );
+        throw classesErr;
+      }
 
       const finalClasses = classesData || [];
+      console.log('fetchClasses: finalClasses for HOD:', finalClasses);
       setClasses(finalClasses);
-
-      // pick selectedClass if it's among finalClasses, otherwise choose the first
       if (!finalClasses.find((c: any) => c.id === selectedClass)) {
         if (finalClasses.length > 0) setSelectedClass(finalClasses[0].id);
         else setSelectedClass('');
       }
     } catch (error) {
-      console.error('Error fetching classes:', error);
+      console.error('fetchClasses: unexpected error:', error);
       setClasses([]);
       setSelectedClass('');
     }
@@ -233,7 +343,8 @@ export function ClassesPage() {
     try {
       // 1) Check if current user is HOD
       const isSubRoleHod =
-        profile?.sub_role && profile.sub_role.toString().toLowerCase() === 'hod';
+        profile?.sub_role &&
+        profile.sub_role.toString().toLowerCase() === 'hod';
 
       const { data: hodDepartments, error: deptErr } = await supabase
         .from('departments')
@@ -280,7 +391,9 @@ export function ClassesPage() {
         }
       });
 
-      const formattedData: TeacherSubject[] = Array.from(uniqueMap.values()).map((item: any) => ({
+      const formattedData: TeacherSubject[] = Array.from(
+        uniqueMap.values()
+      ).map((item: any) => ({
         id: item.id,
         subject_name: item.subjects?.name || 'N/A',
         subject_code: item.subjects?.code || 'N/A',
