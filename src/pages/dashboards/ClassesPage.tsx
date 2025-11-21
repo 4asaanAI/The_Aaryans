@@ -148,7 +148,7 @@ export function ClassesPage() {
         return;
       }
 
-      // HOD path: show only classes where at least one subject belongs to HOD's department(s)
+      // HOD path: show only classes where at least one subject belongs to HOD's department(s) in timetable
 
       // 1) get departments for which user is hod (if deptCheck had data, use it)
       const departmentIds = Array.isArray(deptCheck)
@@ -181,17 +181,17 @@ export function ClassesPage() {
         return;
       }
 
-      // 3) fetch class_subjects rows that reference those subject ids to get class ids
-      const { data: classSubjects, error: csErr } = await supabase
-        .from('class_subjects')
+      // 3) fetch timetables rows that reference those subject ids to get class ids
+      const { data: timetableEntries, error: ttErr } = await supabase
+        .from('timetables')
         .select('class_id')
         .in('subject_id', subjectIds);
 
-      if (csErr) throw csErr;
+      if (ttErr) throw ttErr;
 
-      const classIds = Array.isArray(classSubjects)
+      const classIds = Array.isArray(timetableEntries)
         ? Array.from(
-            new Set(classSubjects.map((r: any) => r.class_id).filter(Boolean))
+            new Set(timetableEntries.map((r: any) => r.class_id).filter(Boolean))
           )
         : [];
 
@@ -227,11 +227,14 @@ export function ClassesPage() {
     }
   };
 
-  // subject teachers assigned to the class, but filtered to assignments made by HODs (per request)
+  // subject teachers assigned to the class from timetable, filtered by HOD's departments
   const fetchClassTeachers = async () => {
     setLoadingTeachers(true);
     try {
-      // 1) Fetch departments where current profile is HOD
+      // 1) Check if current user is HOD
+      const isSubRoleHod =
+        profile?.sub_role && profile.sub_role.toString().toLowerCase() === 'hod';
+
       const { data: hodDepartments, error: deptErr } = await supabase
         .from('departments')
         .select('id')
@@ -243,29 +246,41 @@ export function ClassesPage() {
         ? hodDepartments.map((d) => d.id)
         : [];
 
-      // 2) fetch class_subjects join subjects and profiles
+      const isHod = isSubRoleHod || hodDeptIds.length > 0;
+
+      // 2) fetch timetables for the selected class with subject and teacher details
       const { data, error } = await supabase
-        .from('class_subjects')
+        .from('timetables')
         .select(
           `
           id,
           subjects(id, name, code, department_id),
-          profiles(id, full_name, email, department_id)
+          profiles!timetables_teacher_id_fkey(id, full_name, email, department_id)
         `
         )
         .eq('class_id', selectedClass);
 
       if (error) throw error;
 
-      // 3) Filter rows where the assigned teacher belongs to departments that this HOD manages
-      //    (if hodDeptIds is empty, return empty list so HOD sees only their assigned subjects)
-      const filtered = (data || []).filter((row: any) => {
-        const teacherDept = row.profiles?.department_id;
-        // ensure subject exists as well
-        return teacherDept && hodDeptIds.includes(teacherDept);
+      // 3) Filter by HOD's departments if user is HOD
+      let filtered = data || [];
+      if (isHod && hodDeptIds.length > 0) {
+        filtered = filtered.filter((row: any) => {
+          const subjectDept = row.subjects?.department_id;
+          return subjectDept && hodDeptIds.includes(subjectDept);
+        });
+      }
+
+      // Remove duplicates (same subject-teacher combination might appear multiple times in timetable)
+      const uniqueMap = new Map();
+      filtered.forEach((item: any) => {
+        const key = `${item.subjects?.id}-${item.profiles?.id}`;
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, item);
+        }
       });
 
-      const formattedData: TeacherSubject[] = filtered.map((item: any) => ({
+      const formattedData: TeacherSubject[] = Array.from(uniqueMap.values()).map((item: any) => ({
         id: item.id,
         subject_name: item.subjects?.name || 'N/A',
         subject_code: item.subjects?.code || 'N/A',
