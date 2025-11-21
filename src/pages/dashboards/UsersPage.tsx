@@ -240,8 +240,7 @@ export function UsersPage() {
     if (!currentProfile) return false;
 
     if (
-      currentProfile.sub_role !== 'head' &&
-      currentProfile.sub_role !== 'principal'
+      currentProfile.role !== 'admin'
     ) {
       return false;
     }
