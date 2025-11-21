@@ -135,12 +135,43 @@ export function ProfilePage() {
 
     if (verificationStep === 'method') {
       setVerifying(true);
+      setMessage(null);
       try {
-        if (verificationMethod === 'email') {
-          setMessage({ type: 'success', text: 'Please check your email for OTP (simulated)' });
-        } else {
-          setMessage({ type: 'success', text: 'Please check your phone for OTP (simulated)' });
+        const contact = verificationMethod === 'email' ? profile.email : profile.phone;
+        if (!contact) {
+          setMessage({ type: 'error', text: `${verificationMethod === 'email' ? 'Email' : 'Phone'} not available` });
+          setVerifying(false);
+          return;
         }
+
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`;
+        const { data: { session } } = await supabase.auth.getSession();
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: verificationMethod,
+            userId: profile.id,
+            contact,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to send OTP');
+        }
+
+        setMessage({
+          type: 'success',
+          text: verificationMethod === 'email'
+            ? 'Please check your email for OTP'
+            : 'Please check your phone for OTP'
+        });
         setVerificationStep('otp');
       } catch (error: any) {
         setMessage({ type: 'error', text: error.message || 'Failed to send OTP' });
@@ -148,11 +179,36 @@ export function ProfilePage() {
         setVerifying(false);
       }
     } else if (verificationStep === 'otp') {
-      if (otp === '123456') {
+      setVerifying(true);
+      setMessage(null);
+      try {
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-otp`;
+        const { data: { session } } = await supabase.auth.getSession();
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: profile.id,
+            token: otp,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Invalid OTP');
+        }
+
         setVerificationStep('password');
         setMessage({ type: 'success', text: 'OTP verified successfully' });
-      } else {
-        setMessage({ type: 'error', text: 'Invalid OTP. For demo, use 123456' });
+      } catch (error: any) {
+        setMessage({ type: 'error', text: error.message || 'Invalid or expired OTP' });
+      } finally {
+        setVerifying(false);
       }
     } else if (verificationStep === 'password') {
       if (newPassword !== confirmPassword) {
@@ -164,6 +220,7 @@ export function ProfilePage() {
         return;
       }
       setVerifying(true);
+      setMessage(null);
       try {
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) throw error;
@@ -506,13 +563,14 @@ export function ProfilePage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Enter OTP (Demo: use 123456)
+                    Enter OTP
                   </label>
                   <input
                     type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    placeholder="123456"
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
                     className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
