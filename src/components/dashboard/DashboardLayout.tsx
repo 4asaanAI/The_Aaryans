@@ -174,6 +174,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         ...commonItems,
         { name: 'Subjects', href: '/dashboard/subjects', icon: BookOpen },
         { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar },
+        { name: 'Users', href: '/dashboard/users', icon: Users },
         { name: 'Classes', href: '/dashboard/classes', icon: BookOpen },
         { name: 'Exams', href: '/dashboard/exams', icon: ClipboardList },
         { name: 'Assignments', href: '/dashboard/assignments', icon: Award },
