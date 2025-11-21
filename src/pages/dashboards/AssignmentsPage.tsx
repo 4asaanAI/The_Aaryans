@@ -152,10 +152,17 @@ export function AssignmentsPage() {
 
   const fetchSubjects = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('subjects')
-        .select('id, name')
-        .order('name');
+        .select('id, name');
+
+      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+        query = query.eq('department_id', profile.department_id);
+      }
+
+      query = query.order('name');
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setSubjects(data || []);
@@ -167,17 +174,24 @@ export function AssignmentsPage() {
   const fetchAssignments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('assignments')
         .select(
           `
           *,
           class:classes(id, name),
-          subject:subjects(name, code),
+          subject:subjects!inner(name, code, department_id),
           teacher:profiles!assignments_teacher_id_fkey(full_name)
         `
-        )
-        .order('due_date', { ascending: false });
+        );
+
+      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+        query = query.eq('subject.department_id', profile.department_id);
+      }
+
+      query = query.order('due_date', { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAssignments(data || []);
