@@ -120,6 +120,7 @@ export function SubjectsPage() {
     }
   };
 
+  // *** FIXED: use explicit FK join alias so Supabase returns teacher object correctly ***
   const fetchClassSubjects = async () => {
     if (!profile?.department_id) return;
     try {
@@ -127,17 +128,25 @@ export function SubjectsPage() {
         .from('class_subjects')
         .select(
           `
-          *,
+          id,
+          class_id,
+          subject_id,
+          teacher_id,
+          hod_id,
+          created_at,
           class:classes(id, name, grade_level, section),
           subject:subjects!inner(id, name, department_id),
-          teacher:profiles(id, full_name, email)
+          teacher:profiles!class_subjects_teacher_id_fkey(id, full_name, email)
         `
         )
-        .eq('subject.department_id', profile.department_id);
+        .eq('subject.department_id', profile.department_id)
+        .order('created_at', { ascending: true });
+
       if (error) throw error;
       setClassSubjects(data || []);
     } catch (error) {
       console.error('Error fetching class subjects:', error);
+      setClassSubjects([]);
     }
   };
 
@@ -205,14 +214,12 @@ export function SubjectsPage() {
           .maybeSingle();
 
         if (!existing) {
-          await supabase
-            .from('class_subjects')
-            .insert({
-              class_id: classId,
-              subject_id: assignData.subject_id,
-              teacher_id: tid,
-              hod_id: profile?.id
-            });
+          await supabase.from('class_subjects').insert({
+            class_id: classId,
+            subject_id: assignData.subject_id,
+            teacher_id: tid,
+            hod_id: profile?.id,
+          });
         }
       }
 
