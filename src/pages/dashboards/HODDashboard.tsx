@@ -193,7 +193,7 @@ export function HODDashboard() {
             </div>
           </Link>
 
-          <Link to="/dashboard/teachers" className="block">
+          <Link to="/dashboard/subjects" className="block">
             <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition">
               <div className="flex items-center justify-between">
                 <div>
