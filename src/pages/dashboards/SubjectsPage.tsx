@@ -193,40 +193,34 @@ export function SubjectsPage() {
   const handleAssignTeacher = async () => {
     if (!assignData.subject_id || !assignData.teacher_ids.length) return;
     try {
-      const classId = assignData.class_id || null;
+      // Build array of entries to insert.
+      // If class_id is provided, use it; otherwise set class_id = null.
+      const entries = assignData.teacher_ids.map((tid) => ({
+        class_id: assignData.class_id || null,
+        subject_id: assignData.subject_id,
+        teacher_id: tid,
+      }));
 
-      for (const tid of assignData.teacher_ids) {
-        const { data: existing } = await supabase
-          .from('class_subjects')
-          .select('id')
-          .eq('class_id', classId)
-          .eq('subject_id', assignData.subject_id)
-          .maybeSingle();
-
-        if (existing) {
-          await supabase
-            .from('class_subjects')
-            .update({
-              teacher_id: tid,
-              hod_id: profile?.id
-            })
-            .eq('id', existing.id);
-        } else {
-          await supabase
-            .from('class_subjects')
-            .insert({
-              class_id: classId,
-              subject_id: assignData.subject_id,
-              teacher_id: tid,
-              hod_id: profile?.id
-            });
-        }
+      // Insert multiple rows at once. If duplicates exist, this will error;
+      // to avoid duplicate errors you may want to handle deduplication on client.
+      // Here we attempt insert and ignore duplicates by catching errors.
+      const { error } = await supabase.from('class_subjects').insert(entries);
+      if (error) {
+        // If the error is duplicate constraint, still proceed to refresh data.
+        console.warn('Error inserting class_subjects:', error.message);
+        // show user-friendly message
+        setNotification({
+          type: 'error',
+          message:
+            error.message ||
+            'Some assignments may already exist or an error occurred.',
+        });
+      } else {
+        setNotification({
+          type: 'success',
+          message: 'Teacher(s) assigned successfully',
+        });
       }
-
-      setNotification({
-        type: 'success',
-        message: 'Teacher(s) assigned successfully',
-      });
 
       setShowAssignModal(false);
       setAssignData({ subject_id: '', class_id: '', teacher_ids: [] });
