@@ -248,59 +248,33 @@ export function ClassesPage() {
         // return;
       }
 
-      // If we do have departmentIds, proceed with original HOD filtering
-      console.log(
-        'fetchClasses: fetching subjects for department ids:',
-        departmentIds
-      );
-      const { data: subjects, error: subjErr } = await supabase
-        .from('subjects')
-        .select('id')
-        .in('department_id', departmentIds);
-
-      if (subjErr) {
-        console.error(
-          'fetchClasses: error fetching subjects for HOD departments:',
-          subjErr
-        );
-        throw subjErr;
-      }
-      const subjectIds = Array.isArray(subjects)
-        ? subjects.map((s) => s.id)
-        : [];
-      console.log('fetchClasses: subjectIds for HOD departments:', subjectIds);
-
-      if (!subjectIds.length) {
-        console.log(
-          'fetchClasses: no subjects found for HOD departments -> clearing classes'
-        );
-        setClasses([]);
-        setSelectedClass('');
-        return;
-      }
-
-      console.log('fetchClasses: fetching timetables referencing subjectIds');
-      const { data: timetableEntries, error: ttErr } = await supabase
-        .from('timetables')
+      // HOD filtering: fetch classes based on class_subjects where hod_id matches
+      console.log('fetchClasses: fetching class_subjects for HOD:', profile.id);
+      const { data: classSubjectsData, error: csErr } = await supabase
+        .from('class_subjects')
         .select('class_id')
-        .in('subject_id', subjectIds);
+        .eq('hod_id', profile.id);
 
-      if (ttErr) {
-        console.error('fetchClasses: error fetching timetables:', ttErr);
-        throw ttErr;
+      if (csErr) {
+        console.error(
+          'fetchClasses: error fetching class_subjects for HOD:',
+          csErr
+        );
+        throw csErr;
       }
-      const classIds = Array.isArray(timetableEntries)
+
+      const classIds = Array.isArray(classSubjectsData)
         ? Array.from(
             new Set(
-              timetableEntries.map((r: any) => r.class_id).filter(Boolean)
+              classSubjectsData.map((r: any) => r.class_id).filter(Boolean)
             )
           )
         : [];
-      console.log('fetchClasses: derived classIds from timetable:', classIds);
+      console.log('fetchClasses: derived classIds from class_subjects:', classIds);
 
       if (!classIds.length) {
         console.log(
-          'fetchClasses: no classIds found in timetables for HOD subjects -> clearing classes'
+          'fetchClasses: no classIds found in class_subjects for HOD -> clearing classes'
         );
         setClasses([]);
         setSelectedClass('');
@@ -337,7 +311,7 @@ export function ClassesPage() {
     }
   };
 
-  // subject teachers assigned to the class from timetable, filtered by HOD's departments
+  // subject teachers assigned to the class from class_subjects, filtered by HOD's assignments
   const fetchClassTeachers = async () => {
     setLoadingTeachers(true);
     try {
@@ -359,41 +333,30 @@ export function ClassesPage() {
 
       const isHod = isSubRoleHod || hodDeptIds.length > 0;
 
-      // 2) fetch timetables for the selected class with subject and teacher details
-      const { data, error } = await supabase
-        .from('timetables')
+      // 2) fetch class_subjects for the selected class with subject and teacher details
+      let query = supabase
+        .from('class_subjects')
         .select(
           `
           id,
           subjects(id, name, code, department_id),
-          profiles!timetables_teacher_id_fkey(id, full_name, email, department_id)
+          profiles!class_subjects_teacher_id_fkey(id, full_name, email, department_id)
         `
         )
         .eq('class_id', selectedClass);
 
-      if (error) throw error;
-
-      // 3) Filter by HOD's departments if user is HOD
-      let filtered = data || [];
-      if (isHod && hodDeptIds.length > 0) {
-        filtered = filtered.filter((row: any) => {
-          const subjectDept = row.subjects?.department_id;
-          return subjectDept && hodDeptIds.includes(subjectDept);
-        });
+      // 3) If HOD, filter by hod_id
+      if (isHod) {
+        query = query.eq('hod_id', profile?.id);
       }
 
-      // Remove duplicates (same subject-teacher combination might appear multiple times in timetable)
-      const uniqueMap = new Map();
-      filtered.forEach((item: any) => {
-        const key = `${item.subjects?.id}-${item.profiles?.id}`;
-        if (!uniqueMap.has(key)) {
-          uniqueMap.set(key, item);
-        }
-      });
+      const { data, error } = await query;
 
-      const formattedData: TeacherSubject[] = Array.from(
-        uniqueMap.values()
-      ).map((item: any) => ({
+      if (error) throw error;
+
+      let filtered = data || [];
+
+      const formattedData: TeacherSubject[] = filtered.map((item: any) => ({
         id: item.id,
         subject_name: item.subjects?.name || 'N/A',
         subject_code: item.subjects?.code || 'N/A',

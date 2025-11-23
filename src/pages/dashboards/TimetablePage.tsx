@@ -140,7 +140,7 @@ export function TimetablePage() {
   const handleCreateEntry = async () => {
     if (!formData.class_id || !formData.subject_id || !formData.start_time || !formData.end_time) return;
     try {
-      const { error } = await supabase.from('timetables').insert({
+      const { error: timetableError } = await supabase.from('timetables').insert({
         class_id: formData.class_id,
         subject_id: formData.subject_id,
         teacher_id: formData.teacher_id || null,
@@ -149,7 +149,36 @@ export function TimetablePage() {
         end_time: formData.end_time,
         room_number: formData.room_number
       });
-      if (error) throw error;
+      if (timetableError) throw timetableError;
+
+      const { data: existing } = await supabase
+        .from('class_subjects')
+        .select('id')
+        .eq('class_id', formData.class_id)
+        .eq('subject_id', formData.subject_id)
+        .maybeSingle();
+
+      if (existing) {
+        const { error: updateError } = await supabase
+          .from('class_subjects')
+          .update({
+            hod_id: profile?.id,
+            teacher_id: formData.teacher_id || null
+          })
+          .eq('id', existing.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('class_subjects')
+          .insert({
+            class_id: formData.class_id,
+            subject_id: formData.subject_id,
+            teacher_id: formData.teacher_id || null,
+            hod_id: profile?.id
+          });
+        if (insertError) throw insertError;
+      }
+
       setNotification({ type: 'success', message: 'Timetable entry created' });
       setShowCreateModal(false);
       setFormData({ class_id: '', subject_id: '', teacher_id: '', day_of_week: 1, start_time: '', end_time: '', room_number: '' });
