@@ -201,17 +201,10 @@ export function SubjectsPage() {
           .select('id')
           .eq('class_id', classId)
           .eq('subject_id', assignData.subject_id)
+          .eq('teacher_id', tid)
           .maybeSingle();
 
-        if (existing) {
-          await supabase
-            .from('class_subjects')
-            .update({
-              teacher_id: tid,
-              hod_id: profile?.id
-            })
-            .eq('id', existing.id);
-        } else {
+        if (!existing) {
           await supabase
             .from('class_subjects')
             .insert({
