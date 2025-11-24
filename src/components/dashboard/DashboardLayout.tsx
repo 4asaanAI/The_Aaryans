@@ -223,7 +223,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ];
     }
 
-    if (profile.role === 'professor' && porfile.sub_role === 'teacher') {
+    if (profile.role === 'professor' && profile.sub_role === 'teacher') {
       return [
         ...commonItems,
         { name: 'My Courses', href: '/dashboard/courses', icon: BookOpen },

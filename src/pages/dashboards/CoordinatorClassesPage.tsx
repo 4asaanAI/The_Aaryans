@@ -54,7 +54,8 @@ export function CoordinatorClassesPage() {
   } | null>(null);
 
   useEffect(() => {
-    if (profile?.role === 'admin' && profile.sub_role === 'coordinator') {
+    if ((profile?.role === 'admin' && profile.sub_role === 'coordinator') ||
+        (profile?.role === 'professor' && profile.sub_role === 'coordinator')) {
       fetchClasses();
       fetchTeachers();
     }
@@ -206,7 +207,10 @@ export function CoordinatorClassesPage() {
       c.section.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (profile?.role !== 'professor' || profile.sub_role !== 'coordinator') {
+  if (!(
+    (profile?.role === 'admin' && profile.sub_role === 'coordinator') ||
+    (profile?.role === 'professor' && profile.sub_role === 'coordinator')
+  )) {
     return (
       <DashboardLayout>
         <div className="p-6">Access denied</div>
@@ -493,6 +497,7 @@ export function CoordinatorClassesPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select teacher</option>
+                    <option value={profile?.id || ''}>Myself</option>
                     {teachers.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.full_name}
