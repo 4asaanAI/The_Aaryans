@@ -273,7 +273,7 @@ export function CoordinatorTimetablePage() {
     return teacherId === profile?.id;
   };
 
-  if (profile?.role !== 'admin' || profile.sub_role !== 'coordinator') {
+  if (profile?.role !== 'professor' || profile.sub_role !== 'coordinator') {
     return (
       <DashboardLayout>
         <div className="p-6">Access denied</div>
