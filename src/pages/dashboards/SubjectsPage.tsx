@@ -22,12 +22,19 @@ interface Teacher {
 
 interface ClassSubject {
   id: string;
-  class_id: string;
-  subject_id: string;
-  teacher_id: string;
-  class?: any;
-  teacher?: Teacher;
-  subject?: Subject;
+  class_id: string | null;
+  subject_id: string | null;
+  teacher_id: string | null;
+  class?: {
+    id: string;
+    name: string;
+    grade_level: number;
+    section?: string;
+  } | null;
+  teacher?: Teacher | null;
+  subject?: Subject | null;
+  hod_id?: string | null;
+  created_at?: string | null;
 }
 
 export function SubjectsPage() {
@@ -60,11 +67,7 @@ export function SubjectsPage() {
   } | null>(null);
 
   useEffect(() => {
-    if (
-      profile?.role === 'admin' &&
-      profile.sub_role === 'hod' &&
-      profile.department_id
-    ) {
+    if (profile?.role === 'admin' && profile.sub_role === 'hod') {
       fetchSubjects();
       fetchTeachers();
       fetchClasses();
@@ -73,14 +76,33 @@ export function SubjectsPage() {
   }, [profile]);
 
   const fetchSubjects = async () => {
-    if (!profile?.department_id) return;
+    if (!profile?.id) return;
+
     try {
+      // 1. Find departments where this HOD belongs (hod_ids contains user id)
+      const { data: hodDepartments, error: deptErr } = await supabase
+        .from('departments')
+        .select('id, hod_ids')
+        .contains('hod_ids', [profile.id]); // IMPORTANT: hod_ids is array
+
+      if (deptErr) throw deptErr;
+
+      if (!hodDepartments || hodDepartments.length === 0) {
+        setSubjects([]);
+        return;
+      }
+
+      const departmentIds = hodDepartments.map((d) => d.id);
+      console.log('departmentId: ', departmentIds);
+      // 2. Fetch subjects from ONLY these departments
       const { data, error } = await supabase
         .from('subjects')
         .select('*')
-        .eq('department_id', profile.department_id)
+        .in('department_id', departmentIds)
         .order('name');
+      console.log(data);
       if (error) throw error;
+
       setSubjects(data || []);
     } catch (error) {
       console.error('Error fetching subjects:', error);
@@ -143,7 +165,63 @@ export function SubjectsPage() {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setClassSubjects(data || []);
+
+      // Normalize returned shape: Supabase often returns joins as arrays even when single
+      const normalized: ClassSubject[] = (data || []).map((row: any) => {
+        const clsArr = row.class;
+        const subjArr = row.subject;
+        const teacherArr = row.teacher;
+
+        const normalizedClass =
+          Array.isArray(clsArr) && clsArr.length > 0
+            ? clsArr[0]
+            : clsArr || null;
+        const normalizedSubject =
+          Array.isArray(subjArr) && subjArr.length > 0
+            ? subjArr[0]
+            : subjArr || null;
+        const normalizedTeacher =
+          Array.isArray(teacherArr) && teacherArr.length > 0
+            ? teacherArr[0]
+            : teacherArr || null;
+
+        return {
+          id: row.id,
+          class_id: row.class_id ?? null,
+          subject_id: row.subject_id ?? null,
+          teacher_id: row.teacher_id ?? null,
+          hod_id: row.hod_id ?? null,
+          created_at: row.created_at ?? null,
+          class: normalizedClass
+            ? {
+                id: normalizedClass.id,
+                name: normalizedClass.name,
+                grade_level: normalizedClass.grade_level,
+                section: normalizedClass.section,
+              }
+            : null,
+          subject: normalizedSubject
+            ? {
+                id: normalizedSubject.id,
+                name: normalizedSubject.name,
+                code: (normalizedSubject as any).code || '', // optional
+                department_id: normalizedSubject.department_id,
+                description: (normalizedSubject as any).description || '',
+                grade_levels: (normalizedSubject as any).grade_levels || [],
+                created_at: (normalizedSubject as any).created_at || '',
+              }
+            : null,
+          teacher: normalizedTeacher
+            ? {
+                id: normalizedTeacher.id,
+                full_name: normalizedTeacher.full_name,
+                email: normalizedTeacher.email,
+              }
+            : null,
+        } as ClassSubject;
+      });
+
+      setClassSubjects(normalized);
     } catch (error) {
       console.error('Error fetching class subjects:', error);
       setClassSubjects([]);
