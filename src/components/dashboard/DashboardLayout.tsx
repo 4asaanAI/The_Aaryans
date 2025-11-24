@@ -187,6 +187,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ];
     }
 
+    if (profile.role === 'admin' && profile.sub_role === 'coordinator') {
+      return [
+        ...commonItems,
+        { name: 'My Courses', href: '/dashboard/coordinator/courses', icon: BookOpen },
+        { name: 'Classes', href: '/dashboard/coordinator/classes', icon: Users },
+        { name: 'Timetable', href: '/dashboard/coordinator/timetable', icon: Calendar },
+        { name: 'Assignments', href: '/dashboard/assignments', icon: Award },
+        { name: 'Exams', href: '/dashboard/exams', icon: ClipboardList },
+        { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
+        { name: 'Events', href: '/dashboard/events', icon: Calendar },
+        { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
+        { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
+        { name: 'Support', href: '/dashboard/support', icon: HelpCircle }
+      ];
+    }
+
     if (profile.role === 'admin' || (profile.sub_role && (profile.sub_role === 'principal' || profile.sub_role === 'head'))) {
       return [
         ...commonItems,

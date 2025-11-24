@@ -23,6 +23,9 @@ import { TransportPage } from './pages/dashboards/TransportPage';
 import { InventoryPage } from './pages/dashboards/InventoryPage';
 import { SubjectsPage } from './pages/dashboards/SubjectsPage';
 import { TimetablePage } from './pages/dashboards/TimetablePage';
+import { CoordinatorClassesPage } from './pages/dashboards/CoordinatorClassesPage';
+import { CoordinatorTimetablePage } from './pages/dashboards/CoordinatorTimetablePage';
+import { CoordinatorCoursesPage } from './pages/dashboards/CoordinatorCoursesPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -177,6 +180,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TimetablePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/coordinator/classes"
+              element={
+                <ProtectedRoute>
+                  <CoordinatorClassesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/coordinator/timetable"
+              element={
+                <ProtectedRoute>
+                  <CoordinatorTimetablePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/coordinator/courses"
+              element={
+                <ProtectedRoute>
+                  <CoordinatorCoursesPage />
                 </ProtectedRoute>
               }
             />

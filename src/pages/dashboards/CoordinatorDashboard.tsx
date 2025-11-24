@@ -1,85 +1,129 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
-import { BookOpen, Users, Calendar, FileText } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { BookOpen, Users, Calendar } from 'lucide-react';
 
 export function CoordinatorDashboard() {
+  const { profile } = useAuth();
+  const [stats, setStats] = useState({
+    courses: 0,
+    classes: 0,
+    timetableEntries: 0,
+  });
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchStats();
+    }
+  }, [profile]);
+
+  const fetchStats = async () => {
+    try {
+      const [coursesRes, classesRes, timetableRes] = await Promise.all([
+        supabase
+          .from('class_subjects')
+          .select('id', { count: 'exact', head: true })
+          .eq('teacher_id', profile?.id),
+        supabase
+          .from('classes')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active'),
+        supabase
+          .from('timetables')
+          .select('id', { count: 'exact', head: true })
+          .eq('teacher_id', profile?.id),
+      ]);
+
+      setStats({
+        courses: coursesRes.count || 0,
+        classes: classesRes.count || 0,
+        timetableEntries: timetableRes.count || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="space-y-6 px-4 sm:px-6 md:px-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Coordinator Dashboard</h1>
-            <p className="text-sm text-gray-600">Class and subject-level management</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Coordinator Dashboard</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Class and subject-level management</p>
           </div>
-          <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-2">
-            <p className="text-sm text-purple-800 font-medium">Multi-Class Access</p>
+          <div className="bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700 rounded-lg px-4 py-2">
+            <p className="text-sm text-purple-800 dark:text-purple-200 font-medium">Multi-Class Access</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Assigned Classes</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">3</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">My Courses</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.courses}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">94</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Classes</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.classes}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-green-600" />
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">91%</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">My Schedule</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.timetableEntries}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Assignments</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">12</p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <FileText className="h-6 w-6 text-orange-600" />
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Class Management</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button className="px-4 py-3 text-left text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              to="/dashboard/coordinator/courses"
+              className="px-4 py-3 text-left text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50"
+            >
+              View My Courses
+            </Link>
+            <Link
+              to="/dashboard/coordinator/timetable"
+              className="px-4 py-3 text-left text-sm font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50"
+            >
               Manage Timetables
-            </button>
-            <button className="px-4 py-3 text-left text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100">
-              Class Performance Reports
-            </button>
-            <button className="px-4 py-3 text-left text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100">
-              Workflow Tracking
-            </button>
-            <button className="px-4 py-3 text-left text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100">
-              Class Announcements
-            </button>
+            </Link>
+            <Link
+              to="/dashboard/coordinator/classes"
+              className="px-4 py-3 text-left text-sm font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50"
+            >
+              Manage Classes
+            </Link>
+            <Link
+              to="/dashboard/announcements"
+              className="px-4 py-3 text-left text-sm font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/50"
+            >
+              View Announcements
+            </Link>
           </div>
         </div>
       </div>
