@@ -33,7 +33,7 @@ interface ClassSubject {
   } | null;
   teacher?: Teacher | null;
   subject?: Subject | null;
-  hod_id?: string | null;
+  hod_ids?: string[]; // <-- changed to array
   created_at?: string | null;
 }
 
@@ -93,19 +93,18 @@ export function SubjectsPage() {
       }
 
       const departmentIds = hodDepartments.map((d) => d.id);
-      console.log('departmentId: ', departmentIds);
       // 2. Fetch subjects from ONLY these departments
       const { data, error } = await supabase
         .from('subjects')
         .select('*')
         .in('department_id', departmentIds)
         .order('name');
-      console.log(data);
       if (error) throw error;
 
       setSubjects(data || []);
     } catch (error) {
       console.error('Error fetching subjects:', error);
+      setSubjects([]);
     } finally {
       setLoading(false);
     }
@@ -125,6 +124,7 @@ export function SubjectsPage() {
       setTeachers(data || []);
     } catch (error) {
       console.error('Error fetching teachers:', error);
+      setTeachers([]);
     }
   };
 
@@ -139,12 +139,13 @@ export function SubjectsPage() {
       setClasses(data || []);
     } catch (error) {
       console.error('Error fetching classes:', error);
+      setClasses([]);
     }
   };
 
-  // *** FIXED: use explicit FK join alias so Supabase returns teacher object correctly ***
+  // *** use hod_ids array and show only class_subjects for the logged-in HOD ***
   const fetchClassSubjects = async () => {
-    if (!profile?.department_id) return;
+    if (!profile?.id || !profile?.department_id) return;
     try {
       const { data, error } = await supabase
         .from('class_subjects')
@@ -154,14 +155,17 @@ export function SubjectsPage() {
           class_id,
           subject_id,
           teacher_id,
-          hod_id,
+          hod_ids,
           created_at,
           class:classes(id, name, grade_level, section),
           subject:subjects!inner(id, name, department_id),
           teacher:profiles!class_subjects_teacher_id_fkey(id, full_name, email)
         `
         )
+        // only show class_subjects for subjects in this department
         .eq('subject.department_id', profile.department_id)
+        // and only those where the logged-in HOD is present in the hod_ids array
+        .contains('hod_ids', [profile.id])
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -190,7 +194,7 @@ export function SubjectsPage() {
           class_id: row.class_id ?? null,
           subject_id: row.subject_id ?? null,
           teacher_id: row.teacher_id ?? null,
-          hod_id: row.hod_id ?? null,
+          hod_ids: Array.isArray(row.hod_ids) ? row.hod_ids : [],
           created_at: row.created_at ?? null,
           class: normalizedClass
             ? {
@@ -204,7 +208,7 @@ export function SubjectsPage() {
             ? {
                 id: normalizedSubject.id,
                 name: normalizedSubject.name,
-                code: (normalizedSubject as any).code || '', // optional
+                code: (normalizedSubject as any).code || '',
                 department_id: normalizedSubject.department_id,
                 description: (normalizedSubject as any).description || '',
                 grade_levels: (normalizedSubject as any).grade_levels || [],
@@ -283,21 +287,51 @@ export function SubjectsPage() {
       const classId = assignData.class_id || null;
 
       for (const tid of assignData.teacher_ids) {
-        const { data: existing } = await supabase
+        // select existing record and include hod_ids
+        const { data: existingRow, error: selectErr } = await supabase
           .from('class_subjects')
-          .select('id')
+          .select('id, hod_ids')
           .eq('class_id', classId)
           .eq('subject_id', assignData.subject_id)
           .eq('teacher_id', tid)
           .maybeSingle();
 
-        if (!existing) {
-          await supabase.from('class_subjects').insert({
-            class_id: classId,
-            subject_id: assignData.subject_id,
-            teacher_id: tid,
-            hod_id: profile?.id,
-          });
+        if (selectErr) {
+          console.error('Error checking existing class_subject:', selectErr);
+          continue;
+        }
+
+        if (existingRow && existingRow.id) {
+          // if the record exists but hod_ids does not include this HOD, append it
+          const existingHodIds = Array.isArray(existingRow.hod_ids)
+            ? existingRow.hod_ids
+            : [];
+          if (!existingHodIds.includes(profile?.id)) {
+            const newHodIds = [...existingHodIds, profile?.id];
+            const { error: updateErr } = await supabase
+              .from('class_subjects')
+              .update({ hod_ids: newHodIds })
+              .eq('id', existingRow.id);
+            if (updateErr) {
+              console.error(
+                'Failed to update hod_ids on existing row:',
+                updateErr
+              );
+            }
+          }
+        } else {
+          // insert new row; set hod_ids to include current HOD
+          const { error: insertErr } = await supabase
+            .from('class_subjects')
+            .insert({
+              class_id: classId,
+              subject_id: assignData.subject_id,
+              teacher_id: tid,
+              hod_ids: [profile?.id], // store as array
+            });
+          if (insertErr) {
+            console.error('Failed to insert class_subject:', insertErr);
+          }
         }
       }
 
@@ -360,7 +394,7 @@ export function SubjectsPage() {
       s.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // helper: get unique teacher names assigned to a subject
+  // helper: get unique teacher names assigned to a subject — only uses classSubjects already filtered by HOD
   const getTeachersForSubject = (subjectId: string) => {
     const assigned = classSubjects.filter(
       (cs) => cs.subject_id === subjectId && cs.teacher
@@ -712,7 +746,9 @@ export function SubjectsPage() {
 
                 <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 max-h-48 overflow-y-auto bg-white dark:bg-gray-700">
                   {teachers.length === 0 ? (
-                    <p className="text-sm text-gray-500">No teachers available</p>
+                    <p className="text-sm text-gray-500">
+                      No teachers available
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {teachers.map((t) => (
@@ -727,7 +763,10 @@ export function SubjectsPage() {
                               if (e.target.checked) {
                                 setAssignData({
                                   ...assignData,
-                                  teacher_ids: [...assignData.teacher_ids, t.id],
+                                  teacher_ids: [
+                                    ...assignData.teacher_ids,
+                                    t.id,
+                                  ],
                                 });
                               } else {
                                 setAssignData({
