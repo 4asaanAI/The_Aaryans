@@ -187,7 +187,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ];
     }
 
-    if (profile.role === 'admin' && profile.sub_role === 'coordinator') {
+    if (profile.role === 'professor' && profile.sub_role === 'coordinator') {
       return [
         ...commonItems,
         { name: 'My Courses', href: '/dashboard/coordinator/courses', icon: BookOpen },
