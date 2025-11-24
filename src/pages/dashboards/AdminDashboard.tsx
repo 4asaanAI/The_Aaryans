@@ -2,6 +2,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { HeadDashboard } from './HeadDashboard';
 import { PrincipalDashboard } from './PrincipalDashboard';
 import { HODDashboard } from './HODDashboard';
+import { CoordinatorDashboard } from './CoordinatorDashboard';
 
 export function AdminDashboard() {
   const { profile } = useAuth();
@@ -15,6 +16,8 @@ export function AdminDashboard() {
       return <PrincipalDashboard />;
     case 'hod':
       return <HODDashboard />;
+    case 'coordinator':
+      return <CoordinatorDashboard />;
     case 'other':
       return <PrincipalDashboard />;
     default:
