@@ -210,44 +210,6 @@ export function ClassesPage() {
         : [];
       console.log('fetchClasses: departmentIds for HOD:', departmentIds);
 
-      if (!departmentIds.length) {
-        console.warn(
-          'fetchClasses: HOD role present but no departments found for this profile.'
-        );
-
-        // ---------- FALLBACK CHOICES ----------
-        // Option 1 (safe): treat HOD as non-filtered — fetch all active classes
-        // Uncomment this block if you want HOD with no department mappings to still see all classes:
-        console.log(
-          'fetchClasses: fallback -> fetching all active classes for HOD (no dept mapping)'
-        );
-        const { data: fallbackData, error: fallbackErr } = await supabase
-          .from('classes')
-          .select('*')
-          .eq('status', 'active')
-          .order('grade_level', { ascending: true });
-        if (fallbackErr) {
-          console.error('fetchClasses: fallback fetch error:', fallbackErr);
-          setClasses([]);
-          setSelectedClass('');
-          return;
-        }
-        setClasses(fallbackData || []);
-        if (
-          (!selectedClass || selectedClass === '') &&
-          fallbackData &&
-          fallbackData.length > 0
-        ) {
-          setSelectedClass(fallbackData[0].id);
-        }
-        return;
-
-        // Option 2 (strict): return empty as before (uncomment if you prefer)
-        // setClasses([]);
-        // setSelectedClass('');
-        // return;
-      }
-
       // HOD filtering: fetch classes based on class_subjects where hod_id matches
       console.log('fetchClasses: fetching class_subjects for HOD:', profile.id);
       const { data: classSubjectsData, error: csErr } = await supabase
@@ -270,7 +232,10 @@ export function ClassesPage() {
             )
           )
         : [];
-      console.log('fetchClasses: derived classIds from class_subjects:', classIds);
+      console.log(
+        'fetchClasses: derived classIds from class_subjects:',
+        classIds
+      );
 
       if (!classIds.length) {
         console.log(
