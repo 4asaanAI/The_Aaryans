@@ -203,7 +203,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ];
     }
 
-    if (profile.role === 'admin' || (profile.sub_role && (profile.sub_role === 'principal' || profile.sub_role === 'head'))) {
+    if (profile.role === 'admin' && (profile.sub_role === 'principal' || profile.sub_role === 'head' || profile.sub_role === 'other')) {
       return [
         ...commonItems,
         { name: 'Users', href: '/dashboard/users', icon: Users },
