@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, Trash2, X, Search, Edit2 } from 'lucide-react';
+import { X, Search, Edit2 } from 'lucide-react';
 
 interface Class {
   id: string;
@@ -35,8 +35,6 @@ export function CoordinatorClassesPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletingClass, setDeletingClass] = useState<Class | null>(null);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -63,12 +61,18 @@ export function CoordinatorClassesPage() {
 
   const fetchClasses = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('classes')
         .select(`
           *,
           class_teacher:profiles!classes_class_teacher_id_fkey(id, full_name, email)
-        `)
+        `);
+
+      if (profile?.role === 'professor' && profile.sub_role === 'coordinator') {
+        query = query.eq('class_teacher_id', profile.id);
+      }
+
+      const { data, error } = await query
         .order('grade_level', { ascending: true })
         .order('section', { ascending: true });
 
@@ -101,6 +105,7 @@ export function CoordinatorClassesPage() {
     if (!formData.name || !formData.section) return;
 
     try {
+      if (editingClass) {
         const { error } = await supabase
           .from('classes')
           .update({
@@ -122,10 +127,10 @@ export function CoordinatorClassesPage() {
           type: 'success',
           message: 'Class updated successfully',
         });
-        setEditingClass(null);
-    
+      }
 
       setShowCreateModal(false);
+      setEditingClass(null);
       setFormData({
         name: '',
         grade_level: 1,
@@ -183,7 +188,9 @@ export function CoordinatorClassesPage() {
               Classes
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Manage classes and assign class teachers
+              {profile?.role === 'professor' && profile.sub_role === 'coordinator'
+                ? 'View and manage your assigned classes'
+                : 'Manage classes and assign class teachers'}
             </p>
           </div>
         </div>
@@ -309,12 +316,6 @@ export function CoordinatorClassesPage() {
                           className="p-2 text-gray-600"
                         >
                           <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(cls)}
-                          className="p-2 text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -502,60 +503,6 @@ export function CoordinatorClassesPage() {
         </div>
       )}
 
-      {showDeleteModal && deletingClass && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Delete Class
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  This action cannot be undone.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeletingClass(null);
-                }}
-                className="text-gray-500"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mb-4">
-              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded">
-                <div className="font-medium text-gray-900 dark:text-white">
-                  {deletingClass.name}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Grade {deletingClass.grade_level} - {deletingClass.section}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeletingClass(null);
-                }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {notification && (
         <div className="fixed bottom-6 right-6 z-60 max-w-sm">
