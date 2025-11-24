@@ -37,7 +37,7 @@ interface ClassSubject {
   created_at?: string | null;
 }
 
-export function SubjectsPage() {
+export function ClassesPage() {
   const { profile } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);

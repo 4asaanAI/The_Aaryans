@@ -707,31 +707,57 @@ export function SubjectsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Teacher(s) *
+                  Teacher(s) * - Select one or more
                 </label>
 
-                {/* multiple select for teachers */}
-                <select
-                  multiple
-                  value={assignData.teacher_ids}
-                  onChange={(e) => {
-                    const selected: string[] = Array.from(
-                      e.target.selectedOptions
-                    ).map((opt) => opt.value);
-                    setAssignData({ ...assignData, teacher_ids: selected });
-                  }}
-                  className="w-full h-36 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  {teachers.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.full_name} {t.email ? `— ${t.email}` : ''}
-                    </option>
-                  ))}
-                </select>
+                <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 max-h-48 overflow-y-auto bg-white dark:bg-gray-700">
+                  {teachers.length === 0 ? (
+                    <p className="text-sm text-gray-500">No teachers available</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {teachers.map((t) => (
+                        <label
+                          key={t.id}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 p-2 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={assignData.teacher_ids.includes(t.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setAssignData({
+                                  ...assignData,
+                                  teacher_ids: [...assignData.teacher_ids, t.id],
+                                });
+                              } else {
+                                setAssignData({
+                                  ...assignData,
+                                  teacher_ids: assignData.teacher_ids.filter(
+                                    (id) => id !== t.id
+                                  ),
+                                });
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                          />
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {t.full_name}
+                            {t.email && (
+                              <span className="text-gray-500 ml-1">
+                                ({t.email})
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 <p className="text-xs text-gray-500 mt-1">
-                  Hold Ctrl (Cmd on Mac) / Shift to select multiple or use
-                  checkboxes in supported UIs.
+                  {assignData.teacher_ids.length === 0
+                    ? 'Select at least one teacher'
+                    : `${assignData.teacher_ids.length} teacher(s) selected`}
                 </p>
               </div>
 
