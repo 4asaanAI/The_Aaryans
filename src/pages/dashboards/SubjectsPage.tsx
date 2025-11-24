@@ -80,53 +80,32 @@ export function SubjectsPage() {
     setLoading(true);
 
     try {
-      // 1) Find departments where this HOD belongs (hod_ids contains user id)
+      // Optional: limit to departments where this HOD is listed
       const { data: hodDepartments, error: deptErr } = await supabase
         .from('departments')
         .select('id')
         .contains('hod_ids', [profile.id]);
 
       if (deptErr) throw deptErr;
-
       const deptIds: string[] = (hodDepartments || []).map((d: any) => d.id);
 
-      // 2) Find class_subjects that include this HOD and collect distinct subject_ids
-      const { data: csRows, error: csErr } = await supabase
-        .from('class_subjects')
-        .select('subject_id')
-        .contains('hod_ids', [profile.id]);
+      // Build the query: subjects.created_by == profile.id
+      let q = supabase
+        .from('subjects')
+        .select('*')
+        .eq('created_by', profile.id);
 
-      if (csErr) throw csErr;
-
-      const subjectIds = Array.from(
-        new Set((csRows || []).map((r: any) => r.subject_id).filter(Boolean))
-      ) as string[];
-
-      // If no subject assignments found for this HOD, return empty array
-      if (!subjectIds.length) {
-        setSubjects([]);
-        return;
-      }
-
-      // 3) Fetch actual subjects rows for the subjectIds.
-      // Optionally restrict to the HOD's departments (if deptIds found)
-      let subjectQuery: any = supabase.from('subjects').select('*');
-
-      // If we have department ids, restrict subjects to those departments
+      // If you want to also ensure it's within the HOD's departments (optional)
       if (deptIds.length) {
-        subjectQuery = subjectQuery.in('department_id', deptIds);
+        q = q.in('department_id', deptIds);
       }
 
-      subjectQuery = subjectQuery
-        .in('id', subjectIds)
-        .order('name', { ascending: true });
+      const { data, error } = await q.order('name', { ascending: true });
 
-      const { data: subjectData, error: subjectErr } = await subjectQuery;
-      if (subjectErr) throw subjectErr;
-
-      setSubjects(subjectData || []);
-    } catch (error) {
-      console.error('Error fetching subjects:', error);
+      if (error) throw error;
+      setSubjects(data || []);
+    } catch (err) {
+      console.error('Error fetching subjects:', err);
       setSubjects([]);
     } finally {
       setLoading(false);
@@ -260,8 +239,8 @@ export function SubjectsPage() {
 
     try {
       if (editingSubject) {
-        // update path
-        const { error } = await supabase
+        // update path — return updated row
+        const { data: updated, error: updateErr } = await supabase
           .from('subjects')
           .update({
             name: formData.name,
@@ -269,9 +248,16 @@ export function SubjectsPage() {
             description: formData.description,
             grade_levels: formData.grade_levels,
           })
-          .eq('id', editingSubject.id);
+          .eq('id', editingSubject.id)
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (updateErr) throw updateErr;
+
+        // update local state if present
+        setSubjects((prev) =>
+          prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s))
+        );
 
         setNotification({
           type: 'success',
@@ -280,14 +266,54 @@ export function SubjectsPage() {
         setEditingSubject(null);
       } else {
         // create path
-        const { error } = await supabase.from('subjects').insert({
+        const payload: any = {
           name: formData.name,
           code: formData.code,
           description: formData.description,
           department_id: profile.department_id,
           grade_levels: formData.grade_levels,
-        });
-        if (error) throw error;
+        };
+
+        // optimistic attempt to set created_by if DB supports it
+        let inserted: any = null;
+
+        try {
+          const { data, error } = await supabase
+            .from('subjects')
+            .insert({ ...payload, created_by: profile.id })
+            .select()
+            .single();
+
+          if (error) throw error;
+          inserted = data;
+        } catch (err: any) {
+          // fallback: if created_by column is missing or some other reason,
+          // try inserting without created_by. Only swallow the specific case, otherwise rethrow.
+          const message = err?.message || '';
+          const colMissing = /column .*created_by.*does not exist/i.test(
+            message
+          );
+
+          if (colMissing) {
+            const { data: data2, error: err2 } = await supabase
+              .from('subjects')
+              .insert(payload)
+              .select()
+              .single();
+            if (err2) throw err2;
+            inserted = data2;
+          } else {
+            throw err;
+          }
+        }
+
+        // Add to UI immediately (dedupe)
+        if (inserted) {
+          setSubjects((prev) => {
+            if (prev.find((s) => s.id === inserted.id)) return prev;
+            return [inserted, ...prev];
+          });
+        }
 
         setNotification({
           type: 'success',
@@ -295,12 +321,19 @@ export function SubjectsPage() {
         });
       }
 
+      // reset + refresh
       setShowCreateModal(false);
       setFormData({ name: '', code: '', description: '', grade_levels: [] });
-      fetchSubjects();
-      fetchClassSubjects();
+
+      // refresh derived data (keeps everything consistent)
+      await fetchSubjects();
+      await fetchClassSubjects();
     } catch (error: any) {
-      setNotification({ type: 'error', message: error.message || 'Error' });
+      console.error('handleCreateOrUpdateSubject error:', error);
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Error creating/updating subject',
+      });
     }
   };
 
