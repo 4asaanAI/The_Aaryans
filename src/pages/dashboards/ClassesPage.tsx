@@ -81,6 +81,7 @@ export function ClassesPage() {
 
   useEffect(() => {
     fetchClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
   useEffect(() => {
@@ -96,7 +97,9 @@ export function ClassesPage() {
       setSubjectPerformance([]);
       setRemarksText('');
     }
-  }, [selectedClass, classes, profile]); // include profile in deps because HOD-based teacher filtering depends on it
+    // include profile because HOD-based teacher filtering depends on it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClass, classes, profile]);
 
   const fetchClasses = async () => {
     console.log('fetchClasses: starting');
@@ -119,46 +122,97 @@ export function ClassesPage() {
         isSubRoleHod
       );
 
-      // --- defensive deptCheck but DO NOT query non-existent hod_email column ---
+      // --- defensive deptCheck using departments.hod_ids (array) ---
       let deptCheck: any[] = [];
       try {
         console.log(
-          'fetchClasses: attempting deptCheck by hod_id ===',
+          'fetchClasses: attempting deptCheck by hod_ids contains',
           profile.id
         );
+
+        // Preferred: departments.hod_ids is an array (uuid[] or text[])
         const res1 = await supabase
           .from('departments')
           .select('id')
-          .eq('hod_id', profile.id);
+          .contains('hod_ids', [profile.id]);
 
-        if (res1.error) throw res1.error;
-        deptCheck = res1.data || [];
-        console.log('fetchClasses: deptCheck (by hod_id):', deptCheck);
+        if (!res1.error) {
+          deptCheck = res1.data || [];
+          console.log(
+            'fetchClasses: deptCheck (by hod_ids contains):',
+            deptCheck
+          );
+        } else {
+          // If contains fails (unexpected), try fallback: maybe stored as string or different column
+          console.warn(
+            'fetchClasses: .contains returned error, attempting fallback queries',
+            res1.error
+          );
 
-        // optional: if your profile has alternate id field (user_id), try that too
+          // fallback 1: maybe there is a single-value column hod_id (older schema)
+          const res2 = await supabase
+            .from('departments')
+            .select('id')
+            .eq('hod_id', profile.id);
+
+          if (!res2.error) {
+            deptCheck = res2.data || [];
+            console.log(
+              'fetchClasses: deptCheck (fallback hod_id):',
+              deptCheck
+            );
+          } else {
+            // fallback 2: maybe stored by email
+            const res3 = await supabase
+              .from('departments')
+              .select('id')
+              .eq('hod_email', profile.email);
+
+            if (!res3.error) {
+              deptCheck = res3.data || [];
+              console.log(
+                'fetchClasses: deptCheck (fallback hod_email):',
+                deptCheck
+              );
+            } else {
+              console.error(
+                'fetchClasses: all dept checks failed',
+                res1.error,
+                res2.error,
+                res3.error
+              );
+              deptCheck = [];
+            }
+          }
+        }
+
+        // Optional: also try checking if profile.user_id is present inside hod_ids
         if (
           (!deptCheck || deptCheck.length === 0) &&
           (profile as any).user_id &&
           (profile as any).user_id !== profile.id
         ) {
           console.log(
-            'fetchClasses: attempting deptCheck by hod_id ===',
+            'fetchClasses: attempting deptCheck by hod_ids contains (user_id)',
             (profile as any).user_id
           );
-          const res2 = await supabase
+          const resUid = await supabase
             .from('departments')
             .select('id')
-            .eq('hod_id', (profile as any).user_id);
+            .contains('hod_ids', [(profile as any).user_id]);
 
-          if (res2.error) throw res2.error;
-          deptCheck = res2.data || [];
-          console.log('fetchClasses: deptCheck (by user_id):', deptCheck);
+          if (!resUid.error) {
+            deptCheck = resUid.data || [];
+            console.log(
+              'fetchClasses: deptCheck (by user_id in hod_ids):',
+              deptCheck
+            );
+          }
         }
 
-        // NOTE: we are NOT attempting hod_email because that column does not exist (caused 42703).
         if (!Array.isArray(deptCheck) || deptCheck.length === 0) {
           console.warn(
-            'fetchClasses: deptCheck empty after checking hod_id (and user_id). Possible reasons: departments table uses a different column for HOD, or there are no departments assigned.'
+            'fetchClasses: deptCheck empty after checking hod_ids (and fallbacks). Possible reasons: departments table uses a different column for HOD, or there are no departments assigned.'
           );
         }
       } catch (err) {
@@ -210,7 +264,7 @@ export function ClassesPage() {
         : [];
       console.log('fetchClasses: departmentIds for HOD:', departmentIds);
 
-      // HOD filtering: fetch classes based on class_subjects where hod_id matches
+      // HOD filtering: fetch classes based on class_subjects where hod_id matches (preserves original HOD filtering)
       console.log('fetchClasses: fetching class_subjects for HOD:', profile.id);
       const { data: classSubjectsData, error: csErr } = await supabase
         .from('class_subjects')
@@ -285,16 +339,82 @@ export function ClassesPage() {
         profile?.sub_role &&
         profile.sub_role.toString().toLowerCase() === 'hod';
 
-      const { data: hodDepartments, error: deptErr } = await supabase
-        .from('departments')
-        .select('id')
-        .eq('hod_id', profile?.id);
+      // Prefer departments.hod_ids (array) membership check
+      let hodDeptIds: string[] = [];
+      try {
+        const { data: hodDepartmentsByArray, error: arrErr } = await supabase
+          .from('departments')
+          .select('id')
+          .contains('hod_ids', [profile?.id]);
 
-      if (deptErr) throw deptErr;
+        if (!arrErr) {
+          hodDeptIds = Array.isArray(hodDepartmentsByArray)
+            ? hodDepartmentsByArray.map((d: any) => d.id)
+            : [];
+        } else {
+          console.warn(
+            'fetchClassTeachers: contains(hod_ids) failed, trying eq fallbacks',
+            arrErr
+          );
 
-      const hodDeptIds = Array.isArray(hodDepartments)
-        ? hodDepartments.map((d) => d.id)
-        : [];
+          // fallback to single hod_id column if present
+          const { data: hodDepartmentsByEq, error: eqErr } = await supabase
+            .from('departments')
+            .select('id')
+            .eq('hod_id', profile?.id);
+
+          if (!eqErr) {
+            hodDeptIds = Array.isArray(hodDepartmentsByEq)
+              ? hodDepartmentsByEq.map((d: any) => d.id)
+              : [];
+          } else {
+            // final fallback: maybe departments stores HOD by email
+            const { data: hodDepartmentsByEmail, error: emailErr } =
+              await supabase
+                .from('departments')
+                .select('id')
+                .eq('hod_email', profile?.email);
+
+            if (!emailErr) {
+              hodDeptIds = Array.isArray(hodDepartmentsByEmail)
+                ? hodDepartmentsByEmail.map((d: any) => d.id)
+                : [];
+            } else {
+              console.error(
+                'fetchClassTeachers: all department lookups failed',
+                arrErr,
+                eqErr,
+                emailErr
+              );
+              hodDeptIds = [];
+            }
+          }
+        }
+
+        // also try profile.user_id membership as fallback if nothing found
+        if (
+          hodDeptIds.length === 0 &&
+          (profile as any).user_id &&
+          (profile as any).user_id !== profile?.id
+        ) {
+          const { data: byUserId, error: userIdErr } = await supabase
+            .from('departments')
+            .select('id')
+            .contains('hod_ids', [(profile as any).user_id]);
+
+          if (!userIdErr) {
+            hodDeptIds = Array.isArray(byUserId)
+              ? byUserId.map((d: any) => d.id)
+              : [];
+          }
+        }
+      } catch (err) {
+        console.error(
+          'fetchClassTeachers: unexpected error while reading departments:',
+          err
+        );
+        hodDeptIds = [];
+      }
 
       const isHod = isSubRoleHod || hodDeptIds.length > 0;
 
@@ -310,7 +430,7 @@ export function ClassesPage() {
         )
         .eq('class_id', selectedClass);
 
-      // 3) If HOD, filter by hod_id
+      // 3) If HOD, filter by hod_id on class_subjects (preserves original per-HOD assignment logic)
       if (isHod) {
         query = query.eq('hod_id', profile?.id);
       }
@@ -321,13 +441,28 @@ export function ClassesPage() {
 
       let filtered = data || [];
 
-      const formattedData: TeacherSubject[] = filtered.map((item: any) => ({
-        id: item.id,
-        subject_name: item.subjects?.name || 'N/A',
-        subject_code: item.subjects?.code || 'N/A',
-        teacher_name: item.profiles?.full_name || 'N/A',
-        teacher_email: item.profiles?.email || 'N/A',
-      }));
+      // Normalize profiles shape (object vs array) so teacher name/email don't become undefined
+      const formattedData: TeacherSubject[] = (filtered || []).map(
+        (item: any) => {
+          // Normalize the profiles join: Supabase sometimes returns an object, sometimes an array
+          let teacherRecord: any = null;
+          if (!item) teacherRecord = null;
+          else if (Array.isArray(item.profiles))
+            teacherRecord = item.profiles[0] || null;
+          else teacherRecord = item.profiles || null;
+
+          const teacherName = teacherRecord?.full_name || 'N/A';
+          const teacherEmail = teacherRecord?.email || 'N/A';
+
+          return {
+            id: item.id,
+            subject_name: item.subjects?.name || 'N/A',
+            subject_code: item.subjects?.code || 'N/A',
+            teacher_name: teacherName,
+            teacher_email: teacherEmail,
+          };
+        }
+      );
 
       setClassTeachers(formattedData);
     } catch (error) {
@@ -360,13 +495,18 @@ export function ClassesPage() {
 
       if (csErr) throw csErr;
 
-      const subjects = Array.isArray(classSubjects)
+      // map rows -> subjects and dedupe by subject id immediately
+      const rawSubjects = Array.isArray(classSubjects)
         ? classSubjects.map((row: any) => row.subjects).filter(Boolean)
         : [];
 
-      // fallback: if there are no class_subjects, we may still want to show subjects present in assignments or exams
-      // Fetch subjects referenced by assignments/exams for the class
-      if (subjects.length === 0) {
+      const byId: Record<string, any> = {};
+      rawSubjects.forEach((s: any) => {
+        if (s?.id) byId[s.id] = s; // last-wins but all fields are same usually
+      });
+
+      // fallback: if class_subjects returned nothing, also collect from assignments/exams
+      if (Object.keys(byId).length === 0) {
         // gather subject ids from assignments
         const { data: assignSubjects, error: asErr } = await supabase
           .from('assignments')
@@ -377,6 +517,7 @@ export function ClassesPage() {
         const fromAssign = (assignSubjects || [])
           .map((r: any) => r.subject)
           .filter(Boolean);
+
         // gather subject ids from exams
         const { data: examSubjects, error: exErr } = await supabase
           .from('exams')
@@ -388,13 +529,14 @@ export function ClassesPage() {
           .map((r: any) => r.subject)
           .filter(Boolean);
 
-        // dedupe by id
-        const byId: Record<string, any> = {};
+        // dedupe by id and merge
         [...fromAssign, ...fromExam].forEach((s: any) => {
           if (s?.id) byId[s.id] = s;
         });
-        subjects.push(...Object.values(byId));
       }
+
+      // Final subjects array (unique by id)
+      const subjects = Object.values(byId);
 
       // If still empty, set empty state
       if (subjects.length === 0) {
@@ -447,7 +589,6 @@ export function ClassesPage() {
       examResults.forEach((r: any) => {
         if (!r || !r.exam_id) return;
         marksByExam[r.exam_id] = marksByExam[r.exam_id] || [];
-        // ensure marks_obtained is numeric
         const m = Number(r.marks_obtained);
         if (!Number.isNaN(m)) marksByExam[r.exam_id].push(m);
       });
