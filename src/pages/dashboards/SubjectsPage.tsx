@@ -77,31 +77,54 @@ export function SubjectsPage() {
 
   const fetchSubjects = async () => {
     if (!profile?.id) return;
+    setLoading(true);
 
     try {
-      // 1. Find departments where this HOD belongs (hod_ids contains user id)
+      // 1) Find departments where this HOD belongs (hod_ids contains user id)
       const { data: hodDepartments, error: deptErr } = await supabase
         .from('departments')
-        .select('id, hod_ids')
-        .contains('hod_ids', [profile.id]); // IMPORTANT: hod_ids is array
+        .select('id')
+        .contains('hod_ids', [profile.id]);
 
       if (deptErr) throw deptErr;
 
-      if (!hodDepartments || hodDepartments.length === 0) {
+      const deptIds: string[] = (hodDepartments || []).map((d: any) => d.id);
+
+      // 2) Find class_subjects that include this HOD and collect distinct subject_ids
+      const { data: csRows, error: csErr } = await supabase
+        .from('class_subjects')
+        .select('subject_id')
+        .contains('hod_ids', [profile.id]);
+
+      if (csErr) throw csErr;
+
+      const subjectIds = Array.from(
+        new Set((csRows || []).map((r: any) => r.subject_id).filter(Boolean))
+      ) as string[];
+
+      // If no subject assignments found for this HOD, return empty array
+      if (!subjectIds.length) {
         setSubjects([]);
         return;
       }
 
-      const departmentIds = hodDepartments.map((d) => d.id);
-      // 2. Fetch subjects from ONLY these departments
-      const { data, error } = await supabase
-        .from('subjects')
-        .select('*')
-        .in('department_id', departmentIds)
-        .order('name');
-      if (error) throw error;
+      // 3) Fetch actual subjects rows for the subjectIds.
+      // Optionally restrict to the HOD's departments (if deptIds found)
+      let subjectQuery: any = supabase.from('subjects').select('*');
 
-      setSubjects(data || []);
+      // If we have department ids, restrict subjects to those departments
+      if (deptIds.length) {
+        subjectQuery = subjectQuery.in('department_id', deptIds);
+      }
+
+      subjectQuery = subjectQuery
+        .in('id', subjectIds)
+        .order('name', { ascending: true });
+
+      const { data: subjectData, error: subjectErr } = await subjectQuery;
+      if (subjectErr) throw subjectErr;
+
+      setSubjects(subjectData || []);
     } catch (error) {
       console.error('Error fetching subjects:', error);
       setSubjects([]);
