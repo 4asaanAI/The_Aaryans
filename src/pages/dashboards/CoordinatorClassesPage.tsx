@@ -86,7 +86,7 @@ export function CoordinatorClassesPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .in('role', ['professor', 'admin'])
+        .in('role', ['professor'])
         .eq('approval_status', 'approved')
         .order('full_name');
 
@@ -101,7 +101,6 @@ export function CoordinatorClassesPage() {
     if (!formData.name || !formData.section) return;
 
     try {
-      if (editingClass) {
         const { error } = await supabase
           .from('classes')
           .update({
@@ -124,26 +123,7 @@ export function CoordinatorClassesPage() {
           message: 'Class updated successfully',
         });
         setEditingClass(null);
-      } else {
-        const { error } = await supabase.from('classes').insert({
-          name: formData.name,
-          grade_level: formData.grade_level,
-          section: formData.section,
-          capacity: formData.capacity,
-          current_strength: 0,
-          class_teacher_id: formData.class_teacher_id || null,
-          academic_year: formData.academic_year,
-          status: formData.status,
-          remarks: formData.remarks,
-        });
-
-        if (error) throw error;
-
-        setNotification({
-          type: 'success',
-          message: 'Class created successfully',
-        });
-      }
+    
 
       setShowCreateModal(false);
       setFormData({
@@ -177,30 +157,6 @@ export function CoordinatorClassesPage() {
     setShowCreateModal(true);
   };
 
-  const openDeleteModal = (cls: Class) => {
-    setDeletingClass(cls);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deletingClass) return;
-    try {
-      const { error } = await supabase
-        .from('classes')
-        .delete()
-        .eq('id', deletingClass.id);
-
-      if (error) throw error;
-
-      setNotification({ type: 'success', message: 'Class deleted' });
-      setShowDeleteModal(false);
-      setDeletingClass(null);
-      fetchClasses();
-    } catch (error: any) {
-      setNotification({ type: 'error', message: error.message || 'Error' });
-    }
-  };
-
   const filteredClasses = classes.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -230,26 +186,6 @@ export function CoordinatorClassesPage() {
               Manage classes and assign class teachers
             </p>
           </div>
-          <button
-            onClick={() => {
-              setEditingClass(null);
-              setFormData({
-                name: '',
-                grade_level: 1,
-                section: '',
-                capacity: 30,
-                class_teacher_id: '',
-                academic_year: new Date().getFullYear().toString(),
-                status: 'active',
-                remarks: '',
-              });
-              setShowCreateModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" />
-            Add Class
-          </button>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4">
@@ -328,12 +264,6 @@ export function CoordinatorClassesPage() {
                               className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
                             >
                               <Edit2 className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => openDeleteModal(cls)}
-                              className="p-1.5 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </td>
