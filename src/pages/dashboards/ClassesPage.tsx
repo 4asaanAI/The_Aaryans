@@ -9,6 +9,7 @@ import {
   Edit2,
   Save,
   X,
+  Plus,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -30,7 +31,17 @@ interface ClassData {
   name: string;
   grade_level: number;
   section: string;
+  capacity: number;
+  class_teacher_id: string | null;
+  academic_year: string;
+  status: string;
   remarks?: string;
+}
+
+interface Teacher {
+  id: string;
+  full_name: string;
+  email: string;
 }
 
 interface TeacherSubject {
@@ -71,6 +82,17 @@ export function ClassesPage() {
     SubjectPerformance[]
   >([]);
   const [loadingPerformance, setLoadingPerformance] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    grade_level: 1,
+    section: '',
+    capacity: 30,
+    class_teacher_id: '',
+    academic_year: new Date().getFullYear().toString(),
+    status: 'active',
+  });
 
   const isDark = theme === 'dark';
   const chartColors = {
@@ -740,6 +762,75 @@ export function ClassesPage() {
     return profile?.sub_role === 'head' || profile?.sub_role === 'principal';
   };
 
+  const canAddClass = () => {
+    return (
+      profile?.role === 'admin' &&
+      profile?.sub_role !== 'hod'
+    );
+  };
+
+  const fetchTeachers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('role', ['professor', 'admin'])
+        .eq('approval_status', 'approved')
+        .order('full_name');
+
+      if (error) throw error;
+      setTeachers(data || []);
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    }
+  };
+
+  const handleCreateClass = async () => {
+    if (!formData.name || !formData.section) {
+      setNotification({
+        type: 'error',
+        message: 'Please fill in all required fields',
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('classes').insert({
+        name: formData.name,
+        grade_level: formData.grade_level,
+        section: formData.section,
+        capacity: formData.capacity,
+        class_teacher_id: formData.class_teacher_id || null,
+        academic_year: formData.academic_year,
+        status: formData.status,
+        current_strength: 0,
+      });
+
+      if (error) throw error;
+
+      setNotification({
+        type: 'success',
+        message: 'Class created successfully',
+      });
+      setShowCreateModal(false);
+      setFormData({
+        name: '',
+        grade_level: 1,
+        section: '',
+        capacity: 30,
+        class_teacher_id: '',
+        academic_year: new Date().getFullYear().toString(),
+        status: 'active',
+      });
+      fetchClasses();
+    } catch (error: any) {
+      setNotification({
+        type: 'error',
+        message: error.message || 'Error creating class',
+      });
+    }
+  };
+
   const exportToPDF = () => {
     setNotification({
       type: 'success',
@@ -803,6 +894,18 @@ export function ClassesPage() {
             </div>
 
             <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {canAddClass() && (
+                <button
+                  onClick={() => {
+                    setShowCreateModal(true);
+                    fetchTeachers();
+                  }}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="h-5 w-5" />
+                  Add Class
+                </button>
+              )}
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
@@ -1141,6 +1244,186 @@ export function ClassesPage() {
           message={notification.message}
           onClose={() => setNotification(null)}
         />
+      )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Add New Class
+              </h2>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setFormData({
+                    name: '',
+                    grade_level: 1,
+                    section: '',
+                    capacity: 30,
+                    class_teacher_id: '',
+                    academic_year: new Date().getFullYear().toString(),
+                    status: 'active',
+                  });
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Class Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="e.g., Class 10-A"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Section *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.section}
+                    onChange={(e) =>
+                      setFormData({ ...formData, section: e.target.value })
+                    }
+                    placeholder="e.g., A"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Grade Level *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={formData.grade_level}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        grade_level: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Capacity *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.capacity}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        capacity: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Class Teacher
+                  </label>
+                  <select
+                    value={formData.class_teacher_id}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        class_teacher_id: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select teacher</option>
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.full_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Academic Year *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.academic_year}
+                    onChange={(e) =>
+                      setFormData({ ...formData, academic_year: e.target.value })
+                    }
+                    placeholder="e.g., 2024"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="active">Active</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setFormData({
+                      name: '',
+                      grade_level: 1,
+                      section: '',
+                      capacity: 30,
+                      class_teacher_id: '',
+                      academic_year: new Date().getFullYear().toString(),
+                      status: 'active',
+                    });
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateClass}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Create Class
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </DashboardLayout>
   );
