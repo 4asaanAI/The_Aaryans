@@ -774,7 +774,7 @@ export function ClassesPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, email')
-        .in('role', ['professor', 'admin'])
+        .in('role', ['professor'])
         .eq('approval_status', 'approved')
         .order('full_name');
 
