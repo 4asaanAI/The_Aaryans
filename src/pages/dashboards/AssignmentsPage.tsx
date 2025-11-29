@@ -138,6 +138,57 @@ export function AssignmentsPage() {
 
   const fetchClasses = async () => {
     try {
+      // wait for profile to be available
+      if (!profile) return;
+
+      // If user is a professor, restrict classes to:
+      // - classes where they are the class_teacher, OR
+      // - classes where they are assigned in class_subjects.teacher_id
+      if (profile.role === 'professor') {
+        // 1) find class_subjects entries for this professor
+        const { data: classSubjects, error: csError } = await supabase
+          .from('class_subjects')
+          .select('class_id')
+          .eq('teacher_id', profile.id);
+
+        if (csError) throw csError;
+
+        const classIds = (classSubjects || [])
+          .map((cs: any) => cs.class_id)
+          .filter(Boolean) as string[];
+
+        // 2) fetch classes from those classIds (if any)
+        let classesFromSubjects: Array<{ id: string; name: string }> = [];
+        if (classIds.length > 0) {
+          const { data, error } = await supabase
+            .from('classes')
+            .select('id, name')
+            .in('id', classIds)
+            .order('name');
+          if (error) throw error;
+          classesFromSubjects = data || [];
+        }
+
+        // 3) fetch classes where professor is the class_teacher
+        const { data: teacherClasses, error: tcError } = await supabase
+          .from('classes')
+          .select('id, name')
+          .eq('class_teacher_id', profile.id)
+          .order('name');
+        if (tcError) throw tcError;
+
+        // 4) merge unique by id and set state
+        const merged = [...classesFromSubjects, ...(teacherClasses || [])];
+        const uniqueMap = new Map<string, { id: string; name: string }>();
+        merged.forEach((c) => {
+          if (c && c.id) uniqueMap.set(c.id, c);
+        });
+
+        setClasses(Array.from(uniqueMap.values()));
+        return;
+      }
+
+      // Default behaviour for non-professors (unchanged)
       const { data, error } = await supabase
         .from('classes')
         .select('id, name')
@@ -152,11 +203,13 @@ export function AssignmentsPage() {
 
   const fetchSubjects = async () => {
     try {
-      let query = supabase
-        .from('subjects')
-        .select('id, name');
+      let query = supabase.from('subjects').select('id, name');
 
-      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+      if (
+        profile?.role === 'admin' &&
+        profile.sub_role === 'hod' &&
+        profile.department_id
+      ) {
         query = query.eq('department_id', profile.department_id);
       }
 
@@ -174,19 +227,26 @@ export function AssignmentsPage() {
   const fetchAssignments = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('assignments')
-        .select(
-          `
+      let query = supabase.from('assignments').select(
+        `
           *,
           class:classes(id, name),
           subject:subjects!inner(name, code, department_id),
           teacher:profiles!assignments_teacher_id_fkey(full_name)
         `
-        );
+      );
 
-      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+      if (
+        profile?.role === 'admin' &&
+        profile.sub_role === 'hod' &&
+        profile.department_id
+      ) {
         query = query.eq('subject.department_id', profile.department_id);
+      }
+
+      // ✅ Only show assignments created by the logged-in professor
+      if (profile?.role === 'professor') {
+        query = query.eq('teacher_id', profile.id);
       }
 
       query = query.order('due_date', { ascending: false });
