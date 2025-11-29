@@ -144,6 +144,38 @@ export function ExamsPage() {
 
   const fetchClasses = async () => {
     try {
+      if (profile?.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('class_id')
+          .eq('teacher_id', profile.id);
+
+        const classIds = csData?.map(cs => cs.class_id).filter(Boolean) || [];
+
+        const { data: classTeacherData } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('class_teacher_id', profile.id);
+
+        const classTeacherIds = classTeacherData?.map(c => c.id) || [];
+        const allClassIds = [...new Set([...classIds, ...classTeacherIds])];
+
+        if (allClassIds.length === 0) {
+          setClasses([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('classes')
+          .select('id, name')
+          .in('id', allClassIds)
+          .order('name');
+
+        if (error) throw error;
+        setClasses(data || []);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('classes')
         .select('id, name')
@@ -157,6 +189,30 @@ export function ExamsPage() {
 
   const fetchSubjects = async () => {
     try {
+      if (profile?.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('subject_id')
+          .eq('teacher_id', profile.id);
+
+        const subjectIds = csData?.map(cs => cs.subject_id).filter(Boolean) || [];
+
+        if (subjectIds.length === 0) {
+          setSubjects([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('subjects')
+          .select('id, name')
+          .in('id', subjectIds)
+          .order('name');
+
+        if (error) throw error;
+        setSubjects(data || []);
+        return;
+      }
+
       let query = supabase.from('subjects').select('id, name').order('name');
 
       if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
@@ -185,7 +241,41 @@ export function ExamsPage() {
         )
         .order('exam_date', { ascending: false });
 
-      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+      if (profile?.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('class_id, subject_id')
+          .eq('teacher_id', profile.id);
+
+        const classIds = csData?.map(cs => cs.class_id).filter(Boolean) || [];
+        const subjectIds = csData?.map(cs => cs.subject_id).filter(Boolean) || [];
+
+        const { data: classTeacherData } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('class_teacher_id', profile.id);
+
+        const classTeacherIds = classTeacherData?.map(c => c.id) || [];
+        const allClassIds = [...new Set([...classIds, ...classTeacherIds])];
+
+        if (allClassIds.length === 0 && subjectIds.length === 0) {
+          setExams([]);
+          setLoading(false);
+          return;
+        }
+
+        const conditions: string[] = [];
+        if (allClassIds.length > 0) {
+          conditions.push(`class_id.in.(${allClassIds.join(',')})`);
+        }
+        if (subjectIds.length > 0) {
+          conditions.push(`subject_id.in.(${subjectIds.join(',')})`);
+        }
+
+        if (conditions.length > 0) {
+          query = query.or(conditions.join(','));
+        }
+      } else if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
         query = query.eq('subjects.department_id', profile.department_id);
       }
 

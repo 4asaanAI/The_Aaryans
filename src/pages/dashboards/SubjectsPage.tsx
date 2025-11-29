@@ -67,7 +67,12 @@ export function SubjectsPage() {
   } | null>(null);
 
   useEffect(() => {
-    if (profile?.role === 'admin' && profile.sub_role === 'hod') {
+    if (profile?.role === 'professor') {
+      fetchSubjects();
+      fetchTeachers();
+      fetchClasses();
+      fetchClassSubjects();
+    } else if (profile?.role === 'admin' && profile.sub_role === 'hod') {
       fetchSubjects();
       fetchTeachers();
       fetchClasses();
@@ -80,7 +85,32 @@ export function SubjectsPage() {
     setLoading(true);
 
     try {
-      // Optional: limit to departments where this HOD is listed
+      if (profile.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('subject_id')
+          .eq('teacher_id', profile.id);
+
+        const subjectIds = csData?.map(cs => cs.subject_id).filter(Boolean) || [];
+
+        if (subjectIds.length === 0) {
+          setSubjects([]);
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('subjects')
+          .select('*')
+          .in('id', subjectIds)
+          .order('name', { ascending: true });
+
+        if (error) throw error;
+        setSubjects(data || []);
+        setLoading(false);
+        return;
+      }
+
       const { data: hodDepartments, error: deptErr } = await supabase
         .from('departments')
         .select('id')
@@ -89,13 +119,11 @@ export function SubjectsPage() {
       if (deptErr) throw deptErr;
       const deptIds: string[] = (hodDepartments || []).map((d: any) => d.id);
 
-      // Build the query: subjects.created_by == profile.id
       let q = supabase
         .from('subjects')
         .select('*')
         .eq('created_by', profile.id);
 
-      // If you want to also ensure it's within the HOD's departments (optional)
       if (deptIds.length) {
         q = q.in('department_id', deptIds);
       }

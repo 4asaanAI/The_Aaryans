@@ -108,13 +108,59 @@ export function ResultsPage() {
         .select(
           `
           *,
-          exams(name, exam_code, exam_type, exam_date, total_marks, classes(name), subjects!inner(name, department_id)),
+          exams(name, exam_code, exam_type, exam_date, total_marks, class_id, subject_id, classes(name), subjects!inner(name, department_id)),
           profiles(full_name, admission_no)
         `
         )
         .order('created_at', { ascending: false });
 
-      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+      if (profile?.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('class_id, subject_id')
+          .eq('teacher_id', profile.id);
+
+        const classIds = csData?.map(cs => cs.class_id).filter(Boolean) || [];
+        const subjectIds = csData?.map(cs => cs.subject_id).filter(Boolean) || [];
+
+        const { data: classTeacherData } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('class_teacher_id', profile.id);
+
+        const classTeacherIds = classTeacherData?.map(c => c.id) || [];
+        const allClassIds = [...new Set([...classIds, ...classTeacherIds])];
+
+        if (allClassIds.length === 0 && subjectIds.length === 0) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+
+        const examQuery = supabase.from('exams').select('id');
+        const conditions: string[] = [];
+        if (allClassIds.length > 0) {
+          conditions.push(`class_id.in.(${allClassIds.join(',')})`);
+        }
+        if (subjectIds.length > 0) {
+          conditions.push(`subject_id.in.(${subjectIds.join(',')})`);
+        }
+
+        const examQueryWithConditions = conditions.length > 0
+          ? examQuery.or(conditions.join(','))
+          : examQuery;
+
+        const { data: examData } = await examQueryWithConditions;
+        const examIds = examData?.map(e => e.id) || [];
+
+        if (examIds.length === 0) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+
+        query = query.in('exam_id', examIds);
+      } else if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
         query = query.eq('exams.subjects.department_id', profile.department_id);
       }
 

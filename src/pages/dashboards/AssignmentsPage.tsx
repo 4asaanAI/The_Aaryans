@@ -203,6 +203,30 @@ export function AssignmentsPage() {
 
   const fetchSubjects = async () => {
     try {
+      if (profile?.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('subject_id')
+          .eq('teacher_id', profile.id);
+
+        const subjectIds = csData?.map(cs => cs.subject_id).filter(Boolean) || [];
+
+        if (subjectIds.length === 0) {
+          setSubjects([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('subjects')
+          .select('id, name')
+          .in('id', subjectIds)
+          .order('name');
+
+        if (error) throw error;
+        setSubjects(data || []);
+        return;
+      }
+
       let query = supabase.from('subjects').select('id, name');
 
       if (

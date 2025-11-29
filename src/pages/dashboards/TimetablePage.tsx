@@ -73,10 +73,47 @@ export function TimetablePage() {
 
   // --- Fetch timetable only for class+subject pairs assigned to this HOD (hod_ids contains profile.id) ---
   const fetchTimetable = async () => {
-    if (!profile?.id || !profile?.department_id) return;
+    if (!profile?.id) return;
     setLoading(true);
     try {
-      // 1) find class_subjects rows where this HOD is present in hod_ids
+      if (profile.role === 'professor') {
+        const { data, error } = await supabase
+          .from('timetables')
+          .select(
+            `
+            *,
+            class:classes(id, name, grade_level, section),
+            subject:subjects(id, name, code, department_id),
+            teacher:profiles(id, full_name)
+          `
+          )
+          .eq('teacher_id', profile.id)
+          .order('day_of_week')
+          .order('start_time');
+
+        if (error) throw error;
+
+        const rawTimetables: TimetableEntry[] = (data || []).map((row: any) => ({
+          id: row.id,
+          class_id: row.class_id,
+          subject_id: row.subject_id,
+          teacher_id: row.teacher_id ?? null,
+          day_of_week: row.day_of_week,
+          start_time: row.start_time,
+          end_time: row.end_time,
+          room_number: row.room_number ?? null,
+          class: Array.isArray(row.class) ? row.class[0] : row.class,
+          subject: Array.isArray(row.subject) ? row.subject[0] : row.subject,
+          teacher: Array.isArray(row.teacher) ? row.teacher[0] : row.teacher,
+        }));
+
+        setTimetable(rawTimetables);
+        setLoading(false);
+        return;
+      }
+
+      if (!profile?.department_id) return;
+
       const { data: csData, error: csErr } = await supabase
         .from('class_subjects')
         .select('class_id, subject_id')
@@ -96,7 +133,6 @@ export function TimetablePage() {
         });
       }
 
-      // If no class_subjects assigned to this HOD, return empty
       if (allowedPairs.size === 0) {
         setTimetable([]);
         setLoading(false);
@@ -153,6 +189,34 @@ export function TimetablePage() {
   };
 
   const fetchSubjects = async () => {
+    if (profile?.role === 'professor') {
+      try {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('subject_id')
+          .eq('teacher_id', profile.id);
+
+        const subjectIds = csData?.map(cs => cs.subject_id).filter(Boolean) || [];
+
+        if (subjectIds.length === 0) {
+          setSubjects([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('subjects')
+          .select('*')
+          .in('id', subjectIds)
+          .order('name');
+
+        if (error) throw error;
+        setSubjects(data || []);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      }
+      return;
+    }
+
     if (!profile?.department_id) return;
     try {
       const { data, error } = await supabase
@@ -169,6 +233,39 @@ export function TimetablePage() {
 
   const fetchClasses = async () => {
     try {
+      if (profile?.role === 'professor') {
+        const { data: csData } = await supabase
+          .from('class_subjects')
+          .select('class_id')
+          .eq('teacher_id', profile.id);
+
+        const classIds = csData?.map(cs => cs.class_id).filter(Boolean) || [];
+
+        const { data: classTeacherData } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('class_teacher_id', profile.id);
+
+        const classTeacherIds = classTeacherData?.map(c => c.id) || [];
+        const allClassIds = [...new Set([...classIds, ...classTeacherIds])];
+
+        if (allClassIds.length === 0) {
+          setClasses([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .in('id', allClassIds)
+          .eq('status', 'active')
+          .order('grade_level, section');
+
+        if (error) throw error;
+        setClasses(data || []);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('classes')
         .select('*')

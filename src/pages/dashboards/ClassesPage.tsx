@@ -137,6 +137,23 @@ export function ClassesPage() {
 
       console.log('fetchClasses: profile:', profile);
 
+      if (profile.role === 'professor') {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .or(`class_teacher_id.eq.${profile.id},id.in.(${await getProfessorClassIds()})`)
+          .eq('status', 'active')
+          .order('name');
+
+        if (error) throw error;
+        const classList = data || [];
+        setClasses(classList);
+        if (classList.length > 0 && !selectedClass) {
+          setSelectedClass(classList[0].id);
+        }
+        return;
+      }
+
       const isSubRoleHod =
         profile.sub_role && profile.sub_role.toString().toLowerCase() === 'hod';
       console.log(
@@ -760,6 +777,18 @@ export function ClassesPage() {
 
   const canEditRemarks = () => {
     return profile?.sub_role === 'head' || profile?.sub_role === 'principal';
+  };
+
+  const getProfessorClassIds = async () => {
+    if (!profile) return '';
+
+    const { data } = await supabase
+      .from('class_subjects')
+      .select('class_id')
+      .eq('teacher_id', profile.id);
+
+    const classIds = data?.map(cs => cs.class_id).filter(Boolean) || [];
+    return classIds.length > 0 ? classIds.join(',') : 'null';
   };
 
   const canAddClass = () => {
