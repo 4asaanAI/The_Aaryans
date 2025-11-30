@@ -31,6 +31,7 @@ export function HODDashboard() {
   const [recentAnnouncements, setRecentAnnouncements] = useState<
     Announcement[]
   >([]);
+  const [departmentName, setDepartmentName] = useState<string>('');
   const [loading, setLoading] = useState({
     counts: true,
     exams: true,
@@ -42,11 +43,28 @@ export function HODDashboard() {
     if (!profile || profile.sub_role !== 'hod' || !profile.department_id)
       return;
 
+    fetchDepartmentName();
     fetchCounts();
     fetchRecentExams();
     fetchRecentAnnouncements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
+
+  const fetchDepartmentName = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('name')
+        .eq('id', profile!.department_id)
+        .maybeSingle();
+
+      if (error) throw error;
+      setDepartmentName(data?.name || 'Unknown Department');
+    } catch (err) {
+      console.error('Error fetching department name:', err);
+      setDepartmentName('Department');
+    }
+  };
 
   const fetchCounts = async () => {
     setLoading((s) => ({ ...s, counts: true }));
@@ -168,7 +186,7 @@ export function HODDashboard() {
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
             <p className="text-sm text-blue-800 font-medium">
-              Department Access
+              {departmentName || 'Loading...'}
             </p>
           </div>
         </div>

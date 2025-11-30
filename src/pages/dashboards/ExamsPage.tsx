@@ -215,8 +215,8 @@ export function ExamsPage() {
 
       let query = supabase.from('subjects').select('id, name').order('name');
 
-      if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
-        query = query.eq('department_id', profile.department_id);
+      if (profile?.role === 'admin' && profile.sub_role === 'hod') {
+        query = query.eq('created_by', profile.id);
       }
 
       const { data, error } = await query;
@@ -275,8 +275,21 @@ export function ExamsPage() {
         if (conditions.length > 0) {
           query = query.or(conditions.join(','));
         }
-      } else if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
-        query = query.eq('subjects.department_id', profile.department_id);
+      } else if (profile?.role === 'admin' && profile.sub_role === 'hod') {
+        const { data: hodSubjects } = await supabase
+          .from('subjects')
+          .select('id')
+          .eq('created_by', profile.id);
+
+        const subjectIds = hodSubjects?.map(s => s.id).filter(Boolean) || [];
+
+        if (subjectIds.length > 0) {
+          query = query.in('subject_id', subjectIds);
+        } else {
+          setExams([]);
+          setLoading(false);
+          return;
+        }
       }
 
       const { data, error } = await query;

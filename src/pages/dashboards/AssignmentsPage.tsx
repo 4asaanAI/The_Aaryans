@@ -231,10 +231,9 @@ export function AssignmentsPage() {
 
       if (
         profile?.role === 'admin' &&
-        profile.sub_role === 'hod' &&
-        profile.department_id
+        profile.sub_role === 'hod'
       ) {
-        query = query.eq('department_id', profile.department_id);
+        query = query.eq('created_by', profile.id);
       }
 
       query = query.order('name');
@@ -262,10 +261,22 @@ export function AssignmentsPage() {
 
       if (
         profile?.role === 'admin' &&
-        profile.sub_role === 'hod' &&
-        profile.department_id
+        profile.sub_role === 'hod'
       ) {
-        query = query.eq('subject.department_id', profile.department_id);
+        const { data: hodSubjects } = await supabase
+          .from('subjects')
+          .select('id')
+          .eq('created_by', profile.id);
+
+        const subjectIds = hodSubjects?.map(s => s.id).filter(Boolean) || [];
+
+        if (subjectIds.length > 0) {
+          query = query.in('subject_id', subjectIds);
+        } else {
+          setAssignments([]);
+          setLoading(false);
+          return;
+        }
       }
 
       // ✅ Only show assignments created by the logged-in professor

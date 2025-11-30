@@ -93,7 +93,16 @@ export function RightSidebar() {
   const isSelectedDate = (day: number) => new Date(year, month, day).toDateString() === selectedDate.toDateString();
   const hasEvent = (day: number) => {
     const date = new Date(year, month, day);
-    return allEvents.some(event => new Date(event.event_date).toDateString() === date.toDateString()) || allAnnouncements.some(ann => new Date(ann.created_at).toDateString() === date.toDateString());
+    const dateStr = date.toDateString();
+    const hasEventOnDate = allEvents.some(event => {
+      const eventDate = new Date(event.event_date);
+      return eventDate.toDateString() === dateStr;
+    });
+    const hasAnnouncementOnDate = allAnnouncements.some(ann => {
+      const annDate = new Date(ann.created_at);
+      return annDate.toDateString() === dateStr;
+    });
+    return hasEventOnDate || hasAnnouncementOnDate;
   };
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

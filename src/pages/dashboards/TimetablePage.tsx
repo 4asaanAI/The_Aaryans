@@ -114,33 +114,21 @@ export function TimetablePage() {
 
       if (!profile?.department_id) return;
 
-      const { data: csData, error: csErr } = await supabase
-        .from('class_subjects')
-        .select('class_id, subject_id')
-        .contains('hod_ids', [profile.id]);
+      const { data: hodSubjects, error: subjErr } = await supabase
+        .from('subjects')
+        .select('id')
+        .eq('created_by', profile.id);
 
-      if (csErr) throw csErr;
+      if (subjErr) throw subjErr;
 
-      const allowedPairs = new Set<string>();
-      const allowedClassIds: string[] = [];
-      if (Array.isArray(csData)) {
-        csData.forEach((r: any) => {
-          if (r?.class_id && r?.subject_id) {
-            allowedPairs.add(`${r.class_id}::${r.subject_id}`);
-            if (!allowedClassIds.includes(r.class_id))
-              allowedClassIds.push(r.class_id);
-          }
-        });
-      }
+      const subjectIds = hodSubjects?.map(s => s.id).filter(Boolean) || [];
 
-      if (allowedPairs.size === 0) {
+      if (subjectIds.length === 0) {
         setTimetable([]);
         setLoading(false);
         return;
       }
 
-      // 2) fetch timetables for classes in allowedClassIds where subject belongs to this department
-      //    We will filter client-side by the exact (class,subject) pairs to avoid returning other subjects for same class
       const { data, error } = await supabase
         .from('timetables')
         .select(
@@ -151,33 +139,25 @@ export function TimetablePage() {
           teacher:profiles(id, full_name)
         `
         )
-        .in('class_id', allowedClassIds)
+        .in('subject_id', subjectIds)
         .order('day_of_week')
         .order('start_time');
 
       if (error) throw error;
 
-      const rawTimetables: TimetableEntry[] = (data || [])
-        .filter((row: any) => {
-          // ensure row.subject belongs to the same department (defense) and pair is allowed
-          const subjDeptId = row.subject?.department_id;
-          if (!subjDeptId || subjDeptId !== profile.department_id) return false;
-          const key = `${row.class_id}::${row.subject_id}`;
-          return allowedPairs.has(key);
-        })
-        .map((row: any) => ({
-          id: row.id,
-          class_id: row.class_id,
-          subject_id: row.subject_id,
-          teacher_id: row.teacher_id ?? null,
-          day_of_week: row.day_of_week,
-          start_time: row.start_time,
-          end_time: row.end_time,
-          room_number: row.room_number ?? null,
-          class: Array.isArray(row.class) ? row.class[0] : row.class,
-          subject: Array.isArray(row.subject) ? row.subject[0] : row.subject,
-          teacher: Array.isArray(row.teacher) ? row.teacher[0] : row.teacher,
-        }));
+      const rawTimetables: TimetableEntry[] = (data || []).map((row: any) => ({
+        id: row.id,
+        class_id: row.class_id,
+        subject_id: row.subject_id,
+        teacher_id: row.teacher_id ?? null,
+        day_of_week: row.day_of_week,
+        start_time: row.start_time,
+        end_time: row.end_time,
+        room_number: row.room_number ?? null,
+        class: Array.isArray(row.class) ? row.class[0] : row.class,
+        subject: Array.isArray(row.subject) ? row.subject[0] : row.subject,
+        teacher: Array.isArray(row.teacher) ? row.teacher[0] : row.teacher,
+      }));
 
       setTimetable(rawTimetables);
     } catch (error) {
@@ -219,6 +199,17 @@ export function TimetablePage() {
 
     if (!profile?.department_id) return;
     try {
+      if (profile.role === 'admin' && profile.sub_role === 'hod') {
+        const { data, error } = await supabase
+          .from('subjects')
+          .select('*')
+          .eq('created_by', profile.id)
+          .order('name');
+        if (error) throw error;
+        setSubjects(data || []);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('subjects')
         .select('*')

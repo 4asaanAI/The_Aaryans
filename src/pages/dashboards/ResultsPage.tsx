@@ -160,8 +160,31 @@ export function ResultsPage() {
         }
 
         query = query.in('exam_id', examIds);
-      } else if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
-        query = query.eq('exams.subjects.department_id', profile.department_id);
+      } else if (profile?.role === 'admin' && profile.sub_role === 'hod') {
+        const { data: hodSubjects } = await supabase
+          .from('subjects')
+          .select('id')
+          .eq('created_by', profile.id);
+
+        const subjectIds = hodSubjects?.map(s => s.id).filter(Boolean) || [];
+
+        if (subjectIds.length === 0) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+
+        const examQuery = supabase.from('exams').select('id').in('subject_id', subjectIds);
+        const { data: examData } = await examQuery;
+        const examIds = examData?.map(e => e.id) || [];
+
+        if (examIds.length === 0) {
+          setResults([]);
+          setLoading(false);
+          return;
+        }
+
+        query = query.in('exam_id', examIds);
       }
 
       const { data, error } = await query;
