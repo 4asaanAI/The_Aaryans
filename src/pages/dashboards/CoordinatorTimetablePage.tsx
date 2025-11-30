@@ -102,7 +102,7 @@ export function CoordinatorTimetablePage() {
       const { data: csData, error: csErr } = await supabase
         .from('class_subjects')
         .select('class_id')
-        .contains('hod_ids', [profile.id]);
+        .contains('hod_ids', `{${profile.id}}`);
 
       if (csErr) throw csErr;
 
@@ -135,7 +135,7 @@ export function CoordinatorTimetablePage() {
       const { data: csData, error: csErr } = await supabase
         .from('class_subjects')
         .select('subject_id')
-        .contains('hod_ids', [profile.id]);
+        .contains('hod_ids', `{${profile.id}}`);
 
       if (csErr) throw csErr;
 
@@ -166,7 +166,7 @@ export function CoordinatorTimetablePage() {
       const { data: csData, error: csErr } = await supabase
         .from('class_subjects')
         .select('subject_id')
-        .contains('hod_ids', [profile.id]);
+        .contains('hod_ids', `{${profile.id}}`);
 
       if (csErr) throw csErr;
 
@@ -194,14 +194,14 @@ export function CoordinatorTimetablePage() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email')
+        .select('id, full_name, email, department_id')
         .in('id', teacherIds)
-        .eq('department_id', profile.department_id)
         .eq('approval_status', 'approved')
         .order('full_name');
 
       if (error) throw error;
-      setTeachers(data || []);
+      const filtered = (data || []).filter(t => t.department_id === profile.department_id);
+      setTeachers(filtered);
     } catch (error) {
       console.error('Error fetching teachers:', error);
     }
@@ -214,7 +214,7 @@ export function CoordinatorTimetablePage() {
       const { data: csData, error: csErr } = await supabase
         .from('class_subjects')
         .select('class_id, subject_id')
-        .contains('hod_ids', [profile.id]);
+        .contains('hod_ids', `{${profile.id}}`);
 
       if (csErr) throw csErr;
 
