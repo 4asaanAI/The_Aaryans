@@ -76,15 +76,34 @@ export function LeavesPage() {
 
   const fetchLeaves = async () => {
     try {
-      const query = supabase
+      let query = supabase
         .from('leave_applications')
         .select(
           `
           *,
-          applicant:profiles!leave_applications_applicant_id_fkey(full_name, email, role)
+          applicant:profiles!leave_applications_applicant_id_fkey(full_name, email, role, department_id)
         `
         )
         .order('created_at', { ascending: false });
+
+      if (profile?.role === 'professor') {
+        query = query.eq('applicant_id', profile.id);
+      } else if (profile?.role === 'admin' && profile.sub_role === 'hod' && profile.department_id) {
+        const { data: deptUsers } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('department_id', profile.department_id)
+          .in('role', ['professor', 'coordinator']);
+
+        const userIds = deptUsers?.map(u => u.id) || [];
+        if (userIds.length > 0) {
+          query = query.in('applicant_id', userIds);
+        } else {
+          setLeaves([]);
+          setLoading(false);
+          return;
+        }
+      }
 
       const { data, error } = await query;
       if (error) throw error;

@@ -223,13 +223,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ];
     }
 
-    if (profile.role === 'professor' && profile.sub_role === 'teacher') {
+    if (profile.role === 'professor') {
       return [
         ...commonItems,
-        { name: 'My Courses', href: '/dashboard/courses', icon: BookOpen },
-        { name: 'Students', href: '/dashboard/students', icon: Users },
-        { name: 'Attendance', href: '/dashboard/attendance', icon: Calendar },
-        { name: 'Grades', href: '/dashboard/grades', icon: FileText }
+        { name: 'Classes', href: '/dashboard/classes', icon: BookOpen },
+        { name: 'Subjects', href: '/dashboard/subjects', icon: BookOpen },
+        { name: 'Timetable', href: '/dashboard/timetable', icon: Calendar },
+        { name: 'Exams', href: '/dashboard/exams', icon: ClipboardList },
+        { name: 'Assignments', href: '/dashboard/assignments', icon: Award },
+        { name: 'Results', href: '/dashboard/results', icon: BarChart3 },
+        { name: 'Events', href: '/dashboard/events', icon: Calendar },
+        { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
+        { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
+        { name: 'Leaves', href: '/dashboard/leaves', icon: Plane },
+        { name: 'Support', href: '/dashboard/support', icon: HelpCircle }
       ];
     }
 
