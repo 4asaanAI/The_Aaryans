@@ -97,26 +97,9 @@ export function CoordinatorTimetablePage() {
 
   const fetchClasses = async () => {
     try {
-      if (!profile?.id) return;
-
-      const { data: csData, error: csErr } = await supabase
-        .from('class_subjects')
-        .select('class_id')
-        .contains('hod_ids', `{${profile.id}}`);
-
-      if (csErr) throw csErr;
-
-      const classIds = Array.from(new Set(csData?.map(cs => cs.class_id).filter(Boolean) || []));
-
-      if (classIds.length === 0) {
-        setClasses([]);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('classes')
         .select('id, name, grade_level, section')
-        .in('id', classIds)
         .eq('status', 'active')
         .order('grade_level', { ascending: true })
         .order('section', { ascending: true });
@@ -130,26 +113,9 @@ export function CoordinatorTimetablePage() {
 
   const fetchSubjects = async () => {
     try {
-      if (!profile?.id) return;
-
-      const { data: csData, error: csErr } = await supabase
-        .from('class_subjects')
-        .select('subject_id')
-        .contains('hod_ids', `{${profile.id}}`);
-
-      if (csErr) throw csErr;
-
-      const subjectIds = Array.from(new Set(csData?.map(cs => cs.subject_id).filter(Boolean) || []));
-
-      if (subjectIds.length === 0) {
-        setSubjects([]);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('subjects')
         .select('id, name, code')
-        .in('id', subjectIds)
         .order('name');
 
       if (error) throw error;
@@ -161,47 +127,15 @@ export function CoordinatorTimetablePage() {
 
   const fetchTeachers = async () => {
     try {
-      if (!profile?.id || !profile?.department_id) return;
-
-      const { data: csData, error: csErr } = await supabase
-        .from('class_subjects')
-        .select('subject_id')
-        .contains('hod_ids', `{${profile.id}}`);
-
-      if (csErr) throw csErr;
-
-      const subjectIds = Array.from(new Set(csData?.map(cs => cs.subject_id).filter(Boolean) || []));
-
-      if (subjectIds.length === 0) {
-        setTeachers([]);
-        return;
-      }
-
-      const { data: teachersData, error: teachersErr } = await supabase
-        .from('class_subjects')
-        .select('teacher_id')
-        .in('subject_id', subjectIds)
-        .not('teacher_id', 'is', null);
-
-      if (teachersErr) throw teachersErr;
-
-      const teacherIds = Array.from(new Set(teachersData?.map(cs => cs.teacher_id).filter(Boolean) || []));
-
-      if (teacherIds.length === 0) {
-        setTeachers([]);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, department_id')
-        .in('id', teacherIds)
+        .select('id, full_name, email')
+        .in('role', ['professor', 'admin'])
         .eq('approval_status', 'approved')
         .order('full_name');
 
       if (error) throw error;
-      const filtered = (data || []).filter(t => t.department_id === profile.department_id);
-      setTeachers(filtered);
+      setTeachers(data || []);
     } catch (error) {
       console.error('Error fetching teachers:', error);
     }
@@ -209,31 +143,6 @@ export function CoordinatorTimetablePage() {
 
   const fetchTimetables = async () => {
     try {
-      if (!profile?.id) return;
-
-      const { data: csData, error: csErr } = await supabase
-        .from('class_subjects')
-        .select('class_id, subject_id')
-        .contains('hod_ids', `{${profile.id}}`);
-
-      if (csErr) throw csErr;
-
-      const allowedPairs = new Set<string>();
-      const classIds = new Set<string>();
-
-      csData?.forEach((cs) => {
-        if (cs.class_id && cs.subject_id) {
-          allowedPairs.add(`${cs.class_id}::${cs.subject_id}`);
-          classIds.add(cs.class_id);
-        }
-      });
-
-      if (classIds.size === 0) {
-        setTimetables([]);
-        setLoading(false);
-        return;
-      }
-
       let query = supabase
         .from('timetables')
         .select(`
@@ -242,7 +151,6 @@ export function CoordinatorTimetablePage() {
           subject:subjects(id, name, code),
           teacher:profiles(id, full_name, email)
         `)
-        .in('class_id', Array.from(classIds))
         .order('start_time');
 
       if (selectedClass) {
@@ -255,13 +163,7 @@ export function CoordinatorTimetablePage() {
       const { data, error } = await query;
 
       if (error) throw error;
-
-      const filtered = (data || []).filter((tt: any) => {
-        const key = `${tt.class_id}::${tt.subject_id}`;
-        return allowedPairs.has(key);
-      });
-
-      setTimetables(filtered);
+      setTimetables(data || []);
     } catch (error) {
       console.error('Error fetching timetables:', error);
     } finally {
