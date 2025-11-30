@@ -199,6 +199,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         { name: 'Events', href: '/dashboard/events', icon: Calendar },
         { name: 'Announcements', href: '/dashboard/announcements', icon: Bell },
         { name: 'Messages', href: '/dashboard/messages', icon: MailOpen },
+        { name: 'Leaves', href: '/dashboard/leaves', icon: Plane },
         { name: 'Support', href: '/dashboard/support', icon: HelpCircle }
       ];
     }
