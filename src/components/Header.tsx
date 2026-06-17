@@ -61,18 +61,12 @@ export function Header() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/signup"
-              className="px-4 py-2 text-sm font-medium text-slate-900 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all border border-slate-300"
-            >
-              Sign Up
-            </Link>
-            <Link
-              to="/login"
+            <a
+              href="https://main.ddxpej151tf13.amplifyapp.com/login"
               className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all"
             >
               Login
-            </Link>
+            </a>
             <div className="relative" ref={quickLinksRef}>
               <button
                 onClick={() => setQuickLinksMenuOpen(!quickLinksMenuOpen)}
@@ -122,20 +116,13 @@ export function Header() {
         {mobileMenuOpen && (
           <div ref={mobileMenuRef} className="md:hidden mt-4 pb-4 space-y-3 animate-slideDown">
             <div className="flex gap-2 mb-3">
-              <Link
-                to="/signup"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex-1 py-2.5 text-center text-sm font-medium text-slate-900 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all border border-slate-300"
-              >
-                Sign Up
-              </Link>
-              <Link
-                to="/login"
+              <a
+                href="https://main.ddxpej151tf13.amplifyapp.com/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex-1 py-2.5 text-center text-sm font-medium text-white bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all"
               >
                 Login
-              </Link>
+              </a>
             </div>
             <div className="space-y-2 border-b border-slate-200 pb-3">
               {navLinks.map((link) => (
